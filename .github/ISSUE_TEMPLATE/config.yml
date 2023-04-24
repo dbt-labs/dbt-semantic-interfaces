@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Participate in Discussions
+    url: https://github.com/dbt-labs/dbt-semantic-interfaces/discussions
+    about: Do you have a Big Idea for dbt-semantic-interfaces? Read open discussions, or start a new one
