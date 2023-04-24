@@ -15,7 +15,7 @@ changeFormat: |-
     {{- $IssueList = append $IssueList $changeLink  }}
   {{- end -}}
   - {{.Body}} ({{ range $index, $element := $IssueList }}{{if $index}}, {{end}}{{$element}}{{end}})
-a
+
 kinds:
   - label: Breaking Changes
   - label: Features
