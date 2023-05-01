@@ -4,7 +4,7 @@ version = "0.1.0"
 description = 'The shared semantic layer definitions that dbt-core and MetricFlow use'
 readme = "README.md"
 requires-python = ">=3.8"
-license = "Apache2"
+license = "Apache-2.0"
 keywords = []
 authors = [
   { name = "Callum McCann", email = "cmccann51@gmail.com" },
