@@ -10,4 +10,4 @@ install-hatch:
 install: install-hatch overwrite-pre-commit
 
 test:
-	export FORMAT_JSON_LOGS="1" && hatch run pytest:pytest app/tests
+	export FORMAT_JSON_LOGS="1" && hatch run pytest:pytest future_directory

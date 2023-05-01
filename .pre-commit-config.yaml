@@ -35,4 +35,3 @@ repos:
       args: [--show-error-codes]
       verbose: true
       language: system
-      files: app/.*
