@@ -43,6 +43,9 @@ dependencies = [
   "ruff~=0.0.260",
   "mypy~=1.1.1",
   "pytest~=7.3.0",
+  "types-jsonschema==3.2.0",
+  "types-python-dateutil",
+  "types-PyYAML~=6.0"
 ]
 
 [tool.hatch.envs.pre-commit.scripts]
