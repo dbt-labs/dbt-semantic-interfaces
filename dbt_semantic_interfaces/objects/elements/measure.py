@@ -1,9 +1,13 @@
 from __future__ import annotations
 
-from typing import Optional, List
+from typing import List, Optional
+
 from dbt_semantic_interfaces.objects.aggregation_type import AggregationType
+from dbt_semantic_interfaces.objects.base import (
+    HashableBaseModel,
+    ModelWithMetadataParsing,
+)
 from dbt_semantic_interfaces.objects.metadata import Metadata
-from dbt_semantic_interfaces.objects.base import ModelWithMetadataParsing, HashableBaseModel
 from dbt_semantic_interfaces.references import MeasureReference, TimeDimensionReference
 
 
@@ -21,7 +25,7 @@ class NonAdditiveDimensionParameters(HashableBaseModel):
 
 
 class MeasureAggregationParameters(HashableBaseModel):
-    """Describes parameters for aggregations"""
+    """Describes parameters for aggregations."""
 
     percentile: Optional[float] = None
     use_discrete_percentile: bool = False
@@ -29,7 +33,7 @@ class MeasureAggregationParameters(HashableBaseModel):
 
 
 class Measure(HashableBaseModel, ModelWithMetadataParsing):
-    """Describes a measure"""
+    """Describes a measure."""
 
     name: str
     agg: AggregationType

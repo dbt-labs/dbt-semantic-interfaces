@@ -2,7 +2,7 @@ from dbt_semantic_interfaces.enum_extension import ExtendedEnum
 
 
 class AggregationType(ExtendedEnum):
-    """Aggregation methods for measures"""
+    """Aggregation methods for measures."""
 
     SUM = "sum"
     MIN = "min"

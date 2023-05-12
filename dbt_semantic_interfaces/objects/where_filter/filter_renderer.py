@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Tuple, Sequence
+from typing import List, Sequence, Tuple
 
 import jinja2
 
-from dbt_semantic_interfaces.references import DimensionReference, EntityReference
 from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.references import DimensionReference, EntityReference
 
 
 @dataclass(frozen=True)
@@ -117,7 +117,6 @@ class FilterRenderer:
         )
 
         """
-
         dimension_call_parameter_sets: List[DimensionCallParameterSet] = []
         time_dimension_call_parameter_sets: List[TimeDimensionCallParameterSet] = []
         entity_call_parameter_sets: List[EntityCallParameterSet] = []
@@ -164,7 +163,7 @@ class FilterRenderer:
         """
 
         def _dimension_helper(dimension_name: str, entity_path: Sequence[str] = ()) -> str:
-            """Gets called by Jinja when rendering {{ dimension(...) }}"""
+            """Gets called by Jinja when rendering {{ dimension(...) }}."""
             return call_renderer.render_dimension_call(
                 DimensionCallParameterSet(
                     dimension_reference=DimensionReference(element_name=dimension_name),
@@ -175,7 +174,7 @@ class FilterRenderer:
         def _time_dimension_helper(
             time_dimension_name: str, time_granularity_name: str, entity_path: Sequence[str] = ()
         ) -> str:
-            """Gets called by Jinja when rendering {{ time_dimension(...) }}"""
+            """Gets called by Jinja when rendering {{ time_dimension(...) }}."""
             return call_renderer.render_time_dimension_call(
                 TimeDimensionCallParameterSet(
                     time_dimension_reference=DimensionReference(element_name=time_dimension_name),
@@ -185,7 +184,7 @@ class FilterRenderer:
             )
 
         def _entity_helper(entity_name: str, entity_path: Sequence[str] = ()) -> str:
-            """Gets called by Jinja when rendering {{ entity(...) }}"""
+            """Gets called by Jinja when rendering {{ entity(...) }}."""
             return call_renderer.render_entity_call(
                 EntityCallParameterSet(
                     entity_path=tuple(EntityReference(element_name=arg) for arg in entity_path),

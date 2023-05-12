@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 from dbt_semantic_interfaces.objects.base import (
-    PydanticCustomInputParser,
     HashableBaseModel,
+    PydanticCustomInputParser,
     PydanticParseableValueType,
 )
-from dbt_semantic_interfaces.objects.where_filter.filter_renderer import FilterCallParameterSets, FilterRenderer
+from dbt_semantic_interfaces.objects.where_filter.filter_renderer import (
+    FilterCallParameterSets,
+    FilterRenderer,
+)
 
 
 class WhereFilter(PydanticCustomInputParser, HashableBaseModel):
@@ -24,7 +27,7 @@ class WhereFilter(PydanticCustomInputParser, HashableBaseModel):
         cls,
         input: PydanticParseableValueType,
     ) -> WhereFilter:
-        """Parses a WhereFilter from a string found in a user-provided model specification
+        """Parses a WhereFilter from a string found in a user-provided model specification.
 
         User-provided constraint strings are SQL snippets conforming to the expectations of SQL WHERE clauses,
         and as such we parse them using our standard parse method below.

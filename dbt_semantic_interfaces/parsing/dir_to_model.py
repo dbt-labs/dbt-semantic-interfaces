@@ -1,27 +1,27 @@
 import logging
 import os
+import traceback
 from dataclasses import dataclass
 from string import Template
-import traceback
-import git
-from typing import Optional, Dict, List, Union, Type
+from typing import Dict, List, Optional, Type, Union
 
+import git
 from jsonschema import exceptions
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.model_transformer import ModelTransformer
-from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
 from dbt_semantic_interfaces.objects.metric import Metric
+from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
 from dbt_semantic_interfaces.parsing.objects import Version, YamlConfigFile
 from dbt_semantic_interfaces.parsing.schemas import (
     metric_validator,
     semantic_model_validator,
 )
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.parsing.yaml_loader import (
+    PARSING_CONTEXT_KEY,
     ParsingContext,
     YamlConfigLoader,
-    PARSING_CONTEXT_KEY,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
@@ -48,7 +48,7 @@ class ModelBuildResult:  # noqa: D
 
 @dataclass(frozen=True)
 class FileParsingResult:
-    """Results of parsing a config file
+    """Results of parsing a config file.
 
     Attributes:
         elements: MetricFlow model elements parsed from the file
@@ -60,7 +60,7 @@ class FileParsingResult:
 
 
 def collect_yaml_config_file_paths(directory: str) -> List[str]:
-    """Collects a list of file paths for model config files
+    """Collects a list of file paths for model config files.
 
     Ignores files that are:
         - In hidden directories (i.e. directories starting with '.')
@@ -106,7 +106,8 @@ def parse_directory_of_yaml_files_to_model(
 ) -> ModelBuildResult:
     """Parse files in the given directory to a SemanticManifest.
 
-    Strings in the file following the Python string template format are replaced according to the template_mapping dict.
+    Strings in the file following the Python string template format are replaced
+    according to the template_mapping dict.
     """
     file_paths = collect_yaml_config_file_paths(directory=directory)
     return parse_yaml_file_paths_to_model(
@@ -125,7 +126,8 @@ def parse_yaml_file_paths_to_model(
 ) -> ModelBuildResult:
     """Parse files the given list of file paths to a SemanticManifest.
 
-    Strings in the files following the Python string template format are replaced according to the template_mapping dict.
+    Strings in the files following the Python string template format are replaced
+    according to the template_mapping dict.
     """
     template_mapping = template_mapping or {}
     yaml_config_files = []
@@ -161,7 +163,7 @@ def parse_yaml_files_to_validation_ready_model(
     apply_transformations: Optional[bool] = True,
     raise_issues_as_exceptions: bool = True,
 ) -> ModelBuildResult:
-    """Parse and transform the given set of in-memory YamlConfigFiles to a UserConfigured model
+    """Parse and transform the given set of in-memory YamlConfigFiles to a UserConfigured model.
 
     This model result is, by default, validation-ready, although different callsites (mainly in testing)
     might wish to override the transformation state.
@@ -239,7 +241,7 @@ def parse_config_yaml(
     semantic_model_class: Type[SemanticModel] = SemanticModel,
     metric_class: Type[Metric] = Metric,
 ) -> FileParsingResult:
-    """Parses transform config file passed as string - Returns list of model objects"""
+    """Parses transform config file passed as string - Returns list of model objects."""
     results: List[Union[SemanticModel, Metric]] = []
     ctx: Optional[ParsingContext] = None
     issues: List[ValidationIssue] = []
