@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from string import Template
 from typing import Dict, List, Optional, Type, Union
 
-import git
 from jsonschema import exceptions
 
 from dbt_semantic_interfaces.errors import ParsingException
@@ -67,9 +66,6 @@ def collect_yaml_config_file_paths(directory: str) -> List[str]:
         - Hidden files (i.e. files starting with '.')
         - Non YAML files
         - Ignored by the repo's .gitignore file (if a repo is detected)
-
-    NOTE: We ignore files ignored by .gitignore because an issue cropped up wherein
-    sometimes dependencies of projects include YAML files in their package.
     """
     config_file_paths: List[str] = []
     for root, dirs, files in os.walk(directory):
@@ -85,15 +81,6 @@ def collect_yaml_config_file_paths(directory: str) -> List[str]:
 
             file_path = os.path.join(root, file)
             config_file_paths.append(file_path)
-
-    try:
-        repo = git.Repo(directory, search_parent_directories=True)
-        # repo.ignored returns a list of file paths which are the file paths
-        # that should be ignored as a subset of the handed in file paths
-        ignored_files = repo.ignored(config_file_paths)
-        config_file_paths = list(set(config_file_paths) - set(ignored_files))
-    except git.exc.InvalidGitRepositoryError:
-        pass
 
     return config_file_paths
 
