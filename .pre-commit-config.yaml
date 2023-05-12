@@ -32,6 +32,15 @@ repos:
     rev: v0.931
     hooks:
     - id: mypy
-      args: [--show-error-codes]
+      name: mypy_dbt_semantic_interfaces
+      args: [--ignore-missing-imports, --show-error-codes]
       verbose: true
-      language: system
+      additional_dependencies:
+        [
+          types-PyYAML,
+          types-jinja2,
+          types-attrs,
+          pytest,
+          python-dateutil,
+          types-python-dateutil,
+        ]

@@ -17,4 +17,4 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup-python-env
       - name: Run Pre-commit Hooks
-        run: hatch run pre-commit:pre-commit run --show-diff-on-failure --color=always --all-files
+        run: hatch run make lint
