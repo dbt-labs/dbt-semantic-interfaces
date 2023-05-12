@@ -8,6 +8,7 @@ license = "Apache-2.0"
 keywords = []
 authors = [
   { name = "Callum McCann", email = "cmccann51@gmail.com" },
+  { name = "Quigley malcolm", email = "quigley.malcolm@dbtlabs.com"},
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
