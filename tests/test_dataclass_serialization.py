@@ -1,13 +1,13 @@
 import logging
 from dataclasses import dataclass
-from typing import Optional, Tuple, Protocol
+from typing import Optional, Protocol, Tuple
 
 import pytest
 
 from dbt_semantic_interfaces.dataclass_serialization import (
-    SerializableDataclass,
     DataClassDeserializer,
     DataclassSerializer,
+    SerializableDataclass,
 )
 
 logger = logging.getLogger(__name__)
@@ -118,7 +118,7 @@ def test_dataclass_with_optional(  # noqa: D
 
 
 def test_dataclass_deserialization_with_optional_default(dataclass_deserializer: DataClassDeserializer) -> None:
-    """Tests application of default value when deserializing a sparse optional
+    """Tests application of default value when deserializing a sparse optional.
 
     This is necessary to support cases where new optional fields are added and defaulted None, but serialized
     values - which should be compatible - exist without the field in place
@@ -146,7 +146,7 @@ def test_dataclass_with_tuple(  # noqa: D
 
 
 def test_dataclass_deserialization_with_tuple_default(dataclass_deserializer: DataClassDeserializer) -> None:
-    """Tests application of default tuple value when deserializing a sparse tuple dataclass container
+    """Tests application of default tuple value when deserializing a sparse tuple dataclass container.
 
     As with Optional, this is necessary to support cases where a default is set for a field added after
     some instances were already serialized, but with an empty tuple in place as a default.
@@ -186,7 +186,7 @@ def test_nested_dataclass_with_protocol(  # noqa: D
 
 
 def test_nested_dataclass_deserialization_with_primitive_default(dataclass_deserializer: DataClassDeserializer) -> None:
-    """Tests application of default value when deserializing a sparse primitive type dataclass container
+    """Tests application of default value when deserializing a sparse primitive type dataclass container.
 
     This ensures a default set on a primitive, with nesting, still deserializes correctly even if the value is
     not present.
@@ -200,7 +200,7 @@ def test_nested_dataclass_deserialization_with_primitive_default(dataclass_deser
 
 
 def test_dataclass_deserialization_with_dataclass_default(dataclass_deserializer: DataClassDeserializer) -> None:
-    """Tests application of default value when deserializing a dataclass with a default dataclass value set"""
+    """Tests application of default value when deserializing a dataclass with a default dataclass value set."""
     serialized_object = r"{}"
 
     deserialized_object = dataclass_deserializer.pydantic_deserialize(

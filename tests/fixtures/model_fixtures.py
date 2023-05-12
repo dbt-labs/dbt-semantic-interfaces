@@ -3,14 +3,16 @@ from __future__ import annotations
 import datetime
 import logging
 import os
-from typing import Dict
 import uuid
+from typing import Dict
 
 import pytest
 
 from dbt_semantic_interfaces.model_transformer import ModelTransformer
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.parsing.dir_to_model import parse_directory_of_yaml_files_to_model
+from dbt_semantic_interfaces.parsing.dir_to_model import (
+    parse_directory_of_yaml_files_to_model,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +29,6 @@ def template_mapping() -> Dict[str, str]:
 @pytest.fixture(scope="session")
 def simple_semantic_manifest(template_mapping: Dict[str, str]) -> SemanticManifest:
     """Model used for many tests."""
-
     model_build_result = parse_directory_of_yaml_files_to_model(
         os.path.join(os.path.dirname(__file__), "model_yamls/simple_model"), template_mapping=template_mapping
     )
@@ -37,7 +38,6 @@ def simple_semantic_manifest(template_mapping: Dict[str, str]) -> SemanticManife
 @pytest.fixture(scope="session")
 def simple_model__with_primary_transforms(template_mapping: Dict[str, str]) -> SemanticManifest:
     """Model used for tests pre-transformations."""
-
     model_build_result = parse_directory_of_yaml_files_to_model(
         os.path.join(os.path.dirname(__file__), "model_yamls/simple_model"),
         template_mapping=template_mapping,

@@ -1,13 +1,18 @@
+from copy import deepcopy
+
 import more_itertools
 import pytest
 
-from copy import deepcopy
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.validations.validator_helpers import ModelValidationException
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.validations.unique_valid_name import MetricFlowReservedKeywords, UniqueAndValidNameRule
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
-
+from dbt_semantic_interfaces.validations.unique_valid_name import (
+    MetricFlowReservedKeywords,
+    UniqueAndValidNameRule,
+)
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    ModelValidationException,
+)
 
 """
     Top Level Tests
@@ -29,7 +34,8 @@ def test_duplicate_semantic_model_name(simple_model__with_primary_transforms: Se
     model.semantic_models.append(duplicated_semantic_model)
     with pytest.raises(
         ModelValidationException,
-        match=rf"Can't use name `{duplicated_semantic_model.name}` for a semantic model when it was already used for a semantic model",
+        match=rf"Can't use name `{duplicated_semantic_model.name}` for a semantic model when it was already used for "
+        "a semantic model",
     ):
         ModelValidator([UniqueAndValidNameRule()]).checked_validations(model)
 
@@ -45,9 +51,9 @@ def test_duplicate_metric_name(simple_model__with_primary_transforms: SemanticMa
         ModelValidator([UniqueAndValidNameRule()]).checked_validations(model)
 
 
-def test_top_level_metric_can_have_same_name_as_any_other_top_level_item(
+def test_top_level_metric_can_have_same_name_as_any_other_top_level_item(  # noqa: D
     simple_model__with_primary_transforms: SemanticManifest,
-) -> None:  # noqa:D
+) -> None:
     metric_name = simple_model__with_primary_transforms.metrics[0].name
 
     model_semantic_model = deepcopy(simple_model__with_primary_transforms)
@@ -83,7 +89,8 @@ def test_duplicate_measure_name(simple_model__with_primary_transforms: SemanticM
 
     with pytest.raises(
         ModelValidationException,
-        match=rf"can't use name `{duplicated_measure.reference.element_name}` for a measure when it was already used for a measure",
+        match=rf"can't use name `{duplicated_measure.reference.element_name}` for a measure when it was already used "
+        "for a measure",
     ):
         ModelValidator([UniqueAndValidNameRule()]).checked_validations(model)
 
@@ -122,7 +129,8 @@ def test_duplicate_entity_name(simple_model__with_primary_transforms: SemanticMa
 
     with pytest.raises(
         ModelValidationException,
-        match=rf"can't use name `{duplicated_entity.reference.element_name}` for a entity when it was already used for a entity",
+        match=rf"can't use name `{duplicated_entity.reference.element_name}` for a entity when it was already used "
+        "for a entity",
     ):
         ModelValidator([UniqueAndValidNameRule()]).checked_validations(model)
 

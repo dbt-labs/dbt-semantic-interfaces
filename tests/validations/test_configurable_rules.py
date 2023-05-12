@@ -1,17 +1,21 @@
-import pytest
 import copy
 
+import pytest
+
 from dbt_semantic_interfaces.model_validator import ModelValidator
+from dbt_semantic_interfaces.objects.metric import (
+    MetricInput,
+    MetricType,
+    MetricTypeParams,
+)
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.objects.metric import MetricTypeParams, MetricInput, MetricType
-from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
 from dbt_semantic_interfaces.test_utils import metric_with_guaranteed_meta
+from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
 
 
 def test_can_configure_model_validator_rules(  # noqa: D
     simple_model__with_primary_transforms: SemanticManifest,
 ) -> None:
-
     model = copy.deepcopy(simple_model__with_primary_transforms)
     model.metrics.append(
         metric_with_guaranteed_meta(

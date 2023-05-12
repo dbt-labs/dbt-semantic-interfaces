@@ -1,7 +1,7 @@
 import logging
 import textwrap
 
-from dbt_semantic_interfaces.pretty_print import pretty_format, pformat_big_objects
+from dbt_semantic_interfaces.pretty_print import pformat_big_objects, pretty_format
 from dbt_semantic_interfaces.test_utils import default_meta
 
 logger = logging.getLogger(__name__)

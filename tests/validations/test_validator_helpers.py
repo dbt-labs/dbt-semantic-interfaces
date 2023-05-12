@@ -2,23 +2,23 @@ from datetime import date
 from typing import List
 
 import pytest
+
 from dbt_semantic_interfaces.references import (
+    MetricModelReference,
     SemanticModelElementReference,
     SemanticModelReference,
-    MetricModelReference,
 )
-
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    SemanticModelContext,
-    SemanticModelElementContext,
-    SemanticModelElementType,
     FileContext,
     MetricContext,
     ModelValidationResults,
+    SemanticModelContext,
+    SemanticModelElementContext,
+    SemanticModelElementType,
     ValidationError,
     ValidationFutureError,
-    ValidationIssueLevel,
     ValidationIssue,
+    ValidationIssueLevel,
     ValidationWarning,
 )
 

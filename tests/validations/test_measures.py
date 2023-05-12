@@ -2,22 +2,27 @@ import re
 import textwrap
 
 import pytest
+
 from dbt_semantic_interfaces.model_transformer import ModelTransformer
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.parsing.dir_to_model import parse_yaml_files_to_validation_ready_model
+from dbt_semantic_interfaces.parsing.dir_to_model import (
+    parse_yaml_files_to_validation_ready_model,
+)
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.validations.measures import (
     CountAggregationExprRule,
-    SemanticModelMeasuresUniqueRule,
     MeasureConstraintAliasesRule,
     MeasuresNonAdditiveDimensionRule,
     MetricMeasuresRule,
+    SemanticModelMeasuresUniqueRule,
 )
-from dbt_semantic_interfaces.validations.validator_helpers import ModelValidationException
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    ModelValidationException,
+)
 
 
 def test_metric_missing_measure() -> None:
-    """Tests the basic MetricMeasuresRule, which asserts all measure inputs to a metric exist in the model"""
+    """Tests the basic MetricMeasuresRule, which asserts all measure inputs to a metric exist in the model."""
     metric_name = "invalid_measure_metric_do_not_add_to_model"
     measure_name = "this_measure_cannot_exist_or_else_it_breaks_tests"
 
@@ -120,7 +125,7 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
 
 
 def test_measure_alias_is_set_when_required() -> None:
-    """Tests to ensure that an appropriate error appears when a required alias is missing"""
+    """Tests to ensure that an appropriate error appears when a required alias is missing."""
     measure_name = "num_sample_rows"
     yaml_contents = textwrap.dedent(
         f"""\
@@ -172,7 +177,7 @@ def test_measure_alias_is_set_when_required() -> None:
 
 
 def test_invalid_measure_alias_name() -> None:
-    """Tests measures with aliases that don't pass the unique and valid name rule"""
+    """Tests measures with aliases that don't pass the unique and valid name rule."""
     invalid_alias = "_can't_do_this_"
 
     yaml_contents = textwrap.dedent(
@@ -222,8 +227,7 @@ def test_invalid_measure_alias_name() -> None:
 
 
 def test_measure_alias_measure_name_conflict() -> None:
-    """Tests measures with aliases that already exist as measure names"""
-
+    """Tests measures with aliases that already exist as measure names."""
     invalid_alias = "average_sample_rows"
     measure_name = "num_sample_rows"
     yaml_contents = textwrap.dedent(
@@ -277,8 +281,7 @@ def test_measure_alias_measure_name_conflict() -> None:
 
 
 def test_reused_measure_alias() -> None:
-    """Tests measures with aliases that have been used as measure aliases elsewhere in the model"""
-
+    """Tests measures with aliases that have been used as measure aliases elsewhere in the model."""
     invalid_alias = "duplicate_alias"
 
     yaml_contents = textwrap.dedent(
@@ -340,7 +343,7 @@ def test_reused_measure_alias() -> None:
 
 
 def test_reused_measure_alias_within_metric() -> None:
-    """Tests measures with aliases that have been used as measure aliases in the same metric spec
+    """Tests measures with aliases that have been used as measure aliases in the same metric spec.
 
     This covers a boundary case in the logic where alias checking must always include aliases from the current
     metric under consideration, instead of simply checking against the previous seen values
@@ -400,7 +403,6 @@ def test_reused_measure_alias_within_metric() -> None:
 
 def test_invalid_non_additive_dimension_properties() -> None:
     """Tests validator for invalid cases of non_additive_dimension properties."""
-
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -470,9 +472,10 @@ def test_invalid_non_additive_dimension_properties() -> None:
     ]:
         if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in model_issues.errors):
             missing_error_strings.add(expected_str)
-    assert (
-        len(missing_error_strings) == 0
-    ), f"Failed to match one or more expected errors: {missing_error_strings} in {set([x.as_readable_str() for x in model_issues.errors])}"
+    assert len(missing_error_strings) == 0, (
+        f"Failed to match one or more expected errors: {missing_error_strings} in "
+        f"{set([x.as_readable_str() for x in model_issues.errors])}"
+    )
 
 
 def test_count_measure_missing_expr() -> None:
@@ -619,15 +622,19 @@ def test_percentile_measure_missing_agg_params() -> None:
         "Measure 'bad_measure_2' uses a PERCENTILE aggregation, which requires agg_params.percentile to be provided."
     )
 
-    expected_error_substring_3 = "Measure 'bad_measure_3' with aggregation 'sum' uses agg_params (percentile) only relevant to Percentile measures."
+    expected_error_substring_3 = (
+        "Measure 'bad_measure_3' with aggregation 'sum' uses agg_params (percentile) only relevant to Percentile "
+        "measures."
+    )
 
     missing_error_strings = set()
     for expected_str in [expected_error_substring_1, expected_error_substring_2, expected_error_substring_3]:
         if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in model_issues.errors):
             missing_error_strings.add(expected_str)
-    assert (
-        len(missing_error_strings) == 0
-    ), f"Failed to match one or more expected errors: {missing_error_strings} in {set([x.as_readable_str() for x in model_issues.errors])}"
+    assert len(missing_error_strings) == 0, (
+        f"Failed to match one or more expected errors: {missing_error_strings} in "
+        f"{set([x.as_readable_str() for x in model_issues.errors])}"
+    )
 
 
 def test_percentile_measure_bad_percentile_values() -> None:
@@ -671,13 +678,13 @@ def test_percentile_measure_bad_percentile_values() -> None:
     model_issues = ModelValidator().validate_model(model.model)
     expected_error_substring_1 = (
         "Percentile aggregation parameter for measure 'bad_measure_1' is '1.0', but "
-        + "must be between 0 and 1 (non-inclusive). For example, to indicate the 65th percentile value, set 'percentile: 0.65'. "
-        + "For percentile values of 0, please use MIN, for percentile values of 1, please use MAX."
+        + "must be between 0 and 1 (non-inclusive). For example, to indicate the 65th percentile value, set "
+        + "'percentile: 0.65'. For percentile values of 0, please use MIN, for percentile values of 1, please use MAX."
     )
     expected_error_substring_2 = (
         "Percentile aggregation parameter for measure 'bad_measure_2' is '-2.0', but "
-        + "must be between 0 and 1 (non-inclusive). For example, to indicate the 65th percentile value, set 'percentile: 0.65'. "
-        + "For percentile values of 0, please use MIN, for percentile values of 1, please use MAX."
+        + "must be between 0 and 1 (non-inclusive). For example, to indicate the 65th percentile value, set "
+        + "'percentile: 0.65'. For percentile values of 0, please use MIN, for percentile values of 1, please use MAX."
     )
 
     missing_error_strings = set()
@@ -687,6 +694,7 @@ def test_percentile_measure_bad_percentile_values() -> None:
     ]:
         if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in model_issues.errors):
             missing_error_strings.add(expected_str)
-    assert (
-        len(missing_error_strings) == 0
-    ), f"Failed to match one or more expected errors: {missing_error_strings} in {set([x.as_readable_str() for x in model_issues.errors])}"
+    assert len(missing_error_strings) == 0, (
+        f"Failed to match one or more expected errors: {missing_error_strings} in "
+        f"{set([x.as_readable_str() for x in model_issues.errors])}"
+    )

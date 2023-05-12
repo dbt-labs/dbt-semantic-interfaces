@@ -1,15 +1,22 @@
 import textwrap
 
 from dbt_semantic_interfaces.objects.filters.where_filter import WhereFilter
-from dbt_semantic_interfaces.objects.metric import MetricTimeWindow, MetricInput, MetricInputMeasure, MetricType
+from dbt_semantic_interfaces.objects.metric import (
+    MetricInput,
+    MetricInputMeasure,
+    MetricTimeWindow,
+    MetricType,
+)
 from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.parsing.dir_to_model import parse_yaml_files_to_model
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
-from dbt_semantic_interfaces.validations.validator_helpers import ModelValidationException
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    ModelValidationException,
+)
 
 
 def test_legacy_measure_metric_parsing() -> None:
-    """Test for parsing a simple metric specification with the `measure` parameter instead of `measures`"""
+    """Test for parsing a simple metric specification with the `measure` parameter instead of `measures`."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -32,7 +39,7 @@ def test_legacy_measure_metric_parsing() -> None:
 
 
 def test_legacy_metric_input_measure_object_parsing() -> None:
-    """Test for parsing a simple metric specification with the `measure` parameter set with object notation"""
+    """Test for parsing a simple metric specification with the `measure` parameter set with object notation."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -57,7 +64,7 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
 
 
 def test_metric_metadata_parsing() -> None:
-    """Test for asserting that internal metadata is parsed into the Metric object"""
+    """Test for asserting that internal metadata is parsed into the Metric object."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -90,7 +97,7 @@ def test_metric_metadata_parsing() -> None:
 
 
 def test_ratio_metric_parsing() -> None:
-    """Test for parsing a ratio metric specification with numerator and denominator"""
+    """Test for parsing a ratio metric specification with numerator and denominator."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -115,7 +122,7 @@ def test_ratio_metric_parsing() -> None:
 
 
 def test_ratio_metric_input_measure_object_parsing() -> None:
-    """Test for parsing a ratio metric specification with object inputs for numerator and denominator"""
+    """Test for parsing a ratio metric specification with object inputs for numerator and denominator."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -145,7 +152,7 @@ def test_ratio_metric_input_measure_object_parsing() -> None:
 
 
 def test_expr_metric_parsing() -> None:
-    """Test for parsing a metric specification with an expr and a list of measures"""
+    """Test for parsing a metric specification with an expr and a list of measures."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -172,7 +179,7 @@ def test_expr_metric_parsing() -> None:
 
 
 def test_expr_metric_input_measure_object_parsing() -> None:
-    """Test for parsing a metric specification with object inputs for the list of measures"""
+    """Test for parsing a metric specification with object inputs for the list of measures."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -203,7 +210,7 @@ def test_expr_metric_input_measure_object_parsing() -> None:
 
 
 def test_cumulative_window_metric_parsing() -> None:
-    """Test for parsing a metric specification with a cumulative window"""
+    """Test for parsing a metric specification with a cumulative window."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -228,7 +235,7 @@ def test_cumulative_window_metric_parsing() -> None:
 
 
 def test_grain_to_date_metric_parsing() -> None:
-    """Test for parsing a metric specification with the grain to date cumulative setting"""
+    """Test for parsing a metric specification with the grain to date cumulative setting."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -322,7 +329,7 @@ def test_derive_metric_offset_to_grain_parsing() -> None:
 
 
 def test_constraint_metric_parsing() -> None:
-    """Test for parsing a metric specification with a constraint included"""
+    """Test for parsing a metric specification with a constraint included."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -346,7 +353,7 @@ def test_constraint_metric_parsing() -> None:
 
 
 def test_derived_metric_input_parsing() -> None:
-    """Test for parsing derived metrics with metric_input properties"""
+    """Test for parsing derived metrics with metric_input properties."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -381,7 +388,7 @@ def test_derived_metric_input_parsing() -> None:
 
 
 def test_invalid_metric_type_parsing_error() -> None:
-    """Test for error detection when parsing a metric specification with an invalid MetricType input value"""
+    """Test for error detection when parsing a metric specification with an invalid MetricType input value."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -400,7 +407,7 @@ def test_invalid_metric_type_parsing_error() -> None:
 
 
 def test_invalid_cumulative_metric_window_format_parsing_error() -> None:
-    """Test for errror detection when parsing malformed cumulative metric window entries"""
+    """Test for errror detection when parsing malformed cumulative metric window entries."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -420,7 +427,7 @@ def test_invalid_cumulative_metric_window_format_parsing_error() -> None:
 
 
 def test_invalid_cumulative_metric_window_granularity_parsing_error() -> None:
-    """Test for errror detection when parsing malformed cumulative metric window entries"""
+    """Test for errror detection when parsing malformed cumulative metric window entries."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -440,7 +447,7 @@ def test_invalid_cumulative_metric_window_granularity_parsing_error() -> None:
 
 
 def test_invalid_cumulative_metric_window_count_parsing_error() -> None:
-    """Test for errror detection when parsing malformed cumulative metric window entries"""
+    """Test for errror detection when parsing malformed cumulative metric window entries."""
     yaml_contents = textwrap.dedent(
         """\
         metric:

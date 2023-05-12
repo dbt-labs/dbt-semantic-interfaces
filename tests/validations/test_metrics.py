@@ -1,17 +1,34 @@
 import pytest
 
-from dbt_semantic_interfaces.objects.aggregation_type import AggregationType
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.objects.elements.dimension import Dimension, DimensionType, DimensionTypeParams
+from dbt_semantic_interfaces.objects.aggregation_type import AggregationType
+from dbt_semantic_interfaces.objects.elements.dimension import (
+    Dimension,
+    DimensionType,
+    DimensionTypeParams,
+)
 from dbt_semantic_interfaces.objects.elements.entity import Entity, EntityType
 from dbt_semantic_interfaces.objects.elements.measure import Measure
-from dbt_semantic_interfaces.objects.metric import MetricInput, MetricType, MetricTypeParams
+from dbt_semantic_interfaces.objects.metric import (
+    MetricInput,
+    MetricType,
+    MetricTypeParams,
+)
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.references import DimensionReference, EntityReference, TimeDimensionReference
-from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
-from dbt_semantic_interfaces.validations.validator_helpers import ModelValidationException
-from dbt_semantic_interfaces.test_utils import semantic_model_with_guaranteed_meta, metric_with_guaranteed_meta
 from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.references import (
+    DimensionReference,
+    EntityReference,
+    TimeDimensionReference,
+)
+from dbt_semantic_interfaces.test_utils import (
+    metric_with_guaranteed_meta,
+    semantic_model_with_guaranteed_meta,
+)
+from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    ModelValidationException,
+)
 
 
 def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
@@ -250,6 +267,7 @@ def test_derived_metric() -> None:  # noqa: D
     for expected_str in [expected_substr1, expected_substr2, expected_substr3]:
         if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
             missing_error_strings.add(expected_str)
-    assert (
-        len(missing_error_strings) == 0
-    ), f"Failed to match one or more expected errors: {missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
+    assert len(missing_error_strings) == 0, (
+        f"Failed to match one or more expected errors: {missing_error_strings} in "
+        f"{set([x.as_readable_str() for x in build_issues])}"
+    )

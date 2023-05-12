@@ -1,31 +1,38 @@
 import copy
 import re
 import textwrap
-from typing import Callable
 
 import pytest
 
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
 from dbt_semantic_interfaces.objects.elements.entity import EntityType
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.parsing.dir_to_model import parse_yaml_files_to_validation_ready_model
+from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
+from dbt_semantic_interfaces.parsing.dir_to_model import (
+    parse_yaml_files_to_validation_ready_model,
+)
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
+from dbt_semantic_interfaces.test_utils import (
+    base_semantic_manifest_file,
+    find_semantic_model_with,
+)
 from dbt_semantic_interfaces.validations.entities import (
     NaturalEntityConfigurationRule,
     OnePrimaryEntityPerSemanticModelRule,
 )
-from dbt_semantic_interfaces.validations.validator_helpers import ModelValidationException
-from dbt_semantic_interfaces.test_utils import base_semantic_manifest_file
-from dbt_semantic_interfaces.test_utils import find_semantic_model_with
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    ModelValidationException,
+)
 
 
 def test_semantic_model_cant_have_more_than_one_primary_entity(
     simple_model__with_primary_transforms: SemanticManifest,
 ) -> None:  # noqa: D
-    """Add an additional primary entity to a semantic model and assert that it cannot have two"""
+    """Add an additional primary entity to a semantic model and assert that it cannot have two."""
     model = copy.deepcopy(simple_model__with_primary_transforms)
-    func: Callable[[SemanticModel], bool] = lambda semantic_model: len(semantic_model.entities) > 1
+
+    def func(semantic_model: SemanticModel) -> bool:
+        return len(semantic_model.entities) > 1
 
     multiple_entity_semantic_model, _ = find_semantic_model_with(model, func)
 
@@ -52,7 +59,7 @@ def test_semantic_model_cant_have_more_than_one_primary_entity(
 
 
 def test_multiple_natural_entities() -> None:
-    """Test validation enforcing that a single semantic model cannot have more than one natural entity"""
+    """Test validation enforcing that a single semantic model cannot have more than one natural entity."""
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -90,7 +97,7 @@ def test_multiple_natural_entities() -> None:
 
 
 def test_natural_entity_used_in_wrong_context() -> None:
-    """Test validation enforcing that a single semantic model cannot have more than one natural entity"""
+    """Test validation enforcing that a single semantic model cannot have more than one natural entity."""
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:

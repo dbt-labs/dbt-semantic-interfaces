@@ -1,14 +1,18 @@
 import copy
-import pytest
 from typing import Tuple
 
+import pytest
+
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
 from dbt_semantic_interfaces.objects.elements.dimension import Dimension, DimensionType
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.validations.element_const import ElementConsistencyRule
-from dbt_semantic_interfaces.validations.validator_helpers import SemanticModelElementType, ModelValidationException
+from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
+from dbt_semantic_interfaces.validations.element_const import ElementConsistencyRule
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    ModelValidationException,
+    SemanticModelElementType,
+)
 
 
 def _categorical_dimensions(semantic_model: SemanticModel) -> Tuple[Dimension, ...]:
@@ -44,8 +48,9 @@ def test_cross_element_names(simple_model__with_primary_transforms: SemanticMani
     with pytest.raises(
         ModelValidationException,
         match=(
-            f"element `{measure_reference.element_name}` is of type {SemanticModelElementType.DIMENSION}, but it is used as "
-            f"types .*?SemanticModelElementType.DIMENSION.*?SemanticModelElementType.MEASURE.*? across the model"
+            f"element `{measure_reference.element_name}` is of type {SemanticModelElementType.DIMENSION}, but it is "
+            "used as types .*?SemanticModelElementType.DIMENSION.*?SemanticModelElementType.MEASURE.*? across the "
+            "model"
         ),
     ):
         ModelValidator([ElementConsistencyRule()]).checked_validations(model)
@@ -54,8 +59,8 @@ def test_cross_element_names(simple_model__with_primary_transforms: SemanticMani
     with pytest.raises(
         ModelValidationException,
         match=(
-            f"element `{measure_reference.element_name}` is of type {SemanticModelElementType.ENTITY}, but it is used as "
-            f"types .*?SemanticModelElementType.ENTITY.*?SemanticModelElementType.MEASURE.*? across the model"
+            f"element `{measure_reference.element_name}` is of type {SemanticModelElementType.ENTITY}, but it is "
+            "used as types .*?SemanticModelElementType.ENTITY.*?SemanticModelElementType.MEASURE.*? across the model"
         ),
     ):
         ModelValidator([ElementConsistencyRule()]).checked_validations(model)
@@ -64,8 +69,8 @@ def test_cross_element_names(simple_model__with_primary_transforms: SemanticMani
     with pytest.raises(
         ModelValidationException,
         match=(
-            f"element `{dimension_reference.element_name}` is of type {SemanticModelElementType.DIMENSION}, but it is used as "
-            f"types .*?SemanticModelElementType.DIMENSION.*?SemanticModelElementType.ENTITY.*? across the model"
+            f"element `{dimension_reference.element_name}` is of type {SemanticModelElementType.DIMENSION}, but it is "
+            "used as types .*?SemanticModelElementType.DIMENSION.*?SemanticModelElementType.ENTITY.*? across the model"
         ),
     ):
         ModelValidator([ElementConsistencyRule()]).checked_validations(model)

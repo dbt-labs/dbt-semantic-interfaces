@@ -1,16 +1,23 @@
-import pytest
 import textwrap
 
-from dbt_semantic_interfaces.parsing.dir_to_model import parse_yaml_files_to_validation_ready_model
-from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
+import pytest
+
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.validations.semantic_models import SemanticModelValidityWindowRule
-from dbt_semantic_interfaces.validations.validator_helpers import ModelValidationException
+from dbt_semantic_interfaces.parsing.dir_to_model import (
+    parse_yaml_files_to_validation_ready_model,
+)
+from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.test_utils import base_semantic_manifest_file
+from dbt_semantic_interfaces.validations.semantic_models import (
+    SemanticModelValidityWindowRule,
+)
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    ModelValidationException,
+)
 
 
 def test_validity_window_configuration() -> None:
-    """Tests to ensure a semantic model with a properly configured validity window passes validation"""
+    """Tests to ensure a semantic model with a properly configured validity window passes validation."""
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -50,7 +57,7 @@ def test_validity_window_configuration() -> None:
 
 
 def test_validity_window_must_have_a_start() -> None:
-    """Tests validation asserting a validity window end has a corresponding start"""
+    """Tests validation asserting a validity window end has a corresponding start."""
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -80,7 +87,7 @@ def test_validity_window_must_have_a_start() -> None:
 
 
 def test_validity_window_must_have_an_end() -> None:
-    """Tests validation asserting a validity window start has a corresponding end"""
+    """Tests validation asserting a validity window start has a corresponding end."""
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -110,7 +117,7 @@ def test_validity_window_must_have_an_end() -> None:
 
 
 def test_validity_window_uses_two_dimensions() -> None:
-    """Tests validation asserting validity window endpoints are defined in separate dimensions
+    """Tests validation asserting validity window endpoints are defined in separate dimensions.
 
     Note: This test should be removed when support for single column validity window joins is added
     """
@@ -144,7 +151,7 @@ def test_validity_window_uses_two_dimensions() -> None:
 
 
 def test_two_dimension_validity_windows_must_not_overload_start_and_end() -> None:
-    """Tests validation asserting that a validity window does not set is_start and is_end on one dimension"""
+    """Tests validation asserting that a validity window does not set is_start and is_end on one dimension."""
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -181,7 +188,7 @@ def test_two_dimension_validity_windows_must_not_overload_start_and_end() -> Non
 
 
 def test_multiple_validity_windows_are_invalid() -> None:
-    """Tests validation asserting that no more than 1 validity window can exist in a semantic model"""
+    """Tests validation asserting that no more than 1 validity window can exist in a semantic model."""
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -229,8 +236,7 @@ def test_multiple_validity_windows_are_invalid() -> None:
 
 
 def test_empty_validity_windows_are_invalid() -> None:
-    """Tests validation asserting that validity windows cannot be specified if they are empty"""
-
+    """Tests validation asserting that validity windows cannot be specified if they are empty."""
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -266,12 +272,11 @@ def test_empty_validity_windows_are_invalid() -> None:
 
 
 def test_measures_are_prevented() -> None:
-    """Tests validation asserting that measures are not allowed in a semantic model with validity windows
+    """Tests validation asserting that measures are not allowed in a semantic model with validity windows.
 
     This block is temporary while we sort out the proper syntax for defining a measure in SCD-style semantic models
     and implement whatever additional functionality is needed for measures which are semi-additive to the window.
     """
-
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -312,8 +317,7 @@ def test_measures_are_prevented() -> None:
 
 
 def test_validity_window_must_have_a_natural_key() -> None:
-    """Tests validation asserting that semantic models with validity windows use an entity with type NATURAL"""
-
+    """Tests validation asserting that semantic models with validity windows use an entity with type NATURAL."""
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -349,13 +353,12 @@ def test_validity_window_must_have_a_natural_key() -> None:
 
 
 def test_validity_window_does_not_use_primary_key() -> None:
-    """Tests validation asserting that semantic models with validity windows do not use primary keys
+    """Tests validation asserting that semantic models with validity windows do not use primary keys.
 
     This is useful because we currently do not support joins against SCD-style semantic models without using the
     validity window filter, and so enabling a primary key would be confusing. Subsequent changes may add support
     for this in which case we should of course remove this validation requirement.
     """
-
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:

@@ -1,9 +1,15 @@
 import pytest
 
-from dbt_semantic_interfaces.objects.elements.dimension import Dimension, DimensionType, DimensionTypeParams
-from dbt_semantic_interfaces.validations.validator_helpers import ModelValidationException
-from dbt_semantic_interfaces.test_utils import semantic_model_with_guaranteed_meta
+from dbt_semantic_interfaces.objects.elements.dimension import (
+    Dimension,
+    DimensionType,
+    DimensionTypeParams,
+)
 from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.test_utils import semantic_model_with_guaranteed_meta
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    ModelValidationException,
+)
 
 
 @pytest.mark.skip("TODO: Will convert to validation rule")

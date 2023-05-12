@@ -1,18 +1,33 @@
 import pytest
 
-from dbt_semantic_interfaces.objects.aggregation_type import AggregationType
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.objects.semantic_model import SemanticModel, NodeRelation
-from dbt_semantic_interfaces.objects.elements.dimension import Dimension, DimensionType, DimensionTypeParams
+from dbt_semantic_interfaces.objects.aggregation_type import AggregationType
+from dbt_semantic_interfaces.objects.elements.dimension import (
+    Dimension,
+    DimensionType,
+    DimensionTypeParams,
+)
 from dbt_semantic_interfaces.objects.elements.measure import Measure
-from dbt_semantic_interfaces.objects.metric import MetricType, MetricTypeParams, Metric
+from dbt_semantic_interfaces.objects.metric import Metric, MetricType, MetricTypeParams
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.references import DimensionReference, MeasureReference, TimeDimensionReference
-from dbt_semantic_interfaces.validations.semantic_models import SemanticModelTimeDimensionWarningsRule
-from dbt_semantic_interfaces.validations.dimension_const import DimensionConsistencyRule
-from dbt_semantic_interfaces.validations.validator_helpers import ModelValidationException
-from dbt_semantic_interfaces.test_utils import semantic_model_with_guaranteed_meta, metric_with_guaranteed_meta
+from dbt_semantic_interfaces.objects.semantic_model import NodeRelation, SemanticModel
 from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.references import (
+    DimensionReference,
+    MeasureReference,
+    TimeDimensionReference,
+)
+from dbt_semantic_interfaces.test_utils import (
+    metric_with_guaranteed_meta,
+    semantic_model_with_guaranteed_meta,
+)
+from dbt_semantic_interfaces.validations.dimension_const import DimensionConsistencyRule
+from dbt_semantic_interfaces.validations.semantic_models import (
+    SemanticModelTimeDimensionWarningsRule,
+)
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    ModelValidationException,
+)
 
 
 def test_incompatible_dimension_type() -> None:  # noqa:D
