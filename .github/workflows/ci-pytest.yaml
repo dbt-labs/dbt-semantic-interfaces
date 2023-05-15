@@ -1,0 +1,20 @@
+name: Python Tests
+
+on:
+  workflow_dispatch:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - reopened
+      - synchronize
+
+jobs:
+  pre-commit:
+    name: Run Python Tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: ./.github/actions/setup-python-env
+      - name: Run Python Tests
+        run: hatch run pytest:pytest tests
