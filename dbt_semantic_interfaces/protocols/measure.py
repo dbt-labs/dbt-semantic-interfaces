@@ -57,7 +57,8 @@ class _MeasureMixin:
 
     name: str
     expr: Optional[str] = None
-    agg_time_dimension: Optional[str]
+    non_additive_dimension: Optional[NonAdditiveDimensionParameters] = None
+    agg_time_dimension: Optional[str] = None
 
     @property
     def checked_agg_time_dimension(self) -> TimeDimensionReference:
