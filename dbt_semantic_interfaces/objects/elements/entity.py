@@ -2,22 +2,13 @@ from __future__ import annotations
 
 from typing import Optional
 
-from dbt_semantic_interfaces.enum_extension import ExtendedEnum
 from dbt_semantic_interfaces.objects.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.objects.metadata import Metadata
 from dbt_semantic_interfaces.references import EntityReference
-
-
-class EntityType(ExtendedEnum):
-    """Defines uniqueness and the extent to which an entity represents the common entity for a semantic model."""
-
-    FOREIGN = "foreign"
-    NATURAL = "natural"
-    PRIMARY = "primary"
-    UNIQUE = "unique"
+from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 
 
 class Entity(HashableBaseModel, ModelWithMetadataParsing):
