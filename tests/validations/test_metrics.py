@@ -1,10 +1,8 @@
 import pytest
 
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.objects.aggregation_type import AggregationType
 from dbt_semantic_interfaces.objects.elements.dimension import (
     Dimension,
-    DimensionType,
     DimensionTypeParams,
 )
 from dbt_semantic_interfaces.objects.elements.entity import Entity, EntityType
@@ -25,6 +23,8 @@ from dbt_semantic_interfaces.test_utils import (
     metric_with_guaranteed_meta,
     semantic_model_with_guaranteed_meta,
 )
+from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
+from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
     ModelValidationException,

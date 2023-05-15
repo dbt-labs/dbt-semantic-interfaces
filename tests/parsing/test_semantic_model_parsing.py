@@ -1,11 +1,11 @@
 import textwrap
 
-from dbt_semantic_interfaces.objects.aggregation_type import AggregationType
-from dbt_semantic_interfaces.objects.elements.dimension import DimensionType
 from dbt_semantic_interfaces.objects.elements.entity import EntityType
 from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.parsing.dir_to_model import parse_yaml_files_to_model
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
+from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
+from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 
 
 def test_semantic_model_metadata_parsing() -> None:
