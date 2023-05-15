@@ -17,4 +17,4 @@ jobs:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup-python-env
       - name: Run Python Tests
-        run: hatch run pytest:pytest app/tests
+        run: hatch run pytest:pytest tests
