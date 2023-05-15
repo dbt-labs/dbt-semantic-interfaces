@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Optional
 
-from dbt_semantic_interfaces.enum_extension import ExtendedEnum
 from dbt_semantic_interfaces.objects.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
@@ -13,19 +12,9 @@ from dbt_semantic_interfaces.references import (
     DimensionReference,
     TimeDimensionReference,
 )
+from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 
 ISO8601_FMT = "YYYY-MM-DD"
-
-
-class DimensionType(ExtendedEnum):
-    """Determines types of values expected of dimensions."""
-
-    CATEGORICAL = "categorical"
-    TIME = "time"
-
-    def is_time_type(self) -> bool:
-        """Checks if this type of dimension is a time type."""
-        return self in [DimensionType.TIME]
 
 
 class DimensionValidityParams(HashableBaseModel):

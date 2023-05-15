@@ -1,12 +1,12 @@
 from typing import List
 
-from dbt_semantic_interfaces.objects.elements.dimension import DimensionType
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     SemanticModelElementReference,
     TimeDimensionReference,
 )
+from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     ModelValidationRule,
