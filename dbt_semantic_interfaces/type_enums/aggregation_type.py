@@ -8,8 +8,6 @@ class AggregationType(ExtendedEnum):
     MIN = "min"
     MAX = "max"
     COUNT_DISTINCT = "count_distinct"
-    # BOOLEAN is deprecated. Remove when people have migrated.
-    BOOLEAN = "boolean"
     SUM_BOOLEAN = "sum_boolean"
     AVERAGE = "average"
     PERCENTILE = "percentile"
