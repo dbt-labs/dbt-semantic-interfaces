@@ -56,7 +56,6 @@ class _MeasureMixin:
     """Some useful default implementation details of MeasureProtocol."""
 
     name: str
-    create_metric: Optional[bool] = True
     expr: Optional[str] = None
     agg_time_dimension: Optional[str]
 
