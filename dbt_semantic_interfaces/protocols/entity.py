@@ -37,7 +37,7 @@ class Entity(Protocol):
         ...
 
 
-class _Entity:
+class _EntityMixin:
     """Some useful default implementation details of EntityProtocol."""
 
     name: str
