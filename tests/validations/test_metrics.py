@@ -5,7 +5,7 @@ from dbt_semantic_interfaces.objects.elements.dimension import (
     Dimension,
     DimensionTypeParams,
 )
-from dbt_semantic_interfaces.objects.elements.entity import Entity, EntityType
+from dbt_semantic_interfaces.objects.elements.entity import Entity
 from dbt_semantic_interfaces.objects.elements.measure import Measure
 from dbt_semantic_interfaces.objects.metric import (
     MetricInput,
@@ -24,6 +24,7 @@ from dbt_semantic_interfaces.test_utils import (
 )
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
+from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
