@@ -4,8 +4,8 @@ from abc import abstractmethod
 from typing import List, Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.objects.elements.dimension import Dimension
-from dbt_semantic_interfaces.objects.elements.measure import Measure
 from dbt_semantic_interfaces.protocols.entity import Entity
+from dbt_semantic_interfaces.protocols.measure import Measure
 from dbt_semantic_interfaces.references import (
     LinkableElementReference,
     MeasureReference,
