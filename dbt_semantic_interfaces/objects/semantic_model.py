@@ -85,37 +85,12 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
     def measure_references(self) -> List[MeasureReference]:  # noqa: D
         return [i.reference for i in self.measures]
 
-    def get_measure(self, measure_reference: MeasureReference) -> Measure:  # noqa: D
-        for measure in self.measures:
-            if measure.reference == measure_reference:
-                return measure
-
-        raise ValueError(
-            f"No dimension with name ({measure_reference.element_name}) in semantic_model with name ({self.name})"
-        )
-
-    def get_dimension(self, dimension_reference: LinkableElementReference) -> Dimension:  # noqa: D
-        for dim in self.dimensions:
-            if dim.reference == dimension_reference:
-                return dim
-
-        raise ValueError(f"No dimension with name ({dimension_reference}) in semantic_model with name ({self.name})")
-
-    def get_entity(self, entity_reference: LinkableElementReference) -> Entity:  # noqa: D
-        for entity in self.entities:
-            if entity.reference == entity_reference:
-                return entity
-
-        raise ValueError(f"No entity with name ({entity_reference}) in semantic_model with name ({self.name})")
-
     @property
-    def has_validity_dimensions(self) -> bool:
-        """Returns True if there are validity params set on one or more dimensions."""
+    def has_validity_dimensions(self) -> bool:  # noqa: D
         return any([dim.validity_params is not None for dim in self.dimensions])
 
     @property
-    def validity_start_dimension(self) -> Optional[Dimension]:
-        """Returns the validity window start dimension, if one is set."""
+    def validity_start_dimension(self) -> Optional[Dimension]:  # noqa: D
         validity_start_dims = [dim for dim in self.dimensions if dim.validity_params and dim.validity_params.is_start]
         if not validity_start_dims:
             return None
@@ -125,8 +100,7 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
         return validity_start_dims[0]
 
     @property
-    def validity_end_dimension(self) -> Optional[Dimension]:
-        """Returns the validity window end dimension, if one is set."""
+    def validity_end_dimension(self) -> Optional[Dimension]:  # noqa: D
         validity_end_dims = [dim for dim in self.dimensions if dim.validity_params and dim.validity_params.is_end]
         if not validity_end_dims:
             return None
@@ -151,3 +125,26 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
     @property
     def reference(self) -> SemanticModelReference:  # noqa: D
         return SemanticModelReference(semantic_model_name=self.name)
+
+    def get_measure(self, measure_reference: MeasureReference) -> Measure:  # noqa: D
+        for measure in self.measures:
+            if measure.reference == measure_reference:
+                return measure
+
+        raise ValueError(
+            f"No dimension with name ({measure_reference.element_name}) in semantic_model with name ({self.name})"
+        )
+
+    def get_dimension(self, dimension_reference: LinkableElementReference) -> Dimension:  # noqa: D
+        for dim in self.dimensions:
+            if dim.reference == dimension_reference:
+                return dim
+
+        raise ValueError(f"No dimension with name ({dimension_reference}) in semantic_model with name ({self.name})")
+
+    def get_entity(self, entity_reference: LinkableElementReference) -> Entity:  # noqa: D
+        for entity in self.entities:
+            if entity.reference == entity_reference:
+                return entity
+
+        raise ValueError(f"No entity with name ({entity_reference}) in semantic_model with name ({self.name})")
