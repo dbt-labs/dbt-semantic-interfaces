@@ -33,6 +33,23 @@ class MetricInputMeasure(Protocol):
         ...
 
 
+class _MetricInputMeasureMixin:
+    """Mixin class to provide common functionality for MetricInputMeasure."""
+
+    name: str
+    alias: Optional[str]
+
+    @property
+    def measure_reference(self) -> MeasureReference:
+        """Property accessor to get the MeasureReference associated with this metric input measure."""
+        return MeasureReference(element_name=self.name)
+
+    @property
+    def post_aggregation_measure_reference(self) -> MeasureReference:
+        """Property accessor to get the MeasureReference with the aliased name, if appropriate."""
+        return MeasureReference(element_name=self.alias or self.name)
+
+
 class MetricTimeWindow(Protocol):
     """Describes the window of time the metric should be accumulated over, e.g., '1 day', '2 weeks', etc."""
 
@@ -54,6 +71,17 @@ class MetricInput(Protocol):
     def as_reference(self) -> MetricReference:
         """Property accessor to get the MetricReference associated with this metric input."""
         ...
+
+
+class _MetricInputMixin:
+    """Mixin class to provide common functionality for MetricInput."""
+
+    name: str
+
+    @property
+    def as_reference(self) -> MetricReference:
+        """Property accessor to get the MetricReference associated with this metric input."""
+        return MetricReference(element_name=self.name)
 
 
 class MetricTypeParams(Protocol):
@@ -79,6 +107,23 @@ class MetricTypeParams(Protocol):
     def denominator_measure_reference(self) -> Optional[MeasureReference]:
         """Return the measure reference, if any, associated with the metric input measure defined as the denominator."""
         ...
+
+
+class _MetricTypeParamsMixin:
+    """Mixin class to provide common functionality for MetricTypeParams."""
+
+    numerator: Optional[MetricInputMeasure]
+    denominator: Optional[MetricInputMeasure]
+
+    @property
+    def numerator_measure_reference(self) -> Optional[MeasureReference]:
+        """Return the measure reference, if any, associated with the metric input measure defined as the numerator."""
+        return self.numerator.measure_reference if self.numerator else None
+
+    @property
+    def denominator_measure_reference(self) -> Optional[MeasureReference]:
+        """Return the measure reference, if any, associated with the metric input measure defined as the denominator."""
+        return self.denominator.measure_reference if self.denominator else None
 
 
 class Metric(Protocol):
