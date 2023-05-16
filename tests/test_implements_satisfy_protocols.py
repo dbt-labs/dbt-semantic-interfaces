@@ -13,16 +13,42 @@ from dbt_semantic_interfaces.objects.metric import (
     MetricInputMeasure,
     MetricTypeParams,
 )
+from dbt_semantic_interfaces.objects.semantic_model import NodeRelation, SemanticModel
 from dbt_semantic_interfaces.protocols.dimension import Dimension as DimensionProtocol
 from dbt_semantic_interfaces.protocols.entity import Entity as EntityProtocol
 from dbt_semantic_interfaces.protocols.measure import Measure as MeasureProtocol
 from dbt_semantic_interfaces.protocols.metadata import Metadata as MetadataProtocol
 from dbt_semantic_interfaces.protocols.metric import Metric as MetricProtocol
+from dbt_semantic_interfaces.protocols.semantic_model import (
+    SemanticModel as SemanticModelProtocol,
+)
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 from dbt_semantic_interfaces.type_enums.metric_type import MetricType
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
+
+
+@runtime_checkable
+class RuntimeCheckableSemanticModel(SemanticModelProtocol, Protocol):
+    """We don't want runtime_checkable versions of protocols in the package, but we want them for tests."""
+
+    pass
+
+
+def test_semantic_model_protocol() -> None:  # noqa: D
+    test_semantic_model = SemanticModel(
+        name="test_semantic_model",
+        node_relation=NodeRelation(
+            alias="test_alias",
+            schema_name="test_schema_name",
+        ),
+        entities=[],
+        measures=[],
+        dimensions=[],
+        type=MetricType.MEASURE_PROXY,
+    )
+    assert isinstance(test_semantic_model, RuntimeCheckableSemanticModel)
 
 
 @runtime_checkable
