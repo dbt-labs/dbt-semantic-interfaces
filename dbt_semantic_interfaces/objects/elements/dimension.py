@@ -7,12 +7,12 @@ from dbt_semantic_interfaces.objects.base import (
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.objects.metadata import Metadata
-from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     TimeDimensionReference,
 )
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
+from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 
 ISO8601_FMT = "YYYY-MM-DD"
 

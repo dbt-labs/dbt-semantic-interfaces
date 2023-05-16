@@ -12,11 +12,11 @@ from dbt_semantic_interfaces.objects.base import (
 )
 from dbt_semantic_interfaces.objects.filters.where_filter import WhereFilter
 from dbt_semantic_interfaces.objects.metadata import Metadata
-from dbt_semantic_interfaces.objects.time_granularity import (
+from dbt_semantic_interfaces.references import MeasureReference, MetricReference
+from dbt_semantic_interfaces.type_enums.time_granularity import (
     TimeGranularity,
     string_to_time_granularity,
 )
-from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 
 
 class MetricType(ExtendedEnum):
