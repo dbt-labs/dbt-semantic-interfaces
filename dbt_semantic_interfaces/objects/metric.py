@@ -46,6 +46,16 @@ class MetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
                 f"object (key/value pairs), but got type {type(input)} with value: {input}"
             )
 
+    @property
+    def measure_reference(self) -> MeasureReference:
+        """Property accessor to get the MeasureReference associated with this metric input measure."""
+        return MeasureReference(element_name=self.name)
+
+    @property
+    def post_aggregation_measure_reference(self) -> MeasureReference:
+        """Property accessor to get the MeasureReference with the aliased name, if appropriate."""
+        return MeasureReference(element_name=self.alias or self.name)
+
 
 class MetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
     """Describes the window of time the metric should be accumulated over, e.g., '1 day', '2 weeks', etc."""
