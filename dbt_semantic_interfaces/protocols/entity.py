@@ -35,19 +35,3 @@ class Entity(Protocol):
         keys reserved for SCD Type II style data sources.
         """
         ...
-
-
-class _EntityMixin:
-    """Some useful default implementation details of EntityProtocol."""
-
-    name: str
-    type: EntityType
-    expr: Optional[str] = None
-
-    @property
-    def reference(self) -> EntityReference:
-        return EntityReference(element_name=self.name)
-
-    @property
-    def is_linkable_entity_type(self) -> bool:
-        return self.type in (EntityType.PRIMARY, EntityType.UNIQUE, EntityType.NATURAL)
