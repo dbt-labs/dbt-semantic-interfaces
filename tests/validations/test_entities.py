@@ -5,7 +5,6 @@ import textwrap
 import pytest
 
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.objects.elements.entity import EntityType
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
 from dbt_semantic_interfaces.parsing.dir_to_model import (
@@ -16,6 +15,7 @@ from dbt_semantic_interfaces.test_utils import (
     base_semantic_manifest_file,
     find_semantic_model_with,
 )
+from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 from dbt_semantic_interfaces.validations.entities import (
     NaturalEntityConfigurationRule,
     OnePrimaryEntityPerSemanticModelRule,
