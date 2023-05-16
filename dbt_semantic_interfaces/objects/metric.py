@@ -11,12 +11,7 @@ from dbt_semantic_interfaces.objects.base import (
 )
 from dbt_semantic_interfaces.objects.filters.where_filter import WhereFilter
 from dbt_semantic_interfaces.objects.metadata import Metadata
-from dbt_semantic_interfaces.protocols.metric import (
-    _MetricInputMeasureMixin,
-    _MetricInputMixin,
-    _MetricMixin,
-    _MetricTypeParamsMixin,
-)
+from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums.metric_type import MetricType
 from dbt_semantic_interfaces.type_enums.time_granularity import (
     TimeGranularity,
@@ -24,7 +19,7 @@ from dbt_semantic_interfaces.type_enums.time_granularity import (
 )
 
 
-class MetricInputMeasure(_MetricInputMeasureMixin, PydanticCustomInputParser, HashableBaseModel):
+class MetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
     """Provides a pointer to a measure along with metric-specific processing directives.
 
     If an alias is set, this will be used as the string name reference for this measure after the aggregation
@@ -109,7 +104,7 @@ class MetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         )
 
 
-class MetricInput(_MetricInputMixin, HashableBaseModel):
+class MetricInput(HashableBaseModel):
     """Provides a pointer to a metric along with the additional properties used on that metric."""
 
     name: str
@@ -118,8 +113,13 @@ class MetricInput(_MetricInputMixin, HashableBaseModel):
     offset_window: Optional[MetricTimeWindow]
     offset_to_grain: Optional[TimeGranularity]
 
+    @property
+    def as_reference(self) -> MetricReference:
+        """Property accessor to get the MetricReference associated with this metric input."""
+        return MetricReference(element_name=self.name)
 
-class MetricTypeParams(_MetricTypeParamsMixin, HashableBaseModel):
+
+class MetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
     measure: Optional[MetricInputMeasure]
@@ -131,8 +131,18 @@ class MetricTypeParams(_MetricTypeParamsMixin, HashableBaseModel):
     grain_to_date: Optional[TimeGranularity]
     metrics: Optional[List[MetricInput]]
 
+    @property
+    def numerator_measure_reference(self) -> Optional[MeasureReference]:
+        """Return the measure reference, if any, associated with the metric input measure defined as the numerator."""
+        return self.numerator.measure_reference if self.numerator else None
 
-class Metric(_MetricMixin, HashableBaseModel, ModelWithMetadataParsing):
+    @property
+    def denominator_measure_reference(self) -> Optional[MeasureReference]:
+        """Return the measure reference, if any, associated with the metric input measure defined as the denominator."""
+        return self.denominator.measure_reference if self.denominator else None
+
+
+class Metric(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a metric."""
 
     name: str
@@ -141,3 +151,27 @@ class Metric(_MetricMixin, HashableBaseModel, ModelWithMetadataParsing):
     type_params: MetricTypeParams
     filter: Optional[WhereFilter]
     metadata: Optional[Metadata]
+
+    @property
+    def input_measures(self) -> List[MetricInputMeasure]:
+        """Return the complete list of input measure configurations for this metric."""
+        tp = self.type_params
+        res = tp.measures or []
+        if tp.measure:
+            res.append(tp.measure)
+        if tp.numerator:
+            res.append(tp.numerator)
+        if tp.denominator:
+            res.append(tp.denominator)
+
+        return res
+
+    @property
+    def measure_references(self) -> List[MeasureReference]:
+        """Return the measure references associated with all input measure configurations for this metric."""
+        return [x.measure_reference for x in self.input_measures]
+
+    @property
+    def input_metrics(self) -> List[MetricInput]:
+        """Return the associated input metrics for this metric."""
+        return self.type_params.metrics or []
