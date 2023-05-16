@@ -7,12 +7,35 @@ from dbt_semantic_interfaces.objects.elements.dimension import (
 )
 from dbt_semantic_interfaces.objects.elements.entity import Entity
 from dbt_semantic_interfaces.objects.metadata import FileSlice, Metadata
+from dbt_semantic_interfaces.objects.metric import (
+    Metric,
+    MetricInputMeasure,
+    MetricTypeParams,
+)
 from dbt_semantic_interfaces.protocols.dimension import Dimension as DimensionProtocol
 from dbt_semantic_interfaces.protocols.entity import Entity as EntityProtocol
 from dbt_semantic_interfaces.protocols.metadata import Metadata as MetadataProtocol
+from dbt_semantic_interfaces.protocols.metric import Metric as MetricProtocol
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.type_enums.entity_type import EntityType
+from dbt_semantic_interfaces.type_enums.metric_type import MetricType
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
+
+
+@runtime_checkable
+class RuntimeCheckableMetric(MetricProtocol, Protocol):
+    """We don't want runtime_checkable versions of protocols in the package, but we want them for tests."""
+
+    pass
+
+
+def test_metric_protocol() -> None:  # noqa: D
+    test_metric = Metric(
+        name="test_metric",
+        type=MetricType.MEASURE_PROXY,
+        type_params=MetricTypeParams(measure=MetricInputMeasure(name="test_measure")),
+    )
+    assert isinstance(test_metric, RuntimeCheckableMetric)
 
 
 @runtime_checkable
