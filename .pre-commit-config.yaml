@@ -32,6 +32,14 @@ repos:
     rev: v0.931
     hooks:
     - id: mypy
-      args: [--show-error-codes]
+      args: [--ignore-missing-imports,--show-error-codes]
       verbose: true
-      language: system
+      additional_dependencies: [
+        types-jsonschema,
+        types-python-dateutil,
+        types-PyYAML,
+        types-jinja2,
+        pytest,
+        python-dateutil,
+        types-python-dateutil,
+      ]
