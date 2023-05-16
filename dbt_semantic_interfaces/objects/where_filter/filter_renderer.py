@@ -4,8 +4,8 @@ from typing import List, Sequence, Tuple
 
 import jinja2
 
-from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.references import DimensionReference, EntityReference
+from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 
 
 @dataclass(frozen=True)

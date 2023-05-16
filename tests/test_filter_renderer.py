@@ -1,6 +1,5 @@
 import logging
 
-from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.objects.where_filter.filter_renderer import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
@@ -10,6 +9,7 @@ from dbt_semantic_interfaces.objects.where_filter.filter_renderer import (
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.references import DimensionReference, EntityReference
+from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 
 logger = logging.getLogger(__name__)
 
