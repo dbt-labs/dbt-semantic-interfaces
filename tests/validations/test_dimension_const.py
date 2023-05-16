@@ -9,7 +9,6 @@ from dbt_semantic_interfaces.objects.elements.measure import Measure
 from dbt_semantic_interfaces.objects.metric import Metric, MetricType, MetricTypeParams
 from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.objects.semantic_model import NodeRelation, SemanticModel
-from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     MeasureReference,
@@ -21,6 +20,7 @@ from dbt_semantic_interfaces.test_utils import (
 )
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
+from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.dimension_const import DimensionConsistencyRule
 from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelTimeDimensionWarningsRule,
