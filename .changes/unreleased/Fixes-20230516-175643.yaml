@@ -1,0 +1,6 @@
+kind: Fixes
+body: Adding support for semantic model protocols
+time: 2023-05-16T17:56:43.638129-05:00
+custom:
+  Author: callum-mcdata
+  Issue: "17"
