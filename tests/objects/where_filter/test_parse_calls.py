@@ -1,14 +1,14 @@
 import logging
 
-from dbt_semantic_interfaces.objects.filters.where_filter import WhereFilter
-from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
-from dbt_semantic_interfaces.objects.where_filter.filter_renderer import (
+from dbt_semantic_interfaces.objects.filters.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     FilterCallParameterSets,
     ParseToCallParameterSets,
     TimeDimensionCallParameterSet,
 )
+from dbt_semantic_interfaces.objects.filters.where_filter import WhereFilter
+from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.references import DimensionReference, EntityReference
 
 logger = logging.getLogger(__name__)
