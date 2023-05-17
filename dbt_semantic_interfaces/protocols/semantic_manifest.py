@@ -1,4 +1,3 @@
-from abc import abstractmethod
 from typing import List, Protocol
 
 from dbt_semantic_interfaces.protocols.metric import Metric
@@ -10,9 +9,4 @@ class SemanticManifest(Protocol):
 
     semantic_models: List[SemanticModel]
     metrics: List[Metric]
-
-    @property
-    @abstractmethod
-    def interfaces_version(self) -> str:
-        """Returns the version of the dbt_semantic_interfaces package that generated this manifest."""
-        ...
+    interfaces_version: str
