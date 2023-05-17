@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Renaming is_primary to default agg time
+time: 2023-05-17T13:56:38.703442-05:00
+custom:
+  Author: callum-mcdata
+  Issue: "58"
