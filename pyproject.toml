@@ -43,6 +43,7 @@ exclude = [
   ".pre-commit-config.yaml",
   "CONTRIBUTING.md",
   "MAKEFILE",
+  "/tests",
 ]
 
 [tool.hatch.envs.pre-commit]
