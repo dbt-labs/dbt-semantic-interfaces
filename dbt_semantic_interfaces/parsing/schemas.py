@@ -118,7 +118,7 @@ dimension_type_params_schema = {
     "$id": "dimension_type_params_schema",
     "type": "object",
     "properties": {
-        "is_primary": {"type": "boolean"},
+        "default_agg_time": {"type": "boolean"},
         "time_granularity": {"enum": time_granularity_values},
         "validity_params": {"$ref": "validity_params_schema"},
     },

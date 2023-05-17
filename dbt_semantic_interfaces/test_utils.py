@@ -92,7 +92,7 @@ def base_semantic_manifest_file() -> YamlConfigFile:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
+                default_agg_time: true
         """
     )
     return YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)

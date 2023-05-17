@@ -40,10 +40,10 @@ class SemanticModelTimeDimensionWarningsRule(ModelValidationRule):
         primary_time_dimensions = []
 
         for dim in semantic_model.dimensions:
-            if dim.type == DimensionType.TIME and dim.type_params is not None and dim.type_params.is_primary:
+            if dim.type == DimensionType.TIME and dim.type_params is not None and dim.type_params.default_agg_time:
                 primary_time_dimensions.append(dim)
 
-        # A semantic model must have a primary time dimension if it has
+        # A semantic model must have a default_agg_time dimension if it has
         # any measures that don't have an `agg_time_dimension` set
         if (
             len(primary_time_dimensions) == 0
@@ -56,7 +56,7 @@ class SemanticModelTimeDimensionWarningsRule(ModelValidationRule):
                         file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
                         semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
                     ),
-                    message=f"No primary time dimension in semantic model with name ({semantic_model.name}). "
+                    message=f"No default_agg_time dimension in semantic model with name ({semantic_model.name}). "
                     "Please add one",
                 )
             )
@@ -70,7 +70,7 @@ class SemanticModelTimeDimensionWarningsRule(ModelValidationRule):
                             semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
                         ),
                         message=f"In semantic model {semantic_model.name}, "
-                        f"Primary time dimension with name: {primary_time_dimension.name} "
+                        f"default_agg_time dimension with name: {primary_time_dimension.name} "
                         f"is one of many defined as primary.",
                     )
                 )

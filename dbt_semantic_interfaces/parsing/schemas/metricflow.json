@@ -98,7 +98,7 @@
             "$id": "dimension_type_params_schema",
             "additionalProperties": false,
             "properties": {
-                "is_primary": {
+                "default_agg_time": {
                     "type": "boolean"
                 },
                 "time_granularity": {

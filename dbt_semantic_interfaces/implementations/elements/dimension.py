@@ -34,7 +34,7 @@ class DimensionValidityParams(HashableBaseModel):
 class DimensionTypeParams(HashableBaseModel):
     """Dimension type params add additional context to some types (time) of dimensions."""
 
-    is_primary: bool = False
+    default_agg_time: bool = False
     time_granularity: TimeGranularity
     validity_params: Optional[DimensionValidityParams] = None
 
@@ -51,9 +51,9 @@ class Dimension(HashableBaseModel, ModelWithMetadataParsing):
     metadata: Optional[Metadata]
 
     @property
-    def is_primary_time(self) -> bool:  # noqa: D
+    def is_default_agg_time(self) -> bool:  # noqa: D
         if self.type == DimensionType.TIME and self.type_params is not None:
-            return self.type_params.is_primary
+            return self.type_params.default_agg_time
 
         return False
 

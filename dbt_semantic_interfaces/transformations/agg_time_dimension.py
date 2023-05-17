@@ -11,12 +11,16 @@ logger = logging.getLogger(__name__)
 
 
 class SetMeasureAggregationTimeDimensionRule(ModelTransformRule):
-    """Sets the aggregation time dimension for measures to the primary time dimension if not defined."""
+    """Sets the aggregation time dimension for measures to the default_agg_time dimension if not defined."""
 
     @staticmethod
     def _find_primary_time_dimension(semantic_model: SemanticModel) -> Optional[TimeDimensionReference]:
         for dimension in semantic_model.dimensions:
-            if dimension.type == DimensionType.TIME and dimension.type_params and dimension.type_params.is_primary:
+            if (
+                dimension.type == DimensionType.TIME
+                and dimension.type_params
+                and dimension.type_params.default_agg_time
+            ):
                 return dimension.time_dimension_reference
         return None
 
@@ -28,7 +32,7 @@ class SetMeasureAggregationTimeDimensionRule(ModelTransformRule):
             )
 
             if not primary_time_dimension_reference:
-                # Dimension semantic models won't have a primary time dimension.
+                # Dimension semantic models won't have a default_agg_time dimension.
                 continue
 
             for measure in semantic_model.measures:

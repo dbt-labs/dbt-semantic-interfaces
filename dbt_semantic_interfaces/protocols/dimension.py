@@ -29,7 +29,7 @@ class DimensionValidityParams(Protocol):
 class DimensionTypeParams(Protocol):
     """Dimension type params add context to some types of dimensions (like time)."""
 
-    is_primary: bool
+    default_agg_time: bool
     time_granularity: TimeGranularity
     validity_params: Optional[DimensionValidityParams]
 
@@ -47,8 +47,8 @@ class Dimension(Protocol):
 
     @property
     @abstractmethod
-    def is_primary_time(self) -> bool:
-        """Returns boolean of whether the dimension is a the primary time dimension."""
+    def is_default_agg_time(self) -> bool:
+        """Returns boolean of whether the dimension is a the default agg time dimension."""
         ...
 
     @property
