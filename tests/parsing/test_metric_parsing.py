@@ -21,7 +21,7 @@ def test_legacy_measure_metric_parsing() -> None:
         """\
         metric:
           name: legacy_test
-          type: measure_proxy
+          type: simple
           type_params:
             measure: legacy_measure
         """
@@ -33,7 +33,7 @@ def test_legacy_measure_metric_parsing() -> None:
     assert len(build_result.model.metrics) == 1
     metric = build_result.model.metrics[0]
     assert metric.name == "legacy_test"
-    assert metric.type is MetricType.MEASURE_PROXY
+    assert metric.type is MetricType.SIMPLE
     assert metric.type_params.measure == MetricInputMeasure(name="legacy_measure")
     assert metric.type_params.measures is None
 
@@ -44,7 +44,7 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
         """\
         metric:
           name: legacy_test
-          type: measure_proxy
+          type: simple
           type_params:
             measure:
               name: legacy_measure_from_object
@@ -69,7 +69,7 @@ def test_metric_metadata_parsing() -> None:
         """\
         metric:
           name: metadata_test
-          type: measure_proxy
+          type: simple
           type_params:
             measures:
               - metadata_test_measure
@@ -87,7 +87,7 @@ def test_metric_metadata_parsing() -> None:
     expected_metadata_content = textwrap.dedent(
         """\
         name: metadata_test
-        type: measure_proxy
+        type: simple
         type_params:
           measures:
           - metadata_test_measure
@@ -334,7 +334,7 @@ def test_constraint_metric_parsing() -> None:
         """\
         metric:
           name: constraint_test
-          type: measure_proxy
+          type: simple
           type_params:
             measures:
               - input_measure
@@ -348,7 +348,7 @@ def test_constraint_metric_parsing() -> None:
     assert len(build_result.model.metrics) == 1
     metric = build_result.model.metrics[0]
     assert metric.name == "constraint_test"
-    assert metric.type is MetricType.MEASURE_PROXY
+    assert metric.type is MetricType.SIMPLE
     assert metric.filter == WhereFilter(where_sql_template="{{ dimension('some_dimension') }} IN ('value1', 'value2')")
 
 

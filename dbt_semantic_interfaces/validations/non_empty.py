@@ -30,14 +30,14 @@ class NonEmptyRule(ModelValidationRule):
         issues: List[ValidationIssue] = []
 
         # If we are going to generate measure proxy metrics that is sufficient as well
-        create_measure_proxy_metrics = False
+        create_simple_metrics = False
         for semantic_model in model.semantic_models:
             for measure in semantic_model.measures:
                 if measure.create_metric is True:
-                    create_measure_proxy_metrics = True
+                    create_simple_metrics = True
                     break
 
-        if not model.metrics and not create_measure_proxy_metrics:
+        if not model.metrics and not create_simple_metrics:
             issues.append(
                 ValidationError(
                     message="No metrics present in the model.",

@@ -70,7 +70,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
             metrics=[
                 metric_with_guaranteed_meta(
                     name="metric_with_no_time_dim",
-                    type=MetricType.MEASURE_PROXY,
+                    type=MetricType.SIMPLE,
                     type_params=MetricTypeParams(measures=[measure_name]),
                 )
             ],
@@ -100,7 +100,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
                 metrics=[
                     metric_with_guaranteed_meta(
                         name="metric_with_no_time_dim",
-                        type=MetricType.MEASURE_PROXY,
+                        type=MetricType.SIMPLE,
                         type_params=MetricTypeParams(measures=[measure_name]),
                     )
                 ],
@@ -141,7 +141,7 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
                 metrics=[
                     metric_with_guaranteed_meta(
                         name="foo",
-                        type=MetricType.MEASURE_PROXY,
+                        type=MetricType.SIMPLE,
                         type_params=MetricTypeParams(measures=[measure_name]),
                     )
                 ],
@@ -213,12 +213,12 @@ def test_derived_metric() -> None:  # noqa: D
             metrics=[
                 metric_with_guaranteed_meta(
                     name="random_metric",
-                    type=MetricType.MEASURE_PROXY,
+                    type=MetricType.SIMPLE,
                     type_params=MetricTypeParams(measures=[measure_name]),
                 ),
                 metric_with_guaranteed_meta(
                     name="random_metric2",
-                    type=MetricType.MEASURE_PROXY,
+                    type=MetricType.SIMPLE,
                     type_params=MetricTypeParams(measures=[measure_name]),
                 ),
                 metric_with_guaranteed_meta(

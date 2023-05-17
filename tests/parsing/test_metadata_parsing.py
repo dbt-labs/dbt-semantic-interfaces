@@ -42,7 +42,7 @@ def test_metric_metadata_parsing(simple_semantic_manifest: SemanticManifest) -> 
 
 
 @pytest.mark.skip("TODO: Determine what to do with measure proxy metric metadata")
-def test_metric_metadata_parsing_with_measure_proxy(
+def test_metric_metadata_parsing_with_simple(
     simple_semantic_manifest: SemanticManifest,
 ) -> None:
     """Tests internal metadata object parsing from a file into the Metric model object via measure proxy.

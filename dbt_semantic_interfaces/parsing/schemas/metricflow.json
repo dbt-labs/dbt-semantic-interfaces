@@ -257,12 +257,12 @@
                 },
                 "type": {
                     "enum": [
-                        "MEASURE_PROXY",
+                        "SIMPLE",
                         "RATIO",
                         "EXPR",
                         "CUMULATIVE",
                         "DERIVED",
-                        "measure_proxy",
+                        "simple",
                         "ratio",
                         "expr",
                         "cumulative",
