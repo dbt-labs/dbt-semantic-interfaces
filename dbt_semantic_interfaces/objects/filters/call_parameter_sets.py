@@ -10,7 +10,11 @@ from dbt_semantic_interfaces.objects.filters.where_filter import (
     WhereFilterTransform,
 )
 from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
-from dbt_semantic_interfaces.references import DimensionReference, EntityReference
+from dbt_semantic_interfaces.references import (
+    DimensionReference,
+    EntityReference,
+    TimeDimensionReference,
+)
 
 
 @dataclass(frozen=True)
@@ -23,10 +27,10 @@ class DimensionCallParameterSet:
 
 @dataclass(frozen=True)
 class TimeDimensionCallParameterSet:
-    """When 'dimension(...)' is used in the Jinja template of the where filter, the parameters to that call."""
+    """When 'time_dimension(...)' is used in the Jinja template of the where filter, the parameters to that call."""
 
     entity_path: Tuple[EntityReference, ...]
-    time_dimension_reference: DimensionReference
+    time_dimension_reference: TimeDimensionReference
     time_granularity: TimeGranularity
 
 
@@ -97,7 +101,7 @@ class ParseToCallParameterSets(WhereFilterTransform[FilterCallParameterSets]):
             """Gets called by Jinja when rendering {{ time_dimension(...) }}."""
             time_dimension_call_parameter_sets.append(
                 TimeDimensionCallParameterSet(
-                    time_dimension_reference=DimensionReference(element_name=time_dimension_name),
+                    time_dimension_reference=TimeDimensionReference(element_name=time_dimension_name),
                     entity_path=tuple(EntityReference(element_name=arg) for arg in entity_path),
                     time_granularity=TimeGranularity(time_granularity_name),
                 )

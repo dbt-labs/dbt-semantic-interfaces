@@ -9,7 +9,11 @@ from dbt_semantic_interfaces.objects.filters.call_parameter_sets import (
 )
 from dbt_semantic_interfaces.objects.filters.where_filter import WhereFilter
 from dbt_semantic_interfaces.objects.time_granularity import TimeGranularity
-from dbt_semantic_interfaces.references import DimensionReference, EntityReference
+from dbt_semantic_interfaces.references import (
+    DimensionReference,
+    EntityReference,
+    TimeDimensionReference,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +48,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
     assert parse_result == FilterCallParameterSets(
         time_dimension_call_parameter_sets=(
             TimeDimensionCallParameterSet(
-                time_dimension_reference=DimensionReference(element_name="created_at"),
+                time_dimension_reference=TimeDimensionReference(element_name="created_at"),
                 entity_path=(EntityReference(element_name="listing"),),
                 time_granularity=TimeGranularity.MONTH,
             ),
