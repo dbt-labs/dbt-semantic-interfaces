@@ -29,7 +29,7 @@ repos:
       language: system
 
   - repo: https://github.com/pre-commit/mirrors-mypy # configured via mypy.ini
-    rev: v0.931
+    rev: v0.942
     hooks:
     - id: mypy
       args: [--ignore-missing-imports,--show-error-codes]
