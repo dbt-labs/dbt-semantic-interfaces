@@ -1,14 +1,13 @@
 [project]
 name = "dbt-semantic-interfaces"
-version = "0.1.0"
+version = "0.1.0.dev1"
 description = 'The shared semantic layer definitions that dbt-core and MetricFlow use'
 readme = "README.md"
 requires-python = ">=3.8"
 license = "Apache-2.0"
 keywords = []
 authors = [
-  { name = "Callum McCann", email = "cmccann51@gmail.com" },
-  { name = "Quigley malcolm", email = "quigley.malcolm@dbtlabs.com"},
+  { name = "dbt Labs", email = "info@dbtlabs.com" },
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
