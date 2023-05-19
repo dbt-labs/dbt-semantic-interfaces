@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from dbt_semantic_interfaces.objects.base import HashableBaseModel
+from dbt_semantic_interfaces.implementations.base import HashableBaseModel
 
 
 class FileSlice(HashableBaseModel):  # noqa: D

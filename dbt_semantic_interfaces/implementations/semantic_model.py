@@ -4,14 +4,14 @@ from typing import Any, List, Optional, Sequence
 
 from pydantic import validator
 
-from dbt_semantic_interfaces.objects.base import (
+from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
-from dbt_semantic_interfaces.objects.elements.dimension import Dimension
-from dbt_semantic_interfaces.objects.elements.entity import Entity
-from dbt_semantic_interfaces.objects.elements.measure import Measure
-from dbt_semantic_interfaces.objects.metadata import Metadata
+from dbt_semantic_interfaces.implementations.elements.dimension import Dimension
+from dbt_semantic_interfaces.implementations.elements.entity import Entity
+from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.metadata import Metadata
 from dbt_semantic_interfaces.references import (
     LinkableElementReference,
     MeasureReference,

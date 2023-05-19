@@ -1,6 +1,6 @@
 import pytest
 
-from dbt_semantic_interfaces.objects.elements.dimension import (
+from dbt_semantic_interfaces.implementations.elements.dimension import (
     Dimension,
     DimensionTypeParams,
 )

@@ -1,7 +1,7 @@
 import textwrap
 
-from dbt_semantic_interfaces.objects.filters.where_filter import WhereFilter
-from dbt_semantic_interfaces.objects.metric import (
+from dbt_semantic_interfaces.implementations.filters.where_filter import WhereFilter
+from dbt_semantic_interfaces.implementations.metric import (
     MetricInput,
     MetricInputMeasure,
     MetricTimeWindow,

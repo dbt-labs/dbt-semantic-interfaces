@@ -1,6 +1,6 @@
 from typing import List
 
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.validations.validator_helpers import (
     ModelValidationRule,
     ValidationError,

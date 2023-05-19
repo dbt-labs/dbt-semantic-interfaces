@@ -5,7 +5,7 @@ import textwrap
 from collections.abc import Mapping
 from dataclasses import fields, is_dataclass
 
-from dbt_semantic_interfaces.objects.base import HashableBaseModel
+from dbt_semantic_interfaces.implementations.base import HashableBaseModel
 
 
 def is_hashable_base_model(obj):  # type:ignore # noqa: D

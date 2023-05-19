@@ -2,11 +2,11 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from dbt_semantic_interfaces.objects.base import (
+from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
-from dbt_semantic_interfaces.objects.metadata import Metadata
+from dbt_semantic_interfaces.implementations.metadata import Metadata
 from dbt_semantic_interfaces.references import MeasureReference, TimeDimensionReference
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 

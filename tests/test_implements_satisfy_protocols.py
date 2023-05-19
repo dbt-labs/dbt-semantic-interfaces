@@ -1,20 +1,23 @@
 from typing import Protocol, runtime_checkable
 
-from dbt_semantic_interfaces.objects.elements.dimension import (
+from dbt_semantic_interfaces.implementations.elements.dimension import (
     Dimension,
     DimensionTypeParams,
     DimensionValidityParams,
 )
-from dbt_semantic_interfaces.objects.elements.entity import Entity
-from dbt_semantic_interfaces.objects.elements.measure import Measure
-from dbt_semantic_interfaces.objects.metadata import FileSlice, Metadata
-from dbt_semantic_interfaces.objects.metric import (
+from dbt_semantic_interfaces.implementations.elements.entity import Entity
+from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.metadata import FileSlice, Metadata
+from dbt_semantic_interfaces.implementations.metric import (
     Metric,
     MetricInputMeasure,
     MetricTypeParams,
 )
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.objects.semantic_model import NodeRelation, SemanticModel
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_model import (
+    NodeRelation,
+    SemanticModel,
+)
 from dbt_semantic_interfaces.protocols.dimension import Dimension as DimensionProtocol
 from dbt_semantic_interfaces.protocols.entity import Entity as EntityProtocol
 from dbt_semantic_interfaces.protocols.measure import Measure as MeasureProtocol

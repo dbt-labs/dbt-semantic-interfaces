@@ -1,8 +1,8 @@
 import logging
 from typing import Optional
 
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import TimeDimensionReference
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
