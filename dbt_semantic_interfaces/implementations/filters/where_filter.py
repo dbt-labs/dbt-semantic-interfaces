@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 from typing import Generic, TypeVar
 
-from dbt_semantic_interfaces.objects.base import (
+from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     PydanticCustomInputParser,
     PydanticParseableValueType,

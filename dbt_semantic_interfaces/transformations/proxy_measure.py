@@ -1,13 +1,13 @@
 import logging
 
 from dbt_semantic_interfaces.errors import ModelTransformError
-from dbt_semantic_interfaces.objects.metric import (
+from dbt_semantic_interfaces.implementations.metric import (
     Metric,
     MetricInputMeasure,
     MetricType,
     MetricTypeParams,
 )
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
 
 logger = logging.getLogger(__name__)

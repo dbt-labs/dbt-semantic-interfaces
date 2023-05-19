@@ -2,8 +2,12 @@ import traceback
 from typing import List
 
 from dbt_semantic_interfaces.errors import ParsingException
-from dbt_semantic_interfaces.objects.metric import Metric, MetricTimeWindow, MetricType
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.metric import (
+    Metric,
+    MetricTimeWindow,
+    MetricType,
+)
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.references import MetricModelReference
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (

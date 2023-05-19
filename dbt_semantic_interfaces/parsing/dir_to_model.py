@@ -8,10 +8,10 @@ from typing import Dict, List, Optional, Type, Union
 from jsonschema import exceptions
 
 from dbt_semantic_interfaces.errors import ParsingException
+from dbt_semantic_interfaces.implementations.metric import Metric
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
 from dbt_semantic_interfaces.model_transformer import ModelTransformer
-from dbt_semantic_interfaces.objects.metric import Metric
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
 from dbt_semantic_interfaces.parsing.objects import Version, YamlConfigFile
 from dbt_semantic_interfaces.parsing.schemas import (
     metric_validator,

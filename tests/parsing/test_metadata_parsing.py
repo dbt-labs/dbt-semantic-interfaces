@@ -5,9 +5,9 @@ from typing import Sequence
 
 import pytest
 
-from dbt_semantic_interfaces.objects.elements.measure import Measure
-from dbt_semantic_interfaces.objects.metadata import Metadata
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.metadata import Metadata
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.parsing.yaml_loader import YamlConfigLoader
 
 

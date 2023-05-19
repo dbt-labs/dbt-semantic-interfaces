@@ -1,14 +1,21 @@
 import pytest
 
-from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.objects.elements.dimension import (
+from dbt_semantic_interfaces.implementations.elements.dimension import (
     Dimension,
     DimensionTypeParams,
 )
-from dbt_semantic_interfaces.objects.elements.measure import Measure
-from dbt_semantic_interfaces.objects.metric import Metric, MetricType, MetricTypeParams
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.objects.semantic_model import NodeRelation, SemanticModel
+from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.metric import (
+    Metric,
+    MetricType,
+    MetricTypeParams,
+)
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_model import (
+    NodeRelation,
+    SemanticModel,
+)
+from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     MeasureReference,

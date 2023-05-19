@@ -1,4 +1,4 @@
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 
 
 def test_model_serialization_deserialization(simple_semantic_manifest: SemanticManifest) -> None:

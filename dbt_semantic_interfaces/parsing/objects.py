@@ -4,7 +4,7 @@ import re
 from typing import Optional
 
 from dbt_semantic_interfaces.errors import ParsingException
-from dbt_semantic_interfaces.objects.base import HashableBaseModel
+from dbt_semantic_interfaces.implementations.base import HashableBaseModel
 
 
 class YamlConfigFile(HashableBaseModel):

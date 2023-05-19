@@ -1,8 +1,11 @@
 from typing import Set
 
 from dbt_semantic_interfaces.errors import ModelTransformError
-from dbt_semantic_interfaces.objects.metric import MetricInputMeasure, MetricType
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.metric import (
+    MetricInputMeasure,
+    MetricType,
+)
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
 
 

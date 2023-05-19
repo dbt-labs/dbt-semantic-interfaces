@@ -5,7 +5,7 @@ from typing import List, Sequence, Tuple
 
 import jinja2
 
-from dbt_semantic_interfaces.objects.filters.where_filter import (
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
     WhereFilter,
     WhereFilterTransform,
 )

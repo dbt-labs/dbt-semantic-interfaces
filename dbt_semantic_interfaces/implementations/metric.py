@@ -3,14 +3,14 @@ from __future__ import annotations
 from typing import List, Optional
 
 from dbt_semantic_interfaces.errors import ParsingException
-from dbt_semantic_interfaces.objects.base import (
+from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
     PydanticCustomInputParser,
     PydanticParseableValueType,
 )
-from dbt_semantic_interfaces.objects.filters.where_filter import WhereFilter
-from dbt_semantic_interfaces.objects.metadata import Metadata
+from dbt_semantic_interfaces.implementations.filters.where_filter import WhereFilter
+from dbt_semantic_interfaces.implementations.metadata import Metadata
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums.metric_type import MetricType
 from dbt_semantic_interfaces.type_enums.time_granularity import (

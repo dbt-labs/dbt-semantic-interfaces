@@ -3,8 +3,8 @@ from typing import DefaultDict, Dict, List, Set
 
 from more_itertools import bucket
 
-from dbt_semantic_interfaces.objects.metric import Metric
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.metric import Metric
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType

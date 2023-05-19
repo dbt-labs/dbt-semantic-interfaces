@@ -1,5 +1,5 @@
 from dbt_semantic_interfaces.errors import ModelTransformError
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 

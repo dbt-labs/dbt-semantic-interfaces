@@ -1,9 +1,9 @@
 import copy
 import re
 
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
 from dbt_semantic_interfaces.model_validator import ModelValidator
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.objects.semantic_model import SemanticModel
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.validations.common_entities import CommonEntitysRule
 
