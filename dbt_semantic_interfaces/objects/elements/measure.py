@@ -7,7 +7,7 @@ from dbt_semantic_interfaces.objects.base import (
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.objects.metadata import Metadata
-from dbt_semantic_interfaces.protocols.measure import _MeasureMixin
+from dbt_semantic_interfaces.references import MeasureReference, TimeDimensionReference
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 
 
@@ -32,7 +32,7 @@ class MeasureAggregationParameters(HashableBaseModel):
     use_approximate_percentile: bool = False
 
 
-class Measure(_MeasureMixin, HashableBaseModel, ModelWithMetadataParsing):
+class Measure(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a measure."""
 
     name: str
@@ -44,3 +44,16 @@ class Measure(_MeasureMixin, HashableBaseModel, ModelWithMetadataParsing):
     metadata: Optional[Metadata]
     non_additive_dimension: Optional[NonAdditiveDimensionParameters] = None
     agg_time_dimension: Optional[str] = None
+
+    @property
+    def checked_agg_time_dimension(self) -> TimeDimensionReference:  # noqa: D
+        assert self.agg_time_dimension, (
+            f"Aggregation time dimension for measure {self.name} is not set! This should either be set directly on "
+            f"the measure specification in the model, or else defaulted to the primary time dimension in the data "
+            f"source containing the measure."
+        )
+        return TimeDimensionReference(element_name=self.agg_time_dimension)
+
+    @property
+    def reference(self) -> MeasureReference:  # noqa: D
+        return MeasureReference(element_name=self.name)

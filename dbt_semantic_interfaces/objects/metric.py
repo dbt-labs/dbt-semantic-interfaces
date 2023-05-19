@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import List, Optional
 
-from dbt_semantic_interfaces.enum_extension import ExtendedEnum
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.objects.base import (
     HashableBaseModel,
@@ -12,21 +11,12 @@ from dbt_semantic_interfaces.objects.base import (
 )
 from dbt_semantic_interfaces.objects.filters.where_filter import WhereFilter
 from dbt_semantic_interfaces.objects.metadata import Metadata
-from dbt_semantic_interfaces.objects.time_granularity import (
+from dbt_semantic_interfaces.references import MeasureReference, MetricReference
+from dbt_semantic_interfaces.type_enums.metric_type import MetricType
+from dbt_semantic_interfaces.type_enums.time_granularity import (
     TimeGranularity,
     string_to_time_granularity,
 )
-from dbt_semantic_interfaces.references import MeasureReference, MetricReference
-
-
-class MetricType(ExtendedEnum):
-    """Currently supported metric types."""
-
-    MEASURE_PROXY = "measure_proxy"
-    RATIO = "ratio"
-    EXPR = "expr"
-    CUMULATIVE = "cumulative"
-    DERIVED = "derived"
 
 
 class MetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
@@ -134,7 +124,8 @@ class MetricInput(HashableBaseModel):
     offset_to_grain: Optional[TimeGranularity]
 
     @property
-    def as_reference(self) -> MetricReference:  # noqa: D
+    def as_reference(self) -> MetricReference:
+        """Property accessor to get the MetricReference associated with this metric input."""
         return MetricReference(element_name=self.name)
 
 

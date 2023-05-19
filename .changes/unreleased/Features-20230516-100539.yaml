@@ -1,0 +1,6 @@
+kind: Features
+body: Add protocol for semantic manifest
+time: 2023-05-16T10:05:39.478821-05:00
+custom:
+  Author: callum-mcdata
+  Issue: "17"
