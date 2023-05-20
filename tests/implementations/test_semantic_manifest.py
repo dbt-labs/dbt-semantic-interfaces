@@ -1,9 +1,9 @@
 from importlib_metadata import version
 
-from dbt_semantic_interfaces.objects.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 
 
-def test_interfaces_version() -> None:
+def test_interfaces_version_matches() -> None:
     """Test that the interfaces_version property returns the installed version of dbt_semantic_interfaces."""
     semantic_manifest = SemanticManifest(
         semantic_models=[],
