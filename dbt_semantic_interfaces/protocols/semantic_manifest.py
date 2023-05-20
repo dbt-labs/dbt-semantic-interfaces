@@ -9,3 +9,4 @@ class SemanticManifest(Protocol):
 
     semantic_models: List[SemanticModel]
     metrics: List[Metric]
+    interfaces_version: str
