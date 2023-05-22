@@ -23,7 +23,7 @@ semantic_model:
       type: time
       expr: created_at
       type_params:
-        is_primary: True
+        default_agg_time: True
         time_granularity: day
     - name: created_at
       type: time

@@ -296,7 +296,7 @@ def test_semantic_model_time_dimension_parsing() -> None:
     dimension = semantic_model.dimensions[0]
     assert dimension.type is DimensionType.TIME
     assert dimension.type_params is not None
-    assert dimension.type_params.is_primary is not True
+    assert dimension.type_params.default_agg_time is not True
     assert dimension.type_params.time_granularity is TimeGranularity.MONTH
 
 
@@ -314,7 +314,7 @@ def test_semantic_model_primary_time_dimension_parsing() -> None:
               type: time
               type_params:
                 time_granularity: month
-                is_primary: true
+                default_agg_time: true
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -327,7 +327,7 @@ def test_semantic_model_primary_time_dimension_parsing() -> None:
     dimension = semantic_model.dimensions[0]
     assert dimension.type is DimensionType.TIME
     assert dimension.type_params is not None
-    assert dimension.type_params.is_primary is True
+    assert dimension.type_params.default_agg_time is True
 
 
 def test_semantic_model_dimension_metadata_parsing() -> None:

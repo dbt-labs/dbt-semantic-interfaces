@@ -11,7 +11,7 @@ semantic_model:
     - name: ds
       type: time
       type_params:
-        is_primary: True
+        default_agg_time: True
         time_granularity: day
     - name: home_state_latest
       type: categorical

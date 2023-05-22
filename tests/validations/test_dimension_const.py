@@ -53,7 +53,7 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                                 name=dim_name,
                                 type=DimensionType.TIME,
                                 type_params=DimensionTypeParams(
-                                    is_primary=True,
+                                    default_agg_time=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             )
@@ -92,7 +92,7 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                                 type=DimensionType.TIME,
                                 is_partition=True,
                                 type_params=DimensionTypeParams(
-                                    is_primary=True,
+                                    default_agg_time=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             )
@@ -150,7 +150,7 @@ def test_multiple_primary_time_dimensions() -> None:  # noqa:D
                                 name=dimension_reference.element_name,
                                 type=DimensionType.TIME,
                                 type_params=DimensionTypeParams(
-                                    is_primary=True,
+                                    default_agg_time=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             ),
@@ -158,7 +158,7 @@ def test_multiple_primary_time_dimensions() -> None:  # noqa:D
                                 name=dimension_reference2.element_name,
                                 type=DimensionType.TIME,
                                 type_params=DimensionTypeParams(
-                                    is_primary=True,
+                                    default_agg_time=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             ),
