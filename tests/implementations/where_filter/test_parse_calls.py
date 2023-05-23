@@ -4,7 +4,6 @@ from dbt_semantic_interfaces.implementations.filters.call_parameter_sets import 
     DimensionCallParameterSet,
     EntityCallParameterSet,
     FilterCallParameterSets,
-    ParseToCallParameterSets,
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.implementations.filters.where_filter import WhereFilter
@@ -23,7 +22,7 @@ def test_extract_dimension_call_parameter_sets() -> None:  # noqa: D
         where_sql_template=(
             """{{ dimension('is_instant') }} AND {{ dimension('country', entity_path=['listing']) }} == 'US'"""
         )
-    ).transform(ParseToCallParameterSets())
+    ).call_parameter_sets
 
     assert parse_result == FilterCallParameterSets(
         dimension_call_parameter_sets=(
@@ -43,7 +42,7 @@ def test_extract_dimension_call_parameter_sets() -> None:  # noqa: D
 def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
     parse_result = WhereFilter(
         where_sql_template="""{{ time_dimension('created_at', 'month', entity_path=['listing']) }} = '2020-01-01'"""
-    ).transform(ParseToCallParameterSets())
+    ).call_parameter_sets
 
     assert parse_result == FilterCallParameterSets(
         time_dimension_call_parameter_sets=(
@@ -61,7 +60,7 @@ def test_extract_entity_call_parameter_sets() -> None:  # noqa: D
         where_sql_template=(
             """{{ entity('listing') }} AND {{ entity('user', entity_path=['listing']) }} == 'TEST_USER_ID'"""
         )
-    ).transform(ParseToCallParameterSets())
+    ).call_parameter_sets
 
     assert parse_result == FilterCallParameterSets(
         dimension_call_parameter_sets=(),
