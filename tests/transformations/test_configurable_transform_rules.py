@@ -17,9 +17,9 @@ class SliceNamesRule(ModelTransformRule):
 
 
 def test_can_configure_model_transform_rules(  # noqa: D
-    simple_model__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
 ) -> None:
-    pre_model = simple_model__with_primary_transforms
+    pre_model = simple_semantic_manifest__with_primary_transforms
     assert not all(len(x.name) == 3 for x in pre_model.semantic_models)
 
     # Confirms that a custom transformation works `for ModelTransformer.transform`

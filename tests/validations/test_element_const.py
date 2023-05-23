@@ -20,8 +20,8 @@ def _categorical_dimensions(semantic_model: SemanticModel) -> Tuple[Dimension, .
     return tuple(dim for dim in semantic_model.dimensions if dim.type == DimensionType.CATEGORICAL)
 
 
-def test_cross_element_names(simple_model__with_primary_transforms: SemanticManifest) -> None:  # noqa:D
-    model = copy.deepcopy(simple_model__with_primary_transforms)
+def test_cross_element_names(simple_semantic_manifest__with_primary_transforms: SemanticManifest) -> None:  # noqa:D
+    model = copy.deepcopy(simple_semantic_manifest__with_primary_transforms)
 
     # ensure we have a usable semantic model for the test
     usable_ds, usable_ds_index = find_semantic_model_with(

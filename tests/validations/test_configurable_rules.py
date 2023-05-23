@@ -14,9 +14,9 @@ from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
 
 
 def test_can_configure_model_validator_rules(  # noqa: D
-    simple_model__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
 ) -> None:
-    model = copy.deepcopy(simple_model__with_primary_transforms)
+    model = copy.deepcopy(simple_semantic_manifest__with_primary_transforms)
     model.metrics.append(
         metric_with_guaranteed_meta(
             name="metric_doesnt_exist_squared",

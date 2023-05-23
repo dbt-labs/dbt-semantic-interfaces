@@ -26,10 +26,10 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 
 
 def test_semantic_model_cant_have_more_than_one_primary_entity(
-    simple_model__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
 ) -> None:  # noqa: D
     """Add an additional primary entity to a semantic model and assert that it cannot have two."""
-    model = copy.deepcopy(simple_model__with_primary_transforms)
+    model = copy.deepcopy(simple_semantic_manifest__with_primary_transforms)
 
     def func(semantic_model: SemanticModel) -> bool:
         return len(semantic_model.entities) > 1
