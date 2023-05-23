@@ -30,7 +30,7 @@ def template_mapping() -> Dict[str, str]:
 def simple_semantic_manifest(template_mapping: Dict[str, str]) -> SemanticManifest:
     """Model used for many tests."""
     model_build_result = parse_directory_of_yaml_files_to_model(
-        os.path.join(os.path.dirname(__file__), "model_yamls/simple_semantic_manifest"),
+        os.path.join(os.path.dirname(__file__), "semantic_manifest_yamls/simple_semantic_manifest"),
         template_mapping=template_mapping,
     )
     return model_build_result.model
@@ -40,7 +40,7 @@ def simple_semantic_manifest(template_mapping: Dict[str, str]) -> SemanticManife
 def simple_model__with_primary_transforms(template_mapping: Dict[str, str]) -> SemanticManifest:
     """Model used for tests pre-transformations."""
     model_build_result = parse_directory_of_yaml_files_to_model(
-        os.path.join(os.path.dirname(__file__), "model_yamls/simple_semantic_manifest"),
+        os.path.join(os.path.dirname(__file__), "semantic_manifest_yamls/simple_semantic_manifest"),
         template_mapping=template_mapping,
         apply_transformations=False,
     )
