@@ -18,7 +18,7 @@ BASE_SCHEMA = {
 }
 
 
-def generate_explict_schema(schema_store: Dict) -> Dict:
+def generate_explict_json_schema(schema_store: Dict) -> Dict:
     """Generates a single json schema object from the given schema store."""
     ref_to_definition_mapping = {key: f"#/definitions/{key}" for key in schema_store.keys()}
     definitions = {}
@@ -65,15 +65,18 @@ def _rewrite_refs(obj: Union[Dict, List, bool, str], mapping: Dict) -> Union[Dic
     return obj
 
 
-def write_schema(schema: Dict, output_dir: str, file_name: str) -> None:
+def write_json_schema(json_schema: Dict, output_dir: str, file_name: str) -> None:
     """Writes the schema from the specified schema store to the given path."""
     path = Path(output_dir).resolve()
     path.mkdir(exist_ok=True)
     with open(path / file_name, "w") as f:
-        json.dump(schema, f, indent=4, sort_keys=True)
+        json.dump(json_schema, f, indent=4, sort_keys=True)
+        f.write("\n")
 
 
 if __name__ == "__main__":
-    schema = generate_explict_schema(schemas.schema_store)
-    output_dir = str(Path(__file__).parent / "schemas")
-    write_schema(schema, output_dir, "metricflow.json")
+    write_json_schema(
+        json_schema=generate_explict_json_schema(schemas.schema_store),
+        output_dir=str(Path(__file__).parent / "schemas"),
+        file_name="metricflow.json",
+    )
