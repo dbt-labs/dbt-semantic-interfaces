@@ -78,5 +78,5 @@ if __name__ == "__main__":
     write_json_schema(
         json_schema=generate_explict_json_schema(schemas.schema_store),
         output_dir=str(Path(__file__).parent / "schemas"),
-        file_name="metricflow.json",
+        file_name="default_explicit_schema.json",
     )
