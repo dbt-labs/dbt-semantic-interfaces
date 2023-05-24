@@ -53,6 +53,7 @@ all = ["pre-commit run --all-files"]
 description = "Env for running development commands like pytest / pre-commit"
 dependencies = [
   "pytest~=7.3.0",
+  "pytest-xdist~=3.2.1",
   "httpx~=0.24.0",
   "pre-commit~=3.2.2",
   "isort~=5.12.0",
