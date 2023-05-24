@@ -14,7 +14,7 @@ overwrite-pre-commit:
 install: install-hatch overwrite-pre-commit
 
 test:
-	export FORMAT_JSON_LOGS="1" && hatch run dev-env:pytest tests
+	export FORMAT_JSON_LOGS="1" && hatch -v run dev-env:pytest -n auto tests
 
 lint:
 	hatch run dev-env:pre-commit run --show-diff-on-failure --color=always --all-files
