@@ -6,12 +6,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import click
 from pydantic import BaseModel, Extra
 
-from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
 from dbt_semantic_interfaces.implementations.metadata import Metadata
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
@@ -168,6 +167,38 @@ class ValidationIssue(ABC, BaseModel):
             verbose=verbose, prefix=click.style(self.level.name, bold=True, fg=ISSUE_COLOR_MAP[self.level])
         )
 
+    @property
+    @abstractmethod
+    def as_issue_set(self) -> ValidationIssueSet:  # noqa: D
+        raise NotImplementedError
+
+
+@dataclass(frozen=True)
+class ValidationIssueSet:
+    """Groups validation issues by type."""
+
+    warning_issues: Sequence[ValidationWarning] = ()
+    future_error_issues: Sequence[ValidationFutureError] = ()
+    error_issues: Sequence[ValidationError] = ()
+
+    @staticmethod
+    def combine(validation_issue_sets: Iterable[ValidationIssueSet]) -> ValidationIssueSet:
+        """Combine the given issues (no de-duping)."""
+        combined_warning_issues: List[ValidationWarning] = []
+        combined_future_error_issues: List[ValidationFutureError] = []
+        combined_error_issues: List[ValidationError] = []
+
+        for validation_issue_set in validation_issue_sets:
+            combined_warning_issues.extend(validation_issue_set.warning_issues)
+            combined_future_error_issues.extend(validation_issue_set.future_error_issues)
+            combined_error_issues.extend(validation_issue_set.error_issues)
+
+        return ValidationIssueSet(
+            warning_issues=tuple(combined_warning_issues),
+            future_error_issues=tuple(combined_future_error_issues),
+            error_issues=tuple(combined_error_issues),
+        )
+
 
 class ValidationWarning(ValidationIssue, BaseModel):
     """A warning that was found while validating the model."""
@@ -175,6 +206,10 @@ class ValidationWarning(ValidationIssue, BaseModel):
     @property
     def level(self) -> ValidationIssueLevel:  # noqa: D
         return ValidationIssueLevel.WARNING
+
+    @property
+    def as_issue_set(self) -> ValidationIssueSet:  # noqa: D
+        return ValidationIssueSet(warning_issues=(self,))
 
 
 class ValidationFutureError(ValidationIssue, BaseModel):
@@ -193,6 +228,10 @@ class ValidationFutureError(ValidationIssue, BaseModel):
             f"IMPORTANT: this error will break your model starting {self.error_date.strftime('%b %d, %Y')}. "
         )
 
+    @property
+    def as_issue_set(self) -> ValidationIssueSet:  # noqa: D
+        return ValidationIssueSet(future_error_issues=(self,))
+
 
 class ValidationError(ValidationIssue, BaseModel):
     """An error that was found while validating the model."""
@@ -200,6 +239,10 @@ class ValidationError(ValidationIssue, BaseModel):
     @property
     def level(self) -> ValidationIssueLevel:  # noqa: D
         return ValidationIssueLevel.ERROR
+
+    @property
+    def as_issue_set(self) -> ValidationIssueSet:  # noqa: D
+        return ValidationIssueSet(error_issues=(self,))
 
 
 class ModelValidationResults(FrozenBaseModel):
@@ -214,23 +257,15 @@ class ModelValidationResults(FrozenBaseModel):
         """Does the ModelValidationResults have ERROR issues."""
         return len(self.errors) != 0
 
-    @classmethod
-    def from_issues_sequence(cls, issues: Sequence[ValidationIssue]) -> ModelValidationResults:
+    @staticmethod
+    def from_issues_sequence(issues: Sequence[ValidationIssue]) -> ModelValidationResults:
         """Constructs a ModelValidationResults class from a list of ValidationIssues."""
-        warnings: List[ValidationWarning] = []
-        future_errors: List[ValidationFutureError] = []
-        errors: List[ValidationError] = []
-
-        for issue in issues:
-            if issue.level is ValidationIssueLevel.WARNING:
-                warnings.append(issue)
-            elif issue.level is ValidationIssueLevel.FUTURE_ERROR:
-                future_errors.append(issue)
-            elif issue.level is ValidationIssueLevel.ERROR:
-                errors.append(issue)
-            else:
-                assert_values_exhausted(issue.level)
-        return cls(warnings=tuple(warnings), future_errors=tuple(future_errors), errors=tuple(errors))
+        combined_issue_set = ValidationIssueSet.combine(tuple(issue.as_issue_set for issue in issues))
+        return ModelValidationResults(
+            warnings=tuple(combined_issue_set.warning_issues),
+            future_errors=tuple(combined_issue_set.future_error_issues),
+            errors=tuple(combined_issue_set.error_issues),
+        )
 
     @classmethod
     def merge(cls, results: Sequence[ModelValidationResults]) -> ModelValidationResults:
