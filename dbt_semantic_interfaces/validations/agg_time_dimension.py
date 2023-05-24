@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Sequence
 
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
@@ -23,7 +23,7 @@ class AggregationTimeDimensionRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking aggregation time dimension for semantic models in the model")
-    def validate_model(model: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
         for semantic_model in model.semantic_models:
             issues.extend(AggregationTimeDimensionRule._validate_semantic_model(semantic_model))

@@ -340,7 +340,7 @@ class ModelValidationRule(ABC):
 
     @classmethod
     @abstractmethod
-    def validate_model(cls, model: SemanticManifest) -> List[ValidationIssue]:
+    def validate_model(cls, model: SemanticManifest) -> Sequence[ValidationIssue]:
         """Check the given model and return a list of validation issues."""
         pass
 

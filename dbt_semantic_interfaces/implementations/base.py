@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import os
 from abc import ABC, abstractmethod
-from typing import Any, Callable, ClassVar, Generic, Iterator, TypeVar
+from typing import Any, Callable, ClassVar, Generator, Generic, Type, TypeVar
 
 from pydantic import BaseModel, root_validator
 
@@ -105,6 +105,8 @@ class ModelWithMetadataParsing(BaseModel):
 
 ModelObjectT_co = TypeVar("ModelObjectT_co", covariant=True, bound=BaseModel)
 
+SelfTypeT = TypeVar("SelfTypeT", bound="PydanticCustomInputParser")
+
 
 class PydanticCustomInputParser(ABC, Generic[ModelObjectT_co]):
     """Implements required methods for enabling custom parsing for Pydantic BaseModel objects.
@@ -121,17 +123,21 @@ class PydanticCustomInputParser(ABC, Generic[ModelObjectT_co]):
     """
 
     @classmethod
-    def __get_validators__(cls) -> Iterator[Callable]:
+    def __get_validators__(
+        cls: Type[PydanticCustomInputParser[ModelObjectT_co]],
+    ) -> Generator[Callable[[PydanticParseableValueType], PydanticCustomInputParser[ModelObjectT_co]], None, None]:
         """Pydantic magic method for allowing parsing of arbitrary input on parse_obj invocation.
 
-        This allow for parsing and validation prior to object initialization. Most classes implementing this
+        This allows for parsing and validation prior to object initialization. Most classes implementing this
         interface in our model are doing so because the input value from user-supplied YAML will be a string
         representation rather than the structured object type.
         """
         yield cls.__parse_with_custom_handling
 
     @classmethod
-    def __parse_with_custom_handling(cls: ModelObjectT_co, input: PydanticParseableValueType) -> ModelObjectT_co:
+    def __parse_with_custom_handling(
+        cls: Type[PydanticCustomInputParser[ModelObjectT_co]], input: PydanticParseableValueType
+    ) -> PydanticCustomInputParser[ModelObjectT_co]:
         """Core method for handling common valid - or easily validated - input types.
 
         Pydantic objects can commonly appear as JSON object types (from, e.g., deserializing a Pydantic-serialized
@@ -146,7 +152,7 @@ class PydanticCustomInputParser(ABC, Generic[ModelObjectT_co]):
         to the caller to be pre-validated, and so we do not bother guarding against that here.
         """
         if isinstance(input, dict):
-            return cls(**input)
+            return cls(**input)  # type: ignore
         elif isinstance(input, cls):
             return input
         else:
@@ -154,6 +160,8 @@ class PydanticCustomInputParser(ABC, Generic[ModelObjectT_co]):
 
     @classmethod
     @abstractmethod
-    def _from_yaml_value(cls: ModelObjectT_co, input: PydanticParseableValueType) -> ModelObjectT_co:
+    def _from_yaml_value(
+        cls: Type[PydanticCustomInputParser[ModelObjectT_co]], input: PydanticParseableValueType
+    ) -> PydanticCustomInputParser[ModelObjectT_co]:
         """Abstract method for providing object-specific parsing logic."""
         raise NotImplementedError()

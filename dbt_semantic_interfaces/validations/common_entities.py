@@ -1,4 +1,4 @@
-from typing import Dict, List, Set
+from typing import Dict, List, Sequence, Set
 
 from dbt_semantic_interfaces.implementations.elements.entity import Entity
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
@@ -65,7 +65,7 @@ class CommonEntitysRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation warning if entities are only one one semantic model")
-    def validate_model(model: SemanticManifest) -> List[ValidationIssue]:
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:
         """Issues a warning for any entity that is associated with only one semantic_model."""
         issues = []
 

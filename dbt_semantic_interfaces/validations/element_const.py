@@ -1,5 +1,5 @@
 from collections import defaultdict
-from typing import DefaultDict, List
+from typing import DefaultDict, List, Sequence
 
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.references import SemanticModelReference
@@ -25,7 +25,7 @@ class ElementConsistencyRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring model wide element consistency")
-    def validate_model(model: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
         element_name_to_types = ElementConsistencyRule._get_element_name_to_types(model=model)
         invalid_elements = {
