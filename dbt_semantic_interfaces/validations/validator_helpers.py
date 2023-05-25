@@ -6,12 +6,11 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Sequence, Tuple, Union
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
 
 import click
 from pydantic import BaseModel, Extra
 
-from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
 from dbt_semantic_interfaces.implementations.metadata import Metadata
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
@@ -28,7 +27,7 @@ ValidationIssueJSON = Dict[str, Union[str, int, ValidationContextJSON]]
 
 
 class ValidationIssueLevel(Enum):
-    """Categorize the issues found while validating a MQL model."""
+    """Categorize the issues found while validating a semantic manifest."""
 
     # Issue should be fixed, but model will still work in MQL
     WARNING = 0
@@ -70,7 +69,7 @@ class FileContext(BaseModel):
         extra = Extra.forbid
 
     def context_str(self) -> str:
-        """Human readable stringified representation of the context."""
+        """Human-readable stringified representation of the context."""
         context_string = ""
 
         if self.file_name:
@@ -96,7 +95,7 @@ class MetricContext(BaseModel):
     metric: MetricModelReference
 
     def context_str(self) -> str:
-        """Human readable stringified representation of the context."""
+        """Human-readable stringified representation of the context."""
         return f"with metric `{self.metric.metric_name}` {self.file_context.context_str()}"
 
 
@@ -107,7 +106,7 @@ class SemanticModelContext(BaseModel):
     semantic_model: SemanticModelReference
 
     def context_str(self) -> str:
-        """Human readable stringified representation of the context."""
+        """Human-readable stringified representation of the context."""
         return f"with semantic model `{self.semantic_model.semantic_model_name}` {self.file_context.context_str()}"
 
 
@@ -119,7 +118,7 @@ class SemanticModelElementContext(BaseModel):
     element_type: SemanticModelElementType
 
     def context_str(self) -> str:
-        """Human readable stringified representation of the context."""
+        """Human-readable stringified representation of the context."""
         return (
             f"with {self.element_type.value} `{self.semantic_model_element.element_name}` in semantic model "
             f"`{self.semantic_model_element.semantic_model_name}` {self.file_context.context_str()}"
@@ -135,7 +134,7 @@ ValidationContext = Union[
 
 
 class ValidationIssue(ABC, BaseModel):
-    """The abstract base ValidationIsssue class that the specific ValidationIssue classes are built from."""
+    """The abstract base ValidationIssue class that the specific ValidationIssue classes are built from."""
 
     message: str
     context: Optional[ValidationContext] = None
@@ -144,11 +143,11 @@ class ValidationIssue(ABC, BaseModel):
     @property
     @abstractmethod
     def level(self) -> ValidationIssueLevel:
-        """The level of of ValidationIssue."""
+        """The level of ValidationIssue."""
         raise NotImplementedError
 
     def as_readable_str(self, verbose: bool = False, prefix: Optional[str] = None) -> str:
-        """Return a easily readable string that can be used to log the issue."""
+        """Return an easily readable string that can be used to log the issue."""
         prefix = prefix or self.level.name
 
         # The following is two lines instead of one line because
@@ -168,6 +167,38 @@ class ValidationIssue(ABC, BaseModel):
             verbose=verbose, prefix=click.style(self.level.name, bold=True, fg=ISSUE_COLOR_MAP[self.level])
         )
 
+    @property
+    @abstractmethod
+    def as_issue_set(self) -> ValidationIssueSet:  # noqa: D
+        raise NotImplementedError
+
+
+@dataclass(frozen=True)
+class ValidationIssueSet:
+    """Groups validation issues by type."""
+
+    warning_issues: Sequence[ValidationWarning] = ()
+    future_error_issues: Sequence[ValidationFutureError] = ()
+    error_issues: Sequence[ValidationError] = ()
+
+    @staticmethod
+    def combine(validation_issue_sets: Iterable[ValidationIssueSet]) -> ValidationIssueSet:
+        """Combine the given issues (no de-duping)."""
+        combined_warning_issues: List[ValidationWarning] = []
+        combined_future_error_issues: List[ValidationFutureError] = []
+        combined_error_issues: List[ValidationError] = []
+
+        for validation_issue_set in validation_issue_sets:
+            combined_warning_issues.extend(validation_issue_set.warning_issues)
+            combined_future_error_issues.extend(validation_issue_set.future_error_issues)
+            combined_error_issues.extend(validation_issue_set.error_issues)
+
+        return ValidationIssueSet(
+            warning_issues=tuple(combined_warning_issues),
+            future_error_issues=tuple(combined_future_error_issues),
+            error_issues=tuple(combined_error_issues),
+        )
+
 
 class ValidationWarning(ValidationIssue, BaseModel):
     """A warning that was found while validating the model."""
@@ -175,6 +206,10 @@ class ValidationWarning(ValidationIssue, BaseModel):
     @property
     def level(self) -> ValidationIssueLevel:  # noqa: D
         return ValidationIssueLevel.WARNING
+
+    @property
+    def as_issue_set(self) -> ValidationIssueSet:  # noqa: D
+        return ValidationIssueSet(warning_issues=(self,))
 
 
 class ValidationFutureError(ValidationIssue, BaseModel):
@@ -187,11 +222,15 @@ class ValidationFutureError(ValidationIssue, BaseModel):
         return ValidationIssueLevel.FUTURE_ERROR
 
     def as_readable_str(self, verbose: bool = False, prefix: Optional[str] = None) -> str:
-        """Return a easily readable string that can be used to log the issue."""
+        """Return an easily readable string that can be used to log the issue."""
         return (
             f"{super().as_readable_str(verbose=verbose, prefix=prefix)}"
             f"IMPORTANT: this error will break your model starting {self.error_date.strftime('%b %d, %Y')}. "
         )
+
+    @property
+    def as_issue_set(self) -> ValidationIssueSet:  # noqa: D
+        return ValidationIssueSet(future_error_issues=(self,))
 
 
 class ValidationError(ValidationIssue, BaseModel):
@@ -201,9 +240,13 @@ class ValidationError(ValidationIssue, BaseModel):
     def level(self) -> ValidationIssueLevel:  # noqa: D
         return ValidationIssueLevel.ERROR
 
+    @property
+    def as_issue_set(self) -> ValidationIssueSet:  # noqa: D
+        return ValidationIssueSet(error_issues=(self,))
+
 
 class ModelValidationResults(FrozenBaseModel):
-    """Class for organizating the results of running validations."""
+    """Class for organizing the results of running validations."""
 
     warnings: Tuple[ValidationWarning, ...] = tuple()
     future_errors: Tuple[ValidationFutureError, ...] = tuple()
@@ -214,32 +257,24 @@ class ModelValidationResults(FrozenBaseModel):
         """Does the ModelValidationResults have ERROR issues."""
         return len(self.errors) != 0
 
-    @classmethod
-    def from_issues_sequence(cls, issues: Sequence[ValidationIssue]) -> ModelValidationResults:
+    @staticmethod
+    def from_issues_sequence(issues: Sequence[ValidationIssue]) -> ModelValidationResults:
         """Constructs a ModelValidationResults class from a list of ValidationIssues."""
-        warnings: List[ValidationWarning] = []
-        future_errors: List[ValidationFutureError] = []
-        errors: List[ValidationError] = []
-
-        for issue in issues:
-            if issue.level is ValidationIssueLevel.WARNING:
-                warnings.append(issue)
-            elif issue.level is ValidationIssueLevel.FUTURE_ERROR:
-                future_errors.append(issue)
-            elif issue.level is ValidationIssueLevel.ERROR:
-                errors.append(issue)
-            else:
-                assert_values_exhausted(issue.level)
-        return cls(warnings=tuple(warnings), future_errors=tuple(future_errors), errors=tuple(errors))
+        combined_issue_set = ValidationIssueSet.combine(tuple(issue.as_issue_set for issue in issues))
+        return ModelValidationResults(
+            warnings=tuple(combined_issue_set.warning_issues),
+            future_errors=tuple(combined_issue_set.future_error_issues),
+            errors=tuple(combined_issue_set.error_issues),
+        )
 
     @classmethod
     def merge(cls, results: Sequence[ModelValidationResults]) -> ModelValidationResults:
         """Creates a new ModelValidatorResults instance from multiple instances.
 
         This is useful when there are multiple validators that are run and the
-        combined results are desireable. For instance there is a ModelValidator
+        combined results are desirable. For instance there is a ModelValidator
         and a DataWarehouseModelValidator. These both return validation issues.
-        If it's desireable to combine the results, the following makes it easy.
+        If it's desirable to combine the results, the following makes it easy.
         """
         if not isinstance(results, List):
             results = list(results)
@@ -268,7 +303,7 @@ class ModelValidationResults(FrozenBaseModel):
             text=f"{ValidationIssueLevel.ERROR.name_plural}: {len(self.errors)}",
             fg=ISSUE_COLOR_MAP[ValidationIssueLevel.ERROR],
         )
-        future_erros = click.style(
+        future_errors = click.style(
             text=f"{ValidationIssueLevel.FUTURE_ERROR.name_plural}: {len(self.future_errors)}",
             fg=ISSUE_COLOR_MAP[ValidationIssueLevel.FUTURE_ERROR],
         )
@@ -276,19 +311,25 @@ class ModelValidationResults(FrozenBaseModel):
             text=f"{ValidationIssueLevel.WARNING.name_plural}: {len(self.warnings)}",
             fg=ISSUE_COLOR_MAP[ValidationIssueLevel.WARNING],
         )
-        return f"{errors}, {future_erros}, {warnings}"
+        return f"{errors}, {future_errors}, {warnings}"
 
 
 def generate_exception_issue(
-    what_was_being_done: str, e: Exception, context: Optional[ValidationContext] = None, extras: Dict[str, str] = {}
+    what_was_being_done: str,
+    e: Exception,
+    context: Optional[ValidationContext] = None,
+    extras: Optional[Dict[str, str]] = None,
 ) -> ValidationIssue:
     """Generates a validation issue for exceptions."""
+    if extras is None:
+        extras = {}
+
     if "stacktrace" not in extras:
         extras["stacktrace"] = "".join(traceback.format_tb(e.__traceback__))
 
     return ValidationError(
         context=context,
-        message=f"An error occured while {what_was_being_done} - "
+        message=f"An error occurred while {what_was_being_done} - "
         f"{''.join(traceback.format_exception_only(etype=type(e), value=e))}",
         extra_detail="\n".join([f"{key}: {value}" for key, value in extras.items()]),
     )
@@ -340,7 +381,7 @@ class ModelValidationRule(ABC):
 
     @classmethod
     @abstractmethod
-    def validate_model(cls, model: SemanticManifest) -> List[ValidationIssue]:
+    def validate_model(cls, model: SemanticManifest) -> Sequence[ValidationIssue]:
         """Check the given model and return a list of validation issues."""
         pass
 

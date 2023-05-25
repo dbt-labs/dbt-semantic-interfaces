@@ -208,7 +208,7 @@ def parse_yaml_files_to_model(
                 file_issues.append(
                     ValidationError(
                         context=FileContext(file_name=config_file.filepath),
-                        message=f"Unexpected model object {obj.__name__}. Expected {valid_object_classes}.",
+                        message=f"Unexpected model object {obj.__class__.__name__}. Expected {valid_object_classes}.",
                     )
                 )
 

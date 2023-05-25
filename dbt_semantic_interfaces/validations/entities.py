@@ -1,6 +1,6 @@
 import logging
 from datetime import date
-from typing import List, MutableSet
+from typing import List, MutableSet, Sequence
 
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
@@ -61,7 +61,7 @@ class NaturalEntityConfigurationRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking that entities marked as EntityType.NATURAL are properly configured")
-    def validate_model(model: SemanticManifest) -> List[ValidationIssue]:
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:
         """Validate entities marked as EntityType.NATURAL."""
         issues: List[ValidationIssue] = []
         for semantic_model in model.semantic_models:
@@ -101,7 +101,7 @@ class OnePrimaryEntityPerSemanticModelRule(ModelValidationRule):
     @validate_safely(
         whats_being_done="running model validation ensuring each semantic model has only one primary entity"
     )
-    def validate_model(model: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
 
         for semantic_model in model.semantic_models:

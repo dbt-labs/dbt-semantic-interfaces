@@ -207,6 +207,10 @@ class DataclassSerializer:
                 raise RuntimeError(f"{object_type} is not a dataclass")
             if not isinstance(obj, SerializableDataclass):
                 raise RuntimeError(f"{obj} is not a SerializableDataclass")
+
+            # Redundant assertion is needed for mypy to pass.
+            assert issubclass(object_type, SerializableDataclass)
+
             PydanticModel = self._to_pydantic_type_converter.to_pydantic_type(object_type)
 
             field_dict = _get_dataclass_field_definitions(object_type)
@@ -221,11 +225,14 @@ class DataclassSerializer:
         return obj
 
     def pydantic_serialize(self, obj: SerializableDataclassT) -> str:  # noqa: D
-        assert dataclasses.is_dataclass(obj)
+        # .__class__ seems to be the approach for new classes and there are differences with type(obj)
+        obj_class = obj.__class__
+        assert dataclasses.is_dataclass(obj), f"Got object of type: {obj_class.__name__}"
+        assert isinstance(obj, SerializableDataclass), f"Got object of type: {obj_class.__name__}"
+        assert issubclass(obj_class, SerializableDataclass), f"Got object type: {obj_class.__name__}"
 
         return self._convert_dataclass_instance_to_pydantic_model(
-            # .__class__ seems to be the approach for new classes and there are differences with type(obj)
-            object_type=obj.__class__,
+            object_type=obj_class,
             obj=obj,
         ).json()
 
@@ -261,16 +268,19 @@ class DataClassDeserializer:
                 for x in obj
             )
         elif issubclass(field_type, SerializableDataclass):
-            logger.debug(f"Handling field_type={field_type} object={repr(obj)}")
-            return self._construct_dataclass_from_pydantic_object(
+            logger.error(f"Handling field_type={field_type} object={repr(obj)}")
+            # Redundant assertion is needed for mypy to pass.
+            assert issubclass(field_type, SerializableDataclass), f"Got field type: {field_type.__name__}"
+            assert isinstance(obj, (SerializableDataclass, BaseModel)), f"Got object of type: {obj.__class__.__name__}"
+            return self._construct_dataclass_from_dataclass_like_object(
                 dataclass_type=field_type,
                 obj=obj,
             )
         else:
             return obj
 
-    def _construct_dataclass_from_pydantic_object(
-        self, dataclass_type: Type[SerializableDataclassT], obj: BaseModel
+    def _construct_dataclass_from_dataclass_like_object(
+        self, dataclass_type: Type[SerializableDataclassT], obj: Union[SerializableDataclass, BaseModel]
     ) -> SerializableDataclassT:
         logger.debug(f"Constructing dataclass of type {dataclass_type} from {repr(obj)}")
         object_args = {}
@@ -290,7 +300,7 @@ class DataClassDeserializer:
             ClassAsPydantic = self._to_pydantic_type_converter.to_pydantic_type(dataclass_type)
             logger.debug(f"Serialized object for creation of {ClassAsPydantic} is {serialized_obj}")
             pydantic_object = ClassAsPydantic.parse_raw(serialized_obj)
-            return self._construct_dataclass_from_pydantic_object(
+            return self._construct_dataclass_from_dataclass_like_object(
                 dataclass_type=dataclass_type,
                 obj=pydantic_object,
             )
@@ -337,7 +347,7 @@ class DataClassTypeToPydanticTypeConverter:  # noqa: D
         logger.debug(
             f"Creating Pydantic model {class_name} with fields:\n{pformat_big_objects(fields_for_pydantic_model)}"
         )
-        pydantic_model = pydantic.create_model(class_name, **fields_for_pydantic_model)
+        pydantic_model = pydantic.create_model(class_name, **fields_for_pydantic_model)  # type: ignore
         logger.debug(f"Finished creating Pydantic model {class_name}")
         logger.debug(f"Finished converting {dataclass_type.__name__} to a pydantic class")
         return pydantic_model

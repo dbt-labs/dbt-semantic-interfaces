@@ -29,17 +29,9 @@ repos:
       language: system
 
   - repo: https://github.com/pre-commit/mirrors-mypy # configured via mypy.ini
-    rev: v0.942
+    rev: v1.3.0
     hooks:
     - id: mypy
       args: [--ignore-missing-imports,--show-error-codes]
       verbose: true
-      additional_dependencies: [
-        types-jsonschema,
-        types-python-dateutil,
-        types-PyYAML,
-        types-jinja2,
-        pytest,
-        python-dateutil,
-        types-python-dateutil,
-      ]
+      language: system

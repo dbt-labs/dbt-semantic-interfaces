@@ -1,4 +1,4 @@
-from typing import Dict, List
+from typing import Dict, List, Sequence
 
 from dbt_semantic_interfaces.implementations.elements.dimension import Dimension
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
@@ -30,7 +30,7 @@ class DimensionConsistencyRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring dimension consistency")
-    def validate_model(model: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         dimension_to_invariant: Dict[DimensionReference, DimensionInvariants] = {}
         time_dims_to_granularity: Dict[DimensionReference, TimeGranularity] = {}
         issues: List[ValidationIssue] = []

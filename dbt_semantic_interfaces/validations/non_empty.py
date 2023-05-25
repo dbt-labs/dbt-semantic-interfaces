@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Sequence
 
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.validations.validator_helpers import (
@@ -47,7 +47,7 @@ class NonEmptyRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely("running model validation rule ensuring metrics and semantic models are defined")
-    def validate_model(model: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
         issues += NonEmptyRule._check_model_has_semantic_models(model=model)
         issues += NonEmptyRule._check_model_has_metrics(model=model)
