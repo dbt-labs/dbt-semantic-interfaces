@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import List, Optional, Protocol
+from typing import Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.references import MeasureReference, TimeDimensionReference
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
@@ -10,17 +10,39 @@ from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 class NonAdditiveDimensionParameters(Protocol):
     """Describes the params for specifying non-additive dimensions in a measure."""
 
-    name: str
-    window_choice: AggregationType
-    window_groupings: List[str]
+    @property
+    @abstractmethod
+    def name(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def window_choice(self) -> AggregationType:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def window_groupings(self) -> Sequence[str]:  # noqa: D
+        pass
 
 
 class MeasureAggregationParameters(Protocol):
     """Describes parameters for aggregations."""
 
-    percentile: Optional[float]
-    use_discrete_percentile: bool
-    use_approximate_percentile: bool
+    @property
+    @abstractmethod
+    def percentile(self) -> Optional[float]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def use_discrete_percentile(self) -> bool:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def use_approximate_percentile(self) -> bool:  # noqa: D
+        pass
 
 
 class Measure(Protocol):
@@ -30,14 +52,45 @@ class Measure(Protocol):
     in a specific way.
     """
 
-    name: str
-    agg: AggregationType
-    description: Optional[str]
-    create_metric: Optional[bool]
-    expr: Optional[str]
-    agg_params: Optional[MeasureAggregationParameters]
-    non_additive_dimension: Optional[NonAdditiveDimensionParameters]
-    agg_time_dimension: Optional[str]
+    @property
+    @abstractmethod
+    def name(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def agg(self) -> AggregationType:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def description(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def create_metric(self) -> Optional[bool]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def expr(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def agg_params(self) -> Optional[MeasureAggregationParameters]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def non_additive_dimension(self) -> Optional[NonAdditiveDimensionParameters]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def agg_time_dimension(self) -> Optional[str]:  # noqa: D
+        pass
 
     @property
     @abstractmethod

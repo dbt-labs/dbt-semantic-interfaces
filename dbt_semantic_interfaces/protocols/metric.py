@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import List, Optional, Protocol
+from typing import List, Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.implementations.filters.where_filter import WhereFilter
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
@@ -16,9 +16,20 @@ class MetricInputMeasure(Protocol):
     phase in the SQL plan.
     """
 
-    name: str
-    filter: Optional[WhereFilter]
-    alias: Optional[str]
+    @property
+    @abstractmethod
+    def name(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def filter(self) -> Optional[WhereFilter]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def alias(self) -> Optional[str]:  # noqa: D
+        pass
 
     @property
     @abstractmethod
@@ -36,18 +47,44 @@ class MetricInputMeasure(Protocol):
 class MetricTimeWindow(Protocol):
     """Describes the window of time the metric should be accumulated over, e.g., '1 day', '2 weeks', etc."""
 
-    count: int
-    granularity: TimeGranularity
+    @property
+    @abstractmethod
+    def count(self) -> int:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def granularity(self) -> TimeGranularity:  # noqa: D
+        pass
 
 
 class MetricInput(Protocol):
     """Provides a pointer to a metric along with the additional properties used on that metric."""
 
-    name: str
-    filter: Optional[WhereFilter]
-    alias: Optional[str]
-    offset_window: Optional[MetricTimeWindow]
-    offset_to_grain: Optional[TimeGranularity]
+    @property
+    @abstractmethod
+    def name(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def filter(self) -> Optional[WhereFilter]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def alias(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def offset_window(self) -> Optional[MetricTimeWindow]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def offset_to_grain(self) -> Optional[TimeGranularity]:  # noqa: D
+        pass
 
     @property
     @abstractmethod
@@ -59,14 +96,45 @@ class MetricInput(Protocol):
 class MetricTypeParams(Protocol):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
-    measure: Optional[MetricInputMeasure]
-    measures: Optional[List[MetricInputMeasure]]
-    numerator: Optional[MetricInputMeasure]
-    denominator: Optional[MetricInputMeasure]
-    expr: Optional[str]
-    window: Optional[MetricTimeWindow]
-    grain_to_date: Optional[TimeGranularity]
-    metrics: Optional[List[MetricInput]]
+    @property
+    @abstractmethod
+    def measure(self) -> Optional[MetricInputMeasure]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def measures(self) -> Optional[Sequence[MetricInputMeasure]]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def numerator(self) -> Optional[MetricInputMeasure]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def denominator(self) -> Optional[MetricInputMeasure]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def expr(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def window(self) -> Optional[MetricTimeWindow]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def grain_to_date(self) -> Optional[TimeGranularity]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def metrics(self) -> Optional[Sequence[MetricInput]]:  # noqa: D
+        pass
 
     @property
     @abstractmethod
@@ -84,11 +152,30 @@ class MetricTypeParams(Protocol):
 class Metric(Protocol):
     """Describes a metric."""
 
-    name: str
-    description: Optional[str]
-    type: MetricType
-    type_params: MetricTypeParams
-    filter: Optional[WhereFilter]
+    @property
+    @abstractmethod
+    def name(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def description(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def type(self) -> MetricType:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def type_params(self) -> MetricTypeParams:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def filter(self) -> Optional[WhereFilter]:  # noqa: D
+        pass
 
     @property
     @abstractmethod

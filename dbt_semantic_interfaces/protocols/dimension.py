@@ -22,28 +22,73 @@ class DimensionValidityParams(Protocol):
     validity window, where the dimension value is valid for any time within that range.
     """
 
-    is_start: bool
-    is_end: bool
+    @property
+    @abstractmethod
+    def is_start(self) -> bool:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def is_end(self) -> bool:  # noqa: D
+        pass
 
 
 class DimensionTypeParams(Protocol):
     """Dimension type params add context to some types of dimensions (like time)."""
 
-    is_primary: bool
-    time_granularity: TimeGranularity
-    validity_params: Optional[DimensionValidityParams]
+    @property
+    @abstractmethod
+    def is_primary(self) -> bool:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def time_granularity(self) -> TimeGranularity:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def validity_params(self) -> Optional[DimensionValidityParams]:  # noqa: D
+        pass
 
 
 class Dimension(Protocol):
     """Describes a dimension."""
 
-    name: str
-    description: Optional[str]
-    type: DimensionType
-    is_partition: bool
-    type_params: Optional[DimensionTypeParams]
-    expr: Optional[str]
-    metadata: Optional[Metadata]
+    @property
+    @abstractmethod
+    def name(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def description(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def type(self) -> DimensionType:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def is_partition(self) -> bool:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def type_params(self) -> Optional[DimensionTypeParams]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def expr(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def metadata(self) -> Optional[Metadata]:  # noqa: D
+        pass
 
     @property
     @abstractmethod

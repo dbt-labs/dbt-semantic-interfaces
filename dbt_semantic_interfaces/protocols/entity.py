@@ -10,11 +10,30 @@ from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 class Entity(Protocol):
     """Describes a entity."""
 
-    name: str
-    description: Optional[str]
-    type: EntityType
-    role: Optional[str]
-    expr: Optional[str] = None
+    @property
+    @abstractmethod
+    def name(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def description(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def type(self) -> EntityType:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def role(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def expr(self) -> Optional[str]:  # noqa: D
+        pass
 
     @property
     @abstractmethod
