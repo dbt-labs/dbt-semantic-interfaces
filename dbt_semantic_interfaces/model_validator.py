@@ -3,9 +3,7 @@ import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import List, Sequence
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import (
-    PydanticSemanticManifest,
-)
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.validations.agg_time_dimension import (
     AggregationTimeDimensionRule,
 )
@@ -41,6 +39,18 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 logger = logging.getLogger(__name__)
+
+
+def _validate_manifest_with_one_rule(
+    validation_rule: SemanticManifestValidationRule, semantic_manifest: SemanticManifest
+) -> str:
+    """Helper function to run a single validation rule on a semantic mode.
+
+    Result is returned as a serialized object as there are pickling issues with SemanticManifestValidationResults.
+    """
+    return SemanticManifestValidationResults.from_issues_sequence(
+        validation_rule.validate_model(semantic_manifest)
+    ).json()
 
 
 class SemanticManifestValidator:
@@ -83,14 +93,12 @@ class SemanticManifestValidator:
         self._rules = rules
         self._executor = ProcessPoolExecutor(max_workers=max_workers)
 
-    def validate_model(self, model: PydanticSemanticManifest) -> SemanticManifestValidationResults:
+    def validate_model(self, semantic_manifest: SemanticManifest) -> SemanticManifestValidationResults:
         """Validate a model according to configured rules."""
-        serialized_model = model.json()
-
         results: List[SemanticManifestValidationResults] = []
 
         futures = [
-            self._executor.submit(validation_rule.validate_model_serialized_for_multiprocessing, serialized_model)
+            self._executor.submit(_validate_manifest_with_one_rule, validation_rule, semantic_manifest)
             for validation_rule in self._rules
         ]
         for future in as_completed(futures):
@@ -100,7 +108,7 @@ class SemanticManifestValidator:
 
         return SemanticManifestValidationResults.merge(results)
 
-    def checked_validations(self, model: PydanticSemanticManifest) -> None:
+    def checked_validations(self, model: SemanticManifest) -> None:
         """Similar to validate(), but throws an exception if validation fails."""
         model_copy = copy.deepcopy(model)
         model_issues = self.validate_model(model_copy)

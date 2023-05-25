@@ -385,18 +385,6 @@ class SemanticManifestValidationRule(ABC):
         """Check the given model and return a list of validation issues."""
         pass
 
-    @classmethod
-    def validate_model_serialized_for_multiprocessing(cls, serialized_model: str) -> str:
-        """Validate a model serialized via Pydantic's .json() method, and return a list of JSON serialized issues.
-
-        This method exists because our validations are forked into parallel processes via
-        multiprocessing.ProcessPoolExecutor, and passing a model or validation results object can result in
-        idiosyncratic behavior and inscrutable errors due to interactions between pickling and pydantic objects.
-        """
-        return SemanticManifestValidationResults.from_issues_sequence(
-            cls.validate_model(SemanticManifest.parse_raw(serialized_model))
-        ).json()
-
 
 class ModelValidationException(Exception):
     """Exception raised when validation of a model fails."""
