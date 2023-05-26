@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import List, Optional, Protocol, Sequence
+from typing import Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilter
@@ -180,19 +180,19 @@ class Metric(Protocol):
 
     @property
     @abstractmethod
-    def input_measures(self: Metric) -> List[MetricInputMeasure]:
+    def input_measures(self: Metric) -> Sequence[MetricInputMeasure]:
         """Return the complete list of input measure configurations for this metric."""
         ...
 
     @property
     @abstractmethod
-    def measure_references(self) -> List[MeasureReference]:
+    def measure_references(self) -> Sequence[MeasureReference]:
         """Return the measure references associated with all input measure configurations for this metric."""
         ...
 
     @property
     @abstractmethod
-    def input_metrics(self) -> List[MetricInput]:
+    def input_metrics(self) -> Sequence[MetricInput]:
         """Return the associated input metrics for this metric."""
         ...
 

@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import List, Optional, Protocol, Sequence
+from typing import Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.protocols.dimension import Dimension
 from dbt_semantic_interfaces.protocols.entity import Entity
@@ -73,19 +73,19 @@ class SemanticModel(Protocol):
 
     @property
     @abstractmethod
-    def entity_references(self) -> List[LinkableElementReference]:
+    def entity_references(self) -> Sequence[LinkableElementReference]:
         """Returns a list of references to all entities in the semantic model."""
         ...
 
     @property
     @abstractmethod
-    def dimension_references(self) -> List[LinkableElementReference]:
+    def dimension_references(self) -> Sequence[LinkableElementReference]:
         """Returns a list of references to all dimensions in the semantic model."""
         ...
 
     @property
     @abstractmethod
-    def measure_references(self) -> List[MeasureReference]:
+    def measure_references(self) -> Sequence[MeasureReference]:
         """Returns a list of references to all measures in the semantic model."""
         ...
 
@@ -109,7 +109,7 @@ class SemanticModel(Protocol):
 
     @property
     @abstractmethod
-    def partitions(self) -> List[Dimension]:
+    def partitions(self) -> Sequence[Dimension]:
         """Returns a list of all partition dimensions."""
         ...
 
