@@ -28,7 +28,7 @@ class SetMeasureAggregationTimeDimensionRule(ModelTransformRule):
             )
 
             if not primary_time_dimension_reference:
-                # Dimension semantic models won't have a primary time dimension.
+                # PydanticDimension semantic models won't have a primary time dimension.
                 continue
 
             for measure in semantic_model.measures:

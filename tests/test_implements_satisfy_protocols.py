@@ -1,9 +1,9 @@
 from typing import Protocol, runtime_checkable
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
-    Dimension,
-    DimensionTypeParams,
-    DimensionValidityParams,
+    PydanticDimension,
+    PydanticDimensionTypeParams,
+    PydanticDimensionValidityParams,
 )
 from dbt_semantic_interfaces.implementations.elements.entity import Entity
 from dbt_semantic_interfaces.implementations.elements.measure import Measure
@@ -142,12 +142,12 @@ class RuntimeCheckableDimension(DimensionProtocol, Protocol):
 
 
 def test_dimension_protocol() -> None:  # noqa: D
-    time_dim = Dimension(
+    time_dim = PydanticDimension(
         name="test_time_dim",
         type=DimensionType.TIME,
-        type_params=DimensionTypeParams(
+        type_params=PydanticDimensionTypeParams(
             time_granularity=TimeGranularity.DAY,
-            validity_params=DimensionValidityParams(),
+            validity_params=PydanticDimensionValidityParams(),
         ),
     )
     assert isinstance(time_dim, RuntimeCheckableDimension)
@@ -156,7 +156,7 @@ def test_dimension_protocol() -> None:  # noqa: D
     # exception if DimensionType != TIME. The isinstance check seems to actually run the function thus
     # raising an exception during the assertion.
     # of
-    # categorical_dim = Dimension(
+    # categorical_dim = PydanticDimension(
     #     name="test_categorical_dim",
     #     type=DimensionType.CATEGORICAL,
     # )

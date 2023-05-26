@@ -1,8 +1,8 @@
 import pytest
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
-    Dimension,
-    DimensionTypeParams,
+    PydanticDimension,
+    PydanticDimensionTypeParams,
 )
 from dbt_semantic_interfaces.implementations.elements.measure import Measure
 from dbt_semantic_interfaces.implementations.metric import (
@@ -49,10 +49,10 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                         name="dim1",
                         measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
@@ -61,7 +61,7 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                     ),
                     semantic_model_with_guaranteed_meta(
                         name="categoricaldim",
-                        dimensions=[Dimension(name=dim_name, type=DimensionType.CATEGORICAL)],
+                        dimensions=[PydanticDimension(name=dim_name, type=DimensionType.CATEGORICAL)],
                     ),
                 ],
                 metrics=[
@@ -87,11 +87,11 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                         name="dim1",
                         measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.TIME,
                                 is_partition=True,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
@@ -101,11 +101,11 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                     semantic_model_with_guaranteed_meta(
                         name="dim2",
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.TIME,
                                 is_partition=False,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             )
@@ -146,18 +146,18 @@ def test_multiple_primary_time_dimensions() -> None:  # noqa:D
                             )
                         ],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dimension_reference.element_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             ),
-                            Dimension(
+                            PydanticDimension(
                                 name=dimension_reference2.element_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),

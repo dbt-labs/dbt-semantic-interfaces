@@ -1,8 +1,8 @@
 import pytest
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
-    Dimension,
-    DimensionTypeParams,
+    PydanticDimension,
+    PydanticDimensionTypeParams,
 )
 from dbt_semantic_interfaces.implementations.elements.entity import Entity
 from dbt_semantic_interfaces.implementations.elements.measure import Measure
@@ -43,7 +43,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure",
                     measures=[],
-                    dimensions=[Dimension(name=dim_name, type=DimensionType.CATEGORICAL)],
+                    dimensions=[PydanticDimension(name=dim_name, type=DimensionType.CATEGORICAL)],
                 ),
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure2",
@@ -55,11 +55,11 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                         )
                     ],
                     dimensions=[
-                        Dimension(name=dim_name, type=DimensionType.CATEGORICAL),
-                        Dimension(
+                        PydanticDimension(name=dim_name, type=DimensionType.CATEGORICAL),
+                        PydanticDimension(
                             name=dim2_name,
                             type=DimensionType.TIME,
-                            type_params=DimensionTypeParams(
+                            type_params=PydanticDimensionTypeParams(
                                 is_primary=True,
                                 time_granularity=TimeGranularity.DAY,
                             ),
@@ -90,7 +90,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
                         name="sum_measure",
                         measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.CATEGORICAL,
                             )
@@ -121,17 +121,17 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
                         name="sum_measure",
                         measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             ),
-                            Dimension(
+                            PydanticDimension(
                                 name=dim2_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             ),
@@ -159,11 +159,11 @@ def test_generated_metrics_only() -> None:  # noqa:D
         name="dim1",
         measures=[Measure(name=measure_name, agg=AggregationType.SUM, agg_time_dimension=dim2_reference.element_name)],
         dimensions=[
-            Dimension(name=dim_reference.element_name, type=DimensionType.CATEGORICAL),
-            Dimension(
+            PydanticDimension(name=dim_reference.element_name, type=DimensionType.CATEGORICAL),
+            PydanticDimension(
                 name=dim2_reference.element_name,
                 type=DimensionType.TIME,
-                type_params=DimensionTypeParams(
+                type_params=PydanticDimensionTypeParams(
                     is_primary=True,
                     time_granularity=TimeGranularity.DAY,
                 ),
@@ -199,10 +199,10 @@ def test_derived_metric() -> None:  # noqa: D
                         )
                     ],
                     dimensions=[
-                        Dimension(
+                        PydanticDimension(
                             name="ds",
                             type=DimensionType.TIME,
-                            type_params=DimensionTypeParams(
+                            type_params=PydanticDimensionTypeParams(
                                 is_primary=True,
                                 time_granularity=TimeGranularity.DAY,
                             ),

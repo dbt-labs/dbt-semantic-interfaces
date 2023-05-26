@@ -34,7 +34,7 @@ class DimensionValidityParams(Protocol):
 
 
 class DimensionTypeParams(Protocol):
-    """Dimension type params add context to some types of dimensions (like time)."""
+    """PydanticDimension type params add context to some types of dimensions (like time)."""
 
     @property
     @abstractmethod

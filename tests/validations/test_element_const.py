@@ -3,7 +3,7 @@ from typing import Tuple
 
 import pytest
 
-from dbt_semantic_interfaces.implementations.elements.dimension import Dimension
+from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
 from dbt_semantic_interfaces.model_validator import ModelValidator
@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-def _categorical_dimensions(semantic_model: SemanticModel) -> Tuple[Dimension, ...]:
+def _categorical_dimensions(semantic_model: SemanticModel) -> Tuple[PydanticDimension, ...]:
     return tuple(dim for dim in semantic_model.dimensions if dim.type == DimensionType.CATEGORICAL)
 
 

@@ -5,7 +5,7 @@ from typing import Callable, Optional, Sequence, Tuple
 
 import dateutil.parser
 
-from dbt_semantic_interfaces.implementations.elements.dimension import Dimension
+from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
 from dbt_semantic_interfaces.implementations.elements.entity import Entity
 from dbt_semantic_interfaces.implementations.elements.measure import Measure
 from dbt_semantic_interfaces.implementations.filters.where_filter import WhereFilter
@@ -140,7 +140,7 @@ def semantic_model_with_guaranteed_meta(
     metadata: Metadata = default_meta(),
     entities: Sequence[Entity] = (),
     measures: Sequence[Measure] = (),
-    dimensions: Sequence[Dimension] = (),
+    dimensions: Sequence[PydanticDimension] = (),
 ) -> SemanticModel:
     """Creates a semantic model with the given input.
 
