@@ -5,13 +5,15 @@ from dbt_semantic_interfaces.implementations.elements.measure import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
+from dbt_semantic_interfaces.transformations.transform_rule import (
+    SemanticManifestTransformRule,
+)
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 
 MEDIAN_PERCENTILE = 0.5
 
 
-class ConvertMedianToPercentileRule(ModelTransformRule):
+class ConvertMedianToPercentileRule(SemanticManifestTransformRule):
     """Converts any MEDIAN measures to percentile equivalent."""
 
     @staticmethod

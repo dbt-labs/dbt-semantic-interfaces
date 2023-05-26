@@ -4,12 +4,14 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
-from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
+from dbt_semantic_interfaces.transformations.transform_rule import (
+    SemanticManifestTransformRule,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class LowerCaseNamesRule(ModelTransformRule):
+class LowerCaseNamesRule(SemanticManifestTransformRule):
     """Lowercases the names of both top level objects and semantic model elements in a model."""
 
     @staticmethod

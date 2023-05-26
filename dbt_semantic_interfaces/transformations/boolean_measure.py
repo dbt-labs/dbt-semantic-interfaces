@@ -3,13 +3,15 @@ import logging
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
+from dbt_semantic_interfaces.transformations.transform_rule import (
+    SemanticManifestTransformRule,
+)
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 
 logger = logging.getLogger(__name__)
 
 
-class BooleanMeasureAggregationRule(ModelTransformRule):
+class BooleanMeasureAggregationRule(SemanticManifestTransformRule):
     """Converts the expression used in boolean measures so that it can be aggregated."""
 
     @staticmethod

@@ -2,13 +2,15 @@ from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
+from dbt_semantic_interfaces.transformations.transform_rule import (
+    SemanticManifestTransformRule,
+)
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 
 ONE = "1"
 
 
-class ConvertCountToSumRule(ModelTransformRule):
+class ConvertCountToSumRule(SemanticManifestTransformRule):
     """Converts any COUNT measures to SUM equivalent."""
 
     @staticmethod

@@ -5,7 +5,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 
 
-class ModelTransformRule(ABC):
+class SemanticManifestTransformRule(ABC):
     """Encapsulates logic for transforming a model. e.g. add metrics based on measures."""
 
     @staticmethod
