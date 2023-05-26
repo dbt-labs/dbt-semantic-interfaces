@@ -36,8 +36,8 @@ from dbt_semantic_interfaces.validations.semantic_models import (
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
     ModelValidationException,
-    ModelValidationResults,
     ModelValidationRule,
+    SemanticManifestValidationResults,
 )
 
 logger = logging.getLogger(__name__)
@@ -83,11 +83,11 @@ class SemanticManifestValidator:
         self._rules = rules
         self._executor = ProcessPoolExecutor(max_workers=max_workers)
 
-    def validate_model(self, model: PydanticSemanticManifest) -> ModelValidationResults:
+    def validate_model(self, model: PydanticSemanticManifest) -> SemanticManifestValidationResults:
         """Validate a model according to configured rules."""
         serialized_model = model.json()
 
-        results: List[ModelValidationResults] = []
+        results: List[SemanticManifestValidationResults] = []
 
         futures = [
             self._executor.submit(validation_rule.validate_model_serialized_for_multiprocessing, serialized_model)
@@ -95,10 +95,10 @@ class SemanticManifestValidator:
         ]
         for future in as_completed(futures):
             res = future.result()
-            result = ModelValidationResults.parse_raw(res)
+            result = SemanticManifestValidationResults.parse_raw(res)
             results.append(result)
 
-        return ModelValidationResults.merge(results)
+        return SemanticManifestValidationResults.merge(results)
 
     def checked_validations(self, model: PydanticSemanticManifest) -> None:
         """Similar to validate(), but throws an exception if validation fails."""

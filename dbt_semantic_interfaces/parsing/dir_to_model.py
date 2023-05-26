@@ -27,7 +27,7 @@ from dbt_semantic_interfaces.parsing.yaml_loader import (
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     ModelValidationException,
-    ModelValidationResults,
+    SemanticManifestValidationResults,
     ValidationError,
     ValidationIssue,
 )
@@ -44,7 +44,7 @@ DOCUMENT_TYPES = [METRIC_TYPE, SEMANTIC_MODEL_TYPE]
 class ModelBuildResult:  # noqa: D
     model: PydanticSemanticManifest
     # Issues found in the model.
-    issues: ModelValidationResults = ModelValidationResults()
+    issues: SemanticManifestValidationResults = SemanticManifestValidationResults()
 
 
 @dataclass(frozen=True)
@@ -168,8 +168,8 @@ def parse_yaml_files_to_validation_ready_model(
         if apply_transformations:
             model = ModelTransformer.transform(model)
     except Exception as e:
-        transformation_issue_results = ModelValidationResults(errors=[ValidationError(message=str(e))])
-        build_issues = ModelValidationResults.merge([build_issues, transformation_issue_results])
+        transformation_issue_results = SemanticManifestValidationResults(errors=[ValidationError(message=str(e))])
+        build_issues = SemanticManifestValidationResults.merge([build_issues, transformation_issue_results])
 
     if raise_issues_as_exceptions and build_issues.has_blocking_issues:
         raise ModelValidationException(build_issues.all_issues)
@@ -221,7 +221,7 @@ def parse_yaml_files_to_model(
             semantic_models=semantic_models,
             metrics=metrics,
         ),
-        issues=ModelValidationResults.from_issues_sequence(issues),
+        issues=SemanticManifestValidationResults.from_issues_sequence(issues),
     )
 
 

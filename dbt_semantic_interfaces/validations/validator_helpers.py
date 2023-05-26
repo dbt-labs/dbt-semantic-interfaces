@@ -245,7 +245,7 @@ class ValidationError(ValidationIssue, BaseModel):
         return ValidationIssueSet(error_issues=(self,))
 
 
-class ModelValidationResults(FrozenBaseModel):
+class SemanticManifestValidationResults(FrozenBaseModel):
     """Class for organizing the results of running validations."""
 
     warnings: Tuple[ValidationWarning, ...] = tuple()
@@ -254,21 +254,21 @@ class ModelValidationResults(FrozenBaseModel):
 
     @property
     def has_blocking_issues(self) -> bool:
-        """Does the ModelValidationResults have ERROR issues."""
+        """Does the SemanticManifestValidationResults have ERROR issues."""
         return len(self.errors) != 0
 
     @staticmethod
-    def from_issues_sequence(issues: Sequence[ValidationIssue]) -> ModelValidationResults:
-        """Constructs a ModelValidationResults class from a list of ValidationIssues."""
+    def from_issues_sequence(issues: Sequence[ValidationIssue]) -> SemanticManifestValidationResults:
+        """Constructs a SemanticManifestValidationResults class from a list of ValidationIssues."""
         combined_issue_set = ValidationIssueSet.combine(tuple(issue.as_issue_set for issue in issues))
-        return ModelValidationResults(
+        return SemanticManifestValidationResults(
             warnings=tuple(combined_issue_set.warning_issues),
             future_errors=tuple(combined_issue_set.future_error_issues),
             errors=tuple(combined_issue_set.error_issues),
         )
 
     @classmethod
-    def merge(cls, results: Sequence[ModelValidationResults]) -> ModelValidationResults:
+    def merge(cls, results: Sequence[SemanticManifestValidationResults]) -> SemanticManifestValidationResults:
         """Creates a new ModelValidatorResults instance from multiple instances.
 
         This is useful when there are multiple validators that are run and the
@@ -393,7 +393,7 @@ class ModelValidationRule(ABC):
         multiprocessing.ProcessPoolExecutor, and passing a model or validation results object can result in
         idiosyncratic behavior and inscrutable errors due to interactions between pickling and pydantic objects.
         """
-        return ModelValidationResults.from_issues_sequence(
+        return SemanticManifestValidationResults.from_issues_sequence(
             cls.validate_model(SemanticManifest.parse_raw(serialized_model))
         ).json()
 
