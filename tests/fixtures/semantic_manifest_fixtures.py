@@ -15,6 +15,9 @@ from dbt_semantic_interfaces.model_transformer import SemanticManifestTransforme
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_directory_of_yaml_files_to_model,
 )
+from dbt_semantic_interfaces.transformations.pydantic_rule_set import (
+    PydanticSemanticManifestTransformRuleSet,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -47,6 +50,7 @@ def simple_semantic_manifest__with_primary_transforms(template_mapping: Dict[str
         apply_transformations=False,
     )
     transformed_model = SemanticManifestTransformer.transform(
-        model=model_build_result.model, ordered_rule_sequences=(SemanticManifestTransformer.PRIMARY_RULES,)
+        model=model_build_result.model,
+        ordered_rule_sequences=(PydanticSemanticManifestTransformRuleSet().primary_rules,),
     )
     return transformed_model

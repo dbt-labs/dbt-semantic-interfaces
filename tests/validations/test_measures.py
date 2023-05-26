@@ -12,6 +12,9 @@ from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_validation_ready_model,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
+from dbt_semantic_interfaces.transformations.pydantic_rule_set import (
+    PydanticSemanticManifestTransformRuleSet,
+)
 from dbt_semantic_interfaces.validations.measures import (
     CountAggregationExprRule,
     MeasureConstraintAliasesRule,
@@ -472,7 +475,8 @@ def test_invalid_non_additive_dimension_properties() -> None:
         [invalid_dim_file], apply_transformations=False, raise_issues_as_exceptions=False
     )
     transformed_model = SemanticManifestTransformer.transform(
-        model=model_build_result.model, ordered_rule_sequences=(SemanticManifestTransformer.PRIMARY_RULES,)
+        model=model_build_result.model,
+        ordered_rule_sequences=(PydanticSemanticManifestTransformRuleSet().primary_rules,),
     )
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
@@ -530,7 +534,8 @@ def test_count_measure_missing_expr() -> None:
     missing_expr_file = YamlConfigFile(filepath="inline_for_test_2", contents=yaml_contents)
     model_build_result = parse_yaml_files_to_validation_ready_model([missing_expr_file], apply_transformations=False)
     transformed_model = SemanticManifestTransformer.transform(
-        model=model_build_result.model, ordered_rule_sequences=(SemanticManifestTransformer.PRIMARY_RULES,)
+        model=model_build_result.model,
+        ordered_rule_sequences=(PydanticSemanticManifestTransformRuleSet().primary_rules,),
     )
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest]([CountAggregationExprRule()]).validate_model(
@@ -582,7 +587,8 @@ def test_count_measure_with_distinct_expr() -> None:
     distinct_count_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model_build_result = parse_yaml_files_to_validation_ready_model([distinct_count_file], apply_transformations=False)
     transformed_model = SemanticManifestTransformer.transform(
-        model=model_build_result.model, ordered_rule_sequences=(SemanticManifestTransformer.PRIMARY_RULES,)
+        model=model_build_result.model,
+        ordered_rule_sequences=(PydanticSemanticManifestTransformRuleSet().primary_rules,),
     )
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest]([CountAggregationExprRule()]).validate_model(

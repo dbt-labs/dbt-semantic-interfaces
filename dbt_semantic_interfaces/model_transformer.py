@@ -1,25 +1,13 @@
 import copy
 import logging
-from typing import Sequence, Tuple
+from typing import Optional, Sequence
 
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.transformations.add_input_metric_measures import (
-    AddInputMetricMeasuresRule,
+from dbt_semantic_interfaces.transformations.pydantic_rule_set import (
+    PydanticSemanticManifestTransformRuleSet,
 )
-from dbt_semantic_interfaces.transformations.agg_time_dimension import (
-    SetMeasureAggregationTimeDimensionRule,
-)
-from dbt_semantic_interfaces.transformations.boolean_measure import (
-    BooleanMeasureAggregationRule,
-)
-from dbt_semantic_interfaces.transformations.convert_count import ConvertCountToSumRule
-from dbt_semantic_interfaces.transformations.convert_median import (
-    ConvertMedianToPercentileRule,
-)
-from dbt_semantic_interfaces.transformations.names import LowerCaseNamesRule
-from dbt_semantic_interfaces.transformations.proxy_measure import CreateProxyMeasureRule
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -33,28 +21,10 @@ class SemanticManifestTransformer:
     Generally used to make it more convenient for the user to develop their model.
     """
 
-    PRIMARY_RULES: Sequence[SemanticManifestTransformRule] = (
-        LowerCaseNamesRule(),
-        SetMeasureAggregationTimeDimensionRule(),
-    )
-
-    SECONDARY_RULES: Sequence[SemanticManifestTransformRule] = (
-        CreateProxyMeasureRule(),
-        BooleanMeasureAggregationRule(),
-        ConvertCountToSumRule(),
-        ConvertMedianToPercentileRule(),
-        AddInputMetricMeasuresRule(),
-    )
-
-    DEFAULT_RULES: Tuple[Sequence[SemanticManifestTransformRule], ...] = (
-        PRIMARY_RULES,
-        SECONDARY_RULES,
-    )
-
     @staticmethod
     def transform(
         model: PydanticSemanticManifest,
-        ordered_rule_sequences: Tuple[Sequence[SemanticManifestTransformRule], ...] = DEFAULT_RULES,
+        ordered_rule_sequences: Optional[Sequence[Sequence[SemanticManifestTransformRule]]] = None,
     ) -> PydanticSemanticManifest:
         """Copies the passed in model, applies the rules to the new model, and then returns that model.
 
@@ -63,6 +33,9 @@ class SemanticManifestTransformer:
         secondary rules. We don't currently have tertiary, quaternary, or etc currently, but this
         system easily allows for it.
         """
+        if ordered_rule_sequences is None:
+            ordered_rule_sequences = PydanticSemanticManifestTransformRuleSet().all_rules
+
         model_copy = copy.deepcopy(model)
 
         for rule_sequence in ordered_rule_sequences:
@@ -70,28 +43,3 @@ class SemanticManifestTransformer:
                 model_copy = rule.transform_model(model_copy)
 
         return model_copy
-
-    @staticmethod
-    def pre_validation_transform_model(
-        model: PydanticSemanticManifest, rules: Sequence[SemanticManifestTransformRule] = PRIMARY_RULES
-    ) -> PydanticSemanticManifest:
-        """Transform a model according to configured rules before validations are run."""
-        logger.warning(
-            "DEPRECATION: `ModelTransformer.pre_validation_transform_model` is deprecated.",
-            "Please use `ModelTransformer.transform` instead.",
-        )
-
-        return SemanticManifestTransformer.transform(model=model, ordered_rule_sequences=(rules,))
-
-    @staticmethod
-    def post_validation_transform_model(
-        model: PydanticSemanticManifest,
-        rules: Sequence[SemanticManifestTransformRule] = SECONDARY_RULES,
-    ) -> PydanticSemanticManifest:
-        """Transform a model according to configured rules after validations are run."""
-        logger.warning(
-            "DEPRECATION: `ModelTransformer.post_validation_transform_model` is deprecated.",
-            "Please use `ModelTransformer.transform` instead.",
-        )
-
-        return SemanticManifestTransformer.transform(model=model, ordered_rule_sequences=(rules,))
