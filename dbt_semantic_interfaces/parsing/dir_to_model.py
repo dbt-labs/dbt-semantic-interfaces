@@ -12,7 +12,7 @@ from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.model_transformer import ModelTransformer
 from dbt_semantic_interfaces.parsing.objects import Version, YamlConfigFile
 from dbt_semantic_interfaces.parsing.schemas import (
@@ -56,7 +56,7 @@ class FileParsingResult:
         issues: Issues found when trying to parse the file
     """
 
-    elements: List[Union[SemanticModel, PydanticMetric]]
+    elements: List[Union[PydanticSemanticModel, PydanticMetric]]
     issues: List[ValidationIssue]
 
 
@@ -179,7 +179,7 @@ def parse_yaml_files_to_validation_ready_model(
 
 def parse_yaml_files_to_model(
     files: List[YamlConfigFile],
-    semantic_model_class: Type[SemanticModel] = SemanticModel,
+    semantic_model_class: Type[PydanticSemanticModel] = PydanticSemanticModel,
     metric_class: Type[PydanticMetric] = PydanticMetric,
 ) -> ModelBuildResult:
     """Builds SemanticManifest from list of config files (as strings).
@@ -227,11 +227,11 @@ def parse_yaml_files_to_model(
 
 def parse_config_yaml(
     config_yaml: YamlConfigFile,
-    semantic_model_class: Type[SemanticModel] = SemanticModel,
+    semantic_model_class: Type[PydanticSemanticModel] = PydanticSemanticModel,
     metric_class: Type[PydanticMetric] = PydanticMetric,
 ) -> FileParsingResult:
     """Parses transform config file passed as string - Returns list of model objects."""
-    results: List[Union[SemanticModel, PydanticMetric]] = []
+    results: List[Union[PydanticSemanticModel, PydanticMetric]] = []
     ctx: Optional[ParsingContext] = None
     issues: List[ValidationIssue] = []
     try:

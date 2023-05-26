@@ -4,7 +4,7 @@ from typing import Optional
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.references import TimeDimensionReference
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
@@ -16,7 +16,7 @@ class SetMeasureAggregationTimeDimensionRule(ModelTransformRule):
     """Sets the aggregation time dimension for measures to the primary time dimension if not defined."""
 
     @staticmethod
-    def _find_primary_time_dimension(semantic_model: SemanticModel) -> Optional[TimeDimensionReference]:
+    def _find_primary_time_dimension(semantic_model: PydanticSemanticModel) -> Optional[TimeDimensionReference]:
         for dimension in semantic_model.dimensions:
             if dimension.type == DimensionType.TIME and dimension.type_params and dimension.type_params.is_primary:
                 return dimension.time_dimension_reference

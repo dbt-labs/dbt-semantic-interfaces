@@ -21,7 +21,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 from dbt_semantic_interfaces.implementations.semantic_model import (
     NodeRelation,
-    SemanticModel,
+    PydanticSemanticModel,
 )
 from dbt_semantic_interfaces.protocols.dimension import Dimension as DimensionProtocol
 from dbt_semantic_interfaces.protocols.entity import Entity as EntityProtocol
@@ -49,7 +49,7 @@ class RuntimeCheckableSemanticManifest(SemanticManifestProtocol, Protocol):
 
 
 def test_semantic_manifest_protocol() -> None:  # noqa: D
-    semantic_model = SemanticModel(
+    semantic_model = PydanticSemanticModel(
         name="test_semantic_model",
         node_relation=NodeRelation(
             alias="test_alias",
@@ -79,7 +79,7 @@ class RuntimeCheckableSemanticModel(SemanticModelProtocol, Protocol):
 
 
 def test_semantic_model_protocol() -> None:  # noqa: D
-    test_semantic_model = SemanticModel(
+    test_semantic_model = PydanticSemanticModel(
         name="test_semantic_model",
         node_relation=NodeRelation(
             alias="test_alias",

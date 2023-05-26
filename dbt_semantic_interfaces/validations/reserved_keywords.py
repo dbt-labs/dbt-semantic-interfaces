@@ -1,9 +1,7 @@
 from typing import List
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import (
-    PydanticSemanticManifest,
-)
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelElementReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
@@ -124,7 +122,7 @@ class ReservedKeywordsRule(ModelValidationRule):
 
     @classmethod
     @validate_safely(whats_being_done="checking that semantic_model node_relations are not sql reserved keywords")
-    def _validate_semantic_models(cls, model: PydanticSemanticManifest) -> List[ValidationIssue]:
+    def _validate_semantic_models(cls, model: SemanticManifest) -> List[ValidationIssue]:
         """Checks names of objects that are not nested."""
         issues: List[ValidationIssue] = []
         set_keywords = set(RESERVED_KEYWORDS)
@@ -155,5 +153,5 @@ class ReservedKeywordsRule(ModelValidationRule):
         whats_being_done="running model validation ensuring elements that aren't selected via a defined expr don't "
         "contain reserved keywords"
     )
-    def validate_model(cls, model: PydanticSemanticManifest) -> List[ValidationIssue]:  # noqa: D
+    def validate_model(cls, model: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
         return cls._validate_semantic_models(model=model)

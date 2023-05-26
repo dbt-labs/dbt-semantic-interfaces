@@ -25,7 +25,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 from dbt_semantic_interfaces.implementations.semantic_model import (
     NodeRelation,
-    SemanticModel,
+    PydanticSemanticModel,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 
@@ -38,8 +38,8 @@ def as_datetime(date_string: str) -> datetime.datetime:
 
 
 def find_semantic_model_with(
-    model: PydanticSemanticManifest, function: Callable[[SemanticModel], bool]
-) -> Tuple[SemanticModel, int]:
+    model: PydanticSemanticManifest, function: Callable[[PydanticSemanticModel], bool]
+) -> Tuple[PydanticSemanticModel, int]:
     """Returns a semantic model from the model which matches the criteria defined by the passed in function'.
 
     This is useful because the order of semantic models in the list is non determinant, thus it's impossible to
@@ -150,7 +150,7 @@ def semantic_model_with_guaranteed_meta(
     entities: Sequence[PydanticEntity] = (),
     measures: Sequence[PydanticMeasure] = (),
     dimensions: Sequence[PydanticDimension] = (),
-) -> SemanticModel:
+) -> PydanticSemanticModel:
     """Creates a semantic model with the given input.
 
     If a metadata object is not supplied, a default metadata object is used.
@@ -162,7 +162,7 @@ def semantic_model_with_guaranteed_meta(
             alias="table",
         )
 
-    return SemanticModel(
+    return PydanticSemanticModel(
         name=name,
         description=description,
         node_relation=created_node_relation,

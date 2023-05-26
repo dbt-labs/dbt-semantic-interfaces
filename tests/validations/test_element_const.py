@@ -7,7 +7,7 @@ from dbt_semantic_interfaces.implementations.elements.dimension import PydanticD
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
@@ -18,7 +18,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-def _categorical_dimensions(semantic_model: SemanticModel) -> Tuple[PydanticDimension, ...]:
+def _categorical_dimensions(semantic_model: PydanticSemanticModel) -> Tuple[PydanticDimension, ...]:
     return tuple(dim for dim in semantic_model.dimensions if dim.type == DimensionType.CATEGORICAL)
 
 

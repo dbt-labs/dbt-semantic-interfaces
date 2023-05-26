@@ -1,10 +1,8 @@
 from typing import Dict, List, Sequence, Set
 
-from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
-from dbt_semantic_interfaces.implementations.semantic_manifest import (
-    PydanticSemanticManifest,
-)
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.protocols.entity import Entity
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     EntityReference,
     SemanticModelElementReference,
@@ -24,7 +22,7 @@ class CommonEntitysRule(ModelValidationRule):
     """Checks that entities exist on more than one semantic model."""
 
     @staticmethod
-    def _map_semantic_model_entities(semantic_models: List[SemanticModel]) -> Dict[EntityReference, Set[str]]:
+    def _map_semantic_model_entities(semantic_models: Sequence[SemanticModel]) -> Dict[EntityReference, Set[str]]:
         """Generate mapping of entity names to the set of semantic_models where it is defined."""
         entities_to_semantic_models: Dict[EntityReference, Set[str]] = {}
         for semantic_model in semantic_models or []:
@@ -38,7 +36,7 @@ class CommonEntitysRule(ModelValidationRule):
     @staticmethod
     @validate_safely(whats_being_done="checking entity exists on more than one semantic model")
     def _check_entity(
-        entity: PydanticEntity,
+        entity: Entity,
         semantic_model: SemanticModel,
         entities_to_semantic_models: Dict[EntityReference, Set[str]],
     ) -> List[ValidationIssue]:
@@ -67,7 +65,7 @@ class CommonEntitysRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation warning if entities are only one one semantic model")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:
         """Issues a warning for any entity that is associated with only one semantic_model."""
         issues = []
 

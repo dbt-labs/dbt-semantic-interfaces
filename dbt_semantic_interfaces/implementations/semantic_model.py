@@ -60,7 +60,7 @@ class NodeRelation(HashableBaseModel):
         )
 
 
-class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
+class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a semantic model."""
 
     name: str

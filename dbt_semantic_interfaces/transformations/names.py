@@ -3,7 +3,7 @@ import logging
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
 
 logger = logging.getLogger(__name__)
@@ -21,7 +21,7 @@ class LowerCaseNamesRule(ModelTransformRule):
         return model
 
     @staticmethod
-    def _lowercase_semantic_model_elements(semantic_model: SemanticModel) -> None:
+    def _lowercase_semantic_model_elements(semantic_model: PydanticSemanticModel) -> None:
         """Lowercases the names of semantic model elements."""
         if semantic_model.measures:
             for measure in semantic_model.measures:

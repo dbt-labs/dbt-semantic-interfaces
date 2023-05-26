@@ -1,10 +1,8 @@
 import logging
 from typing import List, Sequence
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import (
-    PydanticSemanticManifest,
-)
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelReference
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.type_enums.entity_type import EntityType
@@ -25,7 +23,7 @@ class SemanticModelTimeDimensionWarningsRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring time dimensions are defined properly")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         for semantic_model in model.semantic_models:
@@ -85,7 +83,7 @@ class SemanticModelValidityWindowRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking correctness of the time dimension validity parameters in the model")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:
         """Checks the validity param definitions in every semantic model in the model."""
         issues: List[ValidationIssue] = []
 

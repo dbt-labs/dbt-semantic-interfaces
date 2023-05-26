@@ -15,7 +15,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 from dbt_semantic_interfaces.implementations.semantic_model import (
     NodeRelation,
-    SemanticModel,
+    PydanticSemanticModel,
 )
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.references import (
@@ -134,7 +134,7 @@ def test_multiple_primary_time_dimensions() -> None:  # noqa:D
         model_validator.checked_validations(
             model=PydanticSemanticManifest(
                 semantic_models=[
-                    SemanticModel(
+                    PydanticSemanticModel(
                         name="dim1",
                         node_relation=NodeRelation(
                             alias="table",

@@ -5,10 +5,8 @@ import re
 from typing import Dict, List, Optional, Sequence, Tuple
 
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
-from dbt_semantic_interfaces.implementations.semantic_manifest import (
-    PydanticSemanticManifest,
-)
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     ElementReference,
     MetricModelReference,
@@ -163,7 +161,7 @@ class UniqueAndValidNameRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking model top level element names are sufficiently unique")
-    def _validate_top_level_objects(model: PydanticSemanticManifest) -> List[ValidationIssue]:
+    def _validate_top_level_objects(model: SemanticManifest) -> List[ValidationIssue]:
         """Checks names of objects that are not nested."""
         object_info_tuples = []
         if model.semantic_models:
@@ -219,7 +217,7 @@ class UniqueAndValidNameRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring elements have adequately unique names")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
         issues += UniqueAndValidNameRule._validate_top_level_objects(model=model)
 
