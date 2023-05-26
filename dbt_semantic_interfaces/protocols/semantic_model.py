@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Optional, Protocol, Sequence
+from typing import Optional, Protocol, Sequence, TypeVar
 
 from dbt_semantic_interfaces.protocols.dimension import Dimension
 from dbt_semantic_interfaces.protocols.entity import Entity
@@ -129,3 +129,6 @@ class SemanticModel(Protocol):
     @abstractmethod
     def metadata(self) -> Optional[Metadata]:  # noqa: D
         pass
+
+
+SemanticModelT = TypeVar("SemanticModelT", bound=SemanticModel)

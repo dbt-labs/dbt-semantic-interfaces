@@ -6,14 +6,27 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 
 import click
 from pydantic import BaseModel, Extra
 
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
 from dbt_semantic_interfaces.protocols.metadata import Metadata
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import (
+    SemanticManifestT,
+)
 from dbt_semantic_interfaces.references import (
     MetricModelReference,
     SemanticModelElementReference,
@@ -376,12 +389,12 @@ class DimensionInvariants:
     is_partition: bool
 
 
-class SemanticManifestValidationRule(ABC):
+class SemanticManifestValidationRule(ABC, Generic[SemanticManifestT]):
     """Encapsulates logic for checking the values of objects in a manifest."""
 
     @classmethod
     @abstractmethod
-    def validate_manifest(cls, semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_manifest(cls, semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:
         """Check the given manifest and return a list of validation issues."""
         pass
 

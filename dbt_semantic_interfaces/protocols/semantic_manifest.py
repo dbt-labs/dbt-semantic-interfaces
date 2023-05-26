@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Protocol, Sequence
+from typing import Protocol, Sequence, TypeVar
 
 from dbt_semantic_interfaces.protocols.metric import Metric
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
@@ -22,3 +22,6 @@ class SemanticManifest(Protocol):
     @abstractmethod
     def interfaces_version(self) -> str:  # noqa: D
         pass
+
+
+SemanticManifestT = TypeVar("SemanticManifestT", bound=SemanticManifest)
