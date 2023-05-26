@@ -2,14 +2,9 @@ import traceback
 from typing import List, Sequence
 
 from dbt_semantic_interfaces.errors import ParsingException
-from dbt_semantic_interfaces.implementations.metric import (
-    MetricType,
-    PydanticMetricTimeWindow,
-)
-from dbt_semantic_interfaces.implementations.semantic_manifest import (
-    PydanticSemanticManifest,
-)
-from dbt_semantic_interfaces.protocols.metric import Metric
+from dbt_semantic_interfaces.implementations.metric import PydanticMetricTimeWindow
+from dbt_semantic_interfaces.protocols.metric import Metric, MetricType
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.references import MetricModelReference
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
@@ -45,6 +40,7 @@ class CumulativeMetricRule(ModelValidationRule):
             if metric.type_params.window:
                 try:
                     window_str = f"{metric.type_params.window.count} {metric.type_params.window.granularity.value}"
+                    # TODO: Should not call an implementation class.
                     PydanticMetricTimeWindow.parse(window_str)
                 except ParsingException as e:
                     issues.append(
@@ -62,7 +58,7 @@ class CumulativeMetricRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring cumulative sum metrics are valid")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         for metric in model.metrics or []:
@@ -101,7 +97,7 @@ class DerivedMetricRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the input metrics exist")
-    def _validate_input_metrics_exist(model: PydanticSemanticManifest) -> List[ValidationIssue]:
+    def _validate_input_metrics_exist(model: SemanticManifest) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         all_metrics = {m.name for m in model.metrics}
@@ -145,7 +141,7 @@ class DerivedMetricRule(ModelValidationRule):
     @validate_safely(
         whats_being_done="running model validation ensuring derived metrics properties are configured properly"
     )
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         issues += DerivedMetricRule._validate_input_metrics_exist(model=model)
