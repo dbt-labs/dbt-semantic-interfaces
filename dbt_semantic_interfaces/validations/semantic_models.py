@@ -23,10 +23,10 @@ class SemanticModelTimeDimensionWarningsRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring time dimensions are defined properly")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             issues.extend(
                 SemanticModelTimeDimensionWarningsRule._validate_semantic_model(semantic_model=semantic_model)
             )
@@ -83,11 +83,11 @@ class SemanticModelValidityWindowRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking correctness of the time dimension validity parameters in the model")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
         """Checks the validity param definitions in every semantic model in the model."""
         issues: List[ValidationIssue] = []
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             issues.extend(SemanticModelValidityWindowRule._validate_semantic_model(semantic_model=semantic_model))
 
         return issues

@@ -61,10 +61,10 @@ class NaturalEntityConfigurationRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking that entities marked as EntityType.NATURAL are properly configured")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
         """Validate entities marked as EntityType.NATURAL."""
         issues: List[ValidationIssue] = []
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             issues += NaturalEntityConfigurationRule._validate_semantic_model_natural_entities(
                 semantic_model=semantic_model
             )
@@ -101,10 +101,10 @@ class OnePrimaryEntityPerSemanticModelRule(SemanticManifestValidationRule):
     @validate_safely(
         whats_being_done="running model validation ensuring each semantic model has only one primary entity"
     )
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             issues += OnePrimaryEntityPerSemanticModelRule._only_one_primary_entity(semantic_model=semantic_model)
 
         return issues

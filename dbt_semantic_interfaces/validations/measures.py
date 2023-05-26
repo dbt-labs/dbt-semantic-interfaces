@@ -30,11 +30,11 @@ class SemanticModelMeasuresUniqueRule(SemanticManifestValidationRule):
     @validate_safely(
         whats_being_done="running model validation ensuring measures exist in only one configured semantic model"
     )
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         measure_references_to_semantic_models: Dict[MeasureReference, List] = defaultdict(list)
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 if measure.reference in measure_references_to_semantic_models:
                     issues.append(
@@ -124,7 +124,7 @@ class MeasureConstraintAliasesRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking constrained measures are aliased properly")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
         """Ensures measures that might need an alias have one set, and that the alias is distinct.
 
         We do not allow aliases to collide with other alias or measure names, since that could create
@@ -132,9 +132,9 @@ class MeasureConstraintAliasesRule(SemanticManifestValidationRule):
         """
         issues: List[ValidationIssue] = []
 
-        measure_names = _get_measure_names_from_model(model)
+        measure_names = _get_measure_names_from_model(semantic_manifest)
         measure_alias_to_metrics: DefaultDict[str, List[str]] = defaultdict(list)
-        for metric in model.metrics:
+        for metric in semantic_manifest.metrics:
             metric_context = MetricContext(
                 file_context=FileContext.from_metadata(metadata=metric.metadata),
                 metric=MetricModelReference(metric_name=metric.name),
@@ -207,11 +207,11 @@ class MetricMeasuresRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring metric measures exist")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
-        valid_measure_names = _get_measure_names_from_model(model)
+        valid_measure_names = _get_measure_names_from_model(semantic_manifest)
 
-        for metric in model.metrics or []:
+        for metric in semantic_manifest.metrics or []:
             issues += MetricMeasuresRule._validate_metric_measure_references(
                 metric=metric, valid_measure_names=valid_measure_names
             )
@@ -223,9 +223,9 @@ class MeasuresNonAdditiveDimensionRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="ensuring that a measure's non_additive_dimensions is valid")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
-        for semantic_model in model.semantic_models or []:
+        for semantic_model in semantic_manifest.semantic_models or []:
             for measure in semantic_model.measures:
                 non_additive_dimension = measure.non_additive_dimension
                 if non_additive_dimension is None:
@@ -380,10 +380,10 @@ class CountAggregationExprRule(SemanticManifestValidationRule):
     @validate_safely(
         whats_being_done="running model validation ensuring expr exist for measures with count aggregation"
     )
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 context = SemanticModelElementContext(
                     file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
@@ -432,10 +432,10 @@ class PercentileAggregationRule(SemanticManifestValidationRule):
         whats_being_done="running model validation ensuring the agg_params.percentile value exist for measures with "
         "percentile aggregation"
     )
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 context = SemanticModelElementContext(
                     file_context=FileContext.from_metadata(metadata=semantic_model.metadata),

@@ -153,5 +153,5 @@ class ReservedKeywordsRule(SemanticManifestValidationRule):
         whats_being_done="running model validation ensuring elements that aren't selected via a defined expr don't "
         "contain reserved keywords"
     )
-    def validate_model(cls, model: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
-        return cls._validate_semantic_models(model=model)
+    def validate_manifest(cls, semantic_manifest: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
+        return cls._validate_semantic_models(model=semantic_manifest)

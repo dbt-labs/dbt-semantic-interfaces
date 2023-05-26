@@ -217,11 +217,11 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring elements have adequately unique names")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
-        issues += UniqueAndValidNameRule._validate_top_level_objects(model=model)
+        issues += UniqueAndValidNameRule._validate_top_level_objects(model=semantic_manifest)
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             issues += UniqueAndValidNameRule._validate_semantic_model_elements(semantic_model=semantic_model)
 
         return issues

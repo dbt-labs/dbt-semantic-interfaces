@@ -49,7 +49,7 @@ def _validate_manifest_with_one_rule(
     Result is returned as a serialized object as there are pickling issues with SemanticManifestValidationResults.
     """
     return SemanticManifestValidationResults.from_issues_sequence(
-        validation_rule.validate_model(semantic_manifest)
+        validation_rule.validate_manifest(semantic_manifest)
     ).json()
 
 

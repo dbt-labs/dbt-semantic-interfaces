@@ -27,9 +27,9 @@ class ElementConsistencyRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring model wide element consistency")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
-        element_name_to_types = ElementConsistencyRule._get_element_name_to_types(model=model)
+        element_name_to_types = ElementConsistencyRule._get_element_name_to_types(model=semantic_manifest)
         invalid_elements = {
             name: type_mapping for name, type_mapping in element_name_to_types.items() if len(type_mapping) > 1
         }

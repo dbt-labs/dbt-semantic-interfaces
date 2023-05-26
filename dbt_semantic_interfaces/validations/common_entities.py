@@ -65,12 +65,12 @@ class CommonEntitysRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation warning if entities are only one one semantic model")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
         """Issues a warning for any entity that is associated with only one semantic_model."""
         issues = []
 
-        entities_to_semantic_models = CommonEntitysRule._map_semantic_model_entities(model.semantic_models)
-        for semantic_model in model.semantic_models or []:
+        entities_to_semantic_models = CommonEntitysRule._map_semantic_model_entities(semantic_manifest.semantic_models)
+        for semantic_model in semantic_manifest.semantic_models or []:
             for entity in semantic_model.entities or []:
                 issues += CommonEntitysRule._check_entity(
                     entity=entity,

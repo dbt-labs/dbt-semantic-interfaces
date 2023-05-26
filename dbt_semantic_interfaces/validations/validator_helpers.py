@@ -377,12 +377,12 @@ class DimensionInvariants:
 
 
 class SemanticManifestValidationRule(ABC):
-    """Encapsulates logic for checking the values of objects in a model."""
+    """Encapsulates logic for checking the values of objects in a manifest."""
 
     @classmethod
     @abstractmethod
-    def validate_model(cls, model: SemanticManifest) -> Sequence[ValidationIssue]:
-        """Check the given model and return a list of validation issues."""
+    def validate_manifest(cls, semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
+        """Check the given manifest and return a list of validation issues."""
         pass
 
 

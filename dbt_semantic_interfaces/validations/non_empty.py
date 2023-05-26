@@ -49,8 +49,8 @@ class NonEmptyRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely("running model validation rule ensuring metrics and semantic models are defined")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
-        issues += NonEmptyRule._check_model_has_semantic_models(model=model)
-        issues += NonEmptyRule._check_model_has_metrics(model=model)
+        issues += NonEmptyRule._check_model_has_semantic_models(model=semantic_manifest)
+        issues += NonEmptyRule._check_model_has_metrics(model=semantic_manifest)
         return issues
