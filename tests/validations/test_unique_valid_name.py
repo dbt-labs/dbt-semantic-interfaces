@@ -41,7 +41,9 @@ def test_duplicate_semantic_model_name(  # noqa: D
         match=rf"Can't use name `{duplicated_semantic_model.name}` for a semantic model when it was already used for "
         "a semantic model",
     ):
-        SemanticManifestValidator([UniqueAndValidNameRule()]).checked_validations(model)
+        SemanticManifestValidator[PydanticSemanticManifest](
+            [UniqueAndValidNameRule[PydanticSemanticManifest]()]
+        ).checked_validations(model)
 
 
 def test_duplicate_metric_name(  # noqa:D
@@ -54,7 +56,7 @@ def test_duplicate_metric_name(  # noqa:D
         SemanticManifestValidationException,
         match=rf"Can't use name `{duplicated_metric.name}` for a metric when it was already used for a metric",
     ):
-        SemanticManifestValidator([UniqueAndValidNameRule()]).checked_validations(model)
+        SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(model)
 
 
 def test_top_level_metric_can_have_same_name_as_any_other_top_level_item(  # noqa: D
@@ -66,7 +68,9 @@ def test_top_level_metric_can_have_same_name_as_any_other_top_level_item(  # noq
 
     model_semantic_model.semantic_models[0].name = metric_name
 
-    SemanticManifestValidator([UniqueAndValidNameRule()]).checked_validations(model_semantic_model)
+    SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(
+        model_semantic_model
+    )
 
 
 """
@@ -100,7 +104,7 @@ def test_duplicate_measure_name(  # noqa:D
         match=rf"can't use name `{duplicated_measure.reference.element_name}` for a measure when it was already used "
         "for a measure",
     ):
-        SemanticManifestValidator([UniqueAndValidNameRule()]).checked_validations(model)
+        SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(model)
 
 
 def test_duplicate_dimension_name(  # noqa: D
@@ -122,7 +126,7 @@ def test_duplicate_dimension_name(  # noqa: D
         match=rf"can't use name `{duplicated_dimension.reference.element_name}` for a "
         rf"dimension when it was already used for a dimension",
     ):
-        SemanticManifestValidator([UniqueAndValidNameRule()]).checked_validations(model)
+        SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(model)
 
 
 def test_duplicate_entity_name(  # noqa:D
@@ -144,7 +148,7 @@ def test_duplicate_entity_name(  # noqa:D
         match=rf"can't use name `{duplicated_entity.reference.element_name}` for a entity when it was already used "
         "for a entity",
     ):
-        SemanticManifestValidator([UniqueAndValidNameRule()]).checked_validations(model)
+        SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(model)
 
 
 """

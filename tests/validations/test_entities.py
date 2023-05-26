@@ -43,7 +43,9 @@ def test_semantic_model_cant_have_more_than_one_primary_entity(
         entity.type = EntityType.PRIMARY
         entity_references.add(entity.reference)
 
-    model_issues = SemanticManifestValidator([OnePrimaryEntityPerSemanticModelRule()]).validate_model(model)
+    model_issues = SemanticManifestValidator[PydanticSemanticManifest](
+        [OnePrimaryEntityPerSemanticModelRule()]
+    ).validate_model(model)
 
     future_issue = (
         f"Semantic models can have only one primary entity. The semantic model"
@@ -95,7 +97,9 @@ def test_multiple_natural_entities() -> None:
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), natural_entity_file])
 
     with pytest.raises(SemanticManifestValidationException, match="can have at most one natural entity"):
-        SemanticManifestValidator([NaturalEntityConfigurationRule()]).checked_validations(model.model)
+        SemanticManifestValidator[PydanticSemanticManifest]([NaturalEntityConfigurationRule()]).checked_validations(
+            model.model
+        )
 
 
 def test_natural_entity_used_in_wrong_context() -> None:
@@ -121,4 +125,6 @@ def test_natural_entity_used_in_wrong_context() -> None:
     with pytest.raises(
         SemanticManifestValidationException, match="use of `natural` entities is currently supported only in"
     ):
-        SemanticManifestValidator([NaturalEntityConfigurationRule()]).checked_validations(model.model)
+        SemanticManifestValidator[PydanticSemanticManifest]([NaturalEntityConfigurationRule()]).checked_validations(
+            model.model
+        )

@@ -58,7 +58,7 @@ def test_cross_element_names(  # noqa:D
             "model"
         ),
     ):
-        SemanticManifestValidator([ElementConsistencyRule()]).checked_validations(model)
+        SemanticManifestValidator[PydanticSemanticManifest]([ElementConsistencyRule()]).checked_validations(model)
 
     model.semantic_models[usable_ds_index] = ds_measure_x_entity
     with pytest.raises(
@@ -68,7 +68,7 @@ def test_cross_element_names(  # noqa:D
             "used as types .*?SemanticModelElementType.ENTITY.*?SemanticModelElementType.MEASURE.*? across the model"
         ),
     ):
-        SemanticManifestValidator([ElementConsistencyRule()]).checked_validations(model)
+        SemanticManifestValidator[PydanticSemanticManifest]([ElementConsistencyRule()]).checked_validations(model)
 
     model.semantic_models[usable_ds_index] = ds_dimension_x_entity
     with pytest.raises(
@@ -78,4 +78,4 @@ def test_cross_element_names(  # noqa:D
             "used as types .*?SemanticModelElementType.DIMENSION.*?SemanticModelElementType.ENTITY.*? across the model"
         ),
     ):
-        SemanticManifestValidator([ElementConsistencyRule()]).checked_validations(model)
+        SemanticManifestValidator[PydanticSemanticManifest]([ElementConsistencyRule()]).checked_validations(model)

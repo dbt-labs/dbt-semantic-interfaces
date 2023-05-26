@@ -32,7 +32,7 @@ def test_invalid_aggregation_time_dimension(simple_semantic_manifest: PydanticSe
             "in the semantic model"
         ),
     ):
-        model_validator = SemanticManifestValidator([AggregationTimeDimensionRule()])
+        model_validator = SemanticManifestValidator[PydanticSemanticManifest]([AggregationTimeDimensionRule()])
         model_validator.checked_validations(model)
 
 
@@ -49,7 +49,7 @@ def test_unset_aggregation_time_dimension(simple_semantic_manifest: PydanticSema
         SemanticManifestValidationException,
         match=("Aggregation time dimension for measure \\w+ is not set!"),
     ):
-        model_validator = SemanticManifestValidator([AggregationTimeDimensionRule()])
+        model_validator = SemanticManifestValidator[PydanticSemanticManifest]([AggregationTimeDimensionRule()])
         model_validator.checked_validations(model)
 
 
@@ -67,5 +67,5 @@ def test_missing_primary_time_ok_if_all_measures_have_agg_time_dim(  # noqa:D
             assert dimension.type_params, f"Time dimension `{dimension.name}` is missing `type_params`"
             dimension.type_params.is_primary = False
 
-    model_validator = SemanticManifestValidator([AggregationTimeDimensionRule()])
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([AggregationTimeDimensionRule()])
     model_validator.checked_validations(model)
