@@ -1,9 +1,12 @@
 import copy
 import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
-from typing import List, Sequence
+from typing import Generic, List, Sequence
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import (
+    SemanticManifest,
+    SemanticManifestT,
+)
 from dbt_semantic_interfaces.validations.agg_time_dimension import (
     AggregationTimeDimensionRule,
 )
@@ -53,31 +56,33 @@ def _validate_manifest_with_one_rule(
     ).json()
 
 
-class SemanticManifestValidator:
+class SemanticManifestValidator(Generic[SemanticManifestT]):
     """A Validator that acts on SemanticManifest."""
 
-    DEFAULT_RULES = (
-        PercentileAggregationRule(),
-        DerivedMetricRule(),
-        CountAggregationExprRule(),
-        SemanticModelMeasuresUniqueRule(),
-        SemanticModelTimeDimensionWarningsRule(),
-        SemanticModelValidityWindowRule(),
-        DimensionConsistencyRule(),
-        ElementConsistencyRule(),
-        NaturalEntityConfigurationRule(),
-        OnePrimaryEntityPerSemanticModelRule(),
-        MeasureConstraintAliasesRule(),
-        MetricMeasuresRule(),
-        CumulativeMetricRule(),
-        NonEmptyRule(),
-        UniqueAndValidNameRule(),
-        AggregationTimeDimensionRule(),
-        ReservedKeywordsRule(),
-        MeasuresNonAdditiveDimensionRule(),
+    DEFAULT_RULES: Sequence[SemanticManifestValidationRule[SemanticManifestT]] = (
+        PercentileAggregationRule[SemanticManifestT](),
+        DerivedMetricRule[SemanticManifestT](),
+        CountAggregationExprRule[SemanticManifestT](),
+        SemanticModelMeasuresUniqueRule[SemanticManifestT](),
+        SemanticModelTimeDimensionWarningsRule[SemanticManifestT](),
+        SemanticModelValidityWindowRule[SemanticManifestT](),
+        DimensionConsistencyRule[SemanticManifestT](),
+        ElementConsistencyRule[SemanticManifestT](),
+        NaturalEntityConfigurationRule[SemanticManifestT](),
+        OnePrimaryEntityPerSemanticModelRule[SemanticManifestT](),
+        MeasureConstraintAliasesRule[SemanticManifestT](),
+        MetricMeasuresRule[SemanticManifestT](),
+        CumulativeMetricRule[SemanticManifestT](),
+        NonEmptyRule[SemanticManifestT](),
+        UniqueAndValidNameRule[SemanticManifestT](),
+        AggregationTimeDimensionRule[SemanticManifestT](),
+        ReservedKeywordsRule[SemanticManifestT](),
+        MeasuresNonAdditiveDimensionRule[SemanticManifestT](),
     )
 
-    def __init__(self, rules: Sequence[SemanticManifestValidationRule] = DEFAULT_RULES, max_workers: int = 1) -> None:
+    def __init__(
+        self, rules: Sequence[SemanticManifestValidationRule[SemanticManifestT]] = DEFAULT_RULES, max_workers: int = 1
+    ) -> None:
         """Constructor.
 
         Args:
@@ -93,7 +98,7 @@ class SemanticManifestValidator:
         self._rules = rules
         self._executor = ProcessPoolExecutor(max_workers=max_workers)
 
-    def validate_model(self, semantic_manifest: SemanticManifest) -> SemanticManifestValidationResults:
+    def validate_model(self, semantic_manifest: SemanticManifestT) -> SemanticManifestValidationResults:
         """Validate a model according to configured rules."""
         results: List[SemanticManifestValidationResults] = []
 
@@ -108,7 +113,7 @@ class SemanticManifestValidator:
 
         return SemanticManifestValidationResults.merge(results)
 
-    def checked_validations(self, model: SemanticManifest) -> None:
+    def checked_validations(self, model: SemanticManifestT) -> None:
         """Similar to validate(), but throws an exception if validation fails."""
         model_copy = copy.deepcopy(model)
         model_issues = self.validate_model(model_copy)

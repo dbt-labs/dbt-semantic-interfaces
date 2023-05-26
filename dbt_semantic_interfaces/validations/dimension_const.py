@@ -1,7 +1,7 @@
-from typing import Dict, List, Sequence
+from typing import Dict, Generic, List, Sequence
 
 from dbt_semantic_interfaces.protocols.dimension import Dimension
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     DimensionReference,
@@ -21,7 +21,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class DimensionConsistencyRule(SemanticManifestValidationRule):
+class DimensionConsistencyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks for consistent dimension properties in the semantic models in a model.
 
     * Dimensions with the same name should be of the same type.
@@ -30,7 +30,7 @@ class DimensionConsistencyRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring dimension consistency")
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         dimension_to_invariant: Dict[DimensionReference, DimensionInvariants] = {}
         time_dims_to_granularity: Dict[DimensionReference, TimeGranularity] = {}
         issues: List[ValidationIssue] = []

@@ -1,9 +1,10 @@
 from collections import defaultdict
-from typing import DefaultDict, List, Sequence
+from typing import DefaultDict, Generic, List, Sequence
 
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.references import SemanticModelReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
@@ -16,7 +17,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class ElementConsistencyRule(SemanticManifestValidationRule):
+class ElementConsistencyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that elements in semantic models with the same name are of the same element type across the model.
 
     This reduces the potential confusion that might arise from having an entity named `country` and a dimension

@@ -1,6 +1,9 @@
-from typing import List
+from typing import Generic, List
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import (
+    SemanticManifest,
+    SemanticManifestT,
+)
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelElementReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
@@ -14,7 +17,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     validate_safely,
 )
 
-# A non-exaustive tuple of reserved keywords
+# A non-exhaustive tuple of reserved keywords
 # This list was created by running an intersection of keywords for redshift,
 # postgres, bigquery, and snowflake
 RESERVED_KEYWORDS = (
@@ -47,7 +50,7 @@ RESERVED_KEYWORDS = (
 )
 
 
-class ReservedKeywordsRule(SemanticManifestValidationRule):
+class ReservedKeywordsRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Check that any element that ends up being selected by name (instead of expr) isn't a commonly reserved keyword.
 
     Note: This rule DOES NOT catch all keywords. That is because keywords are

@@ -1,10 +1,13 @@
 from collections import defaultdict
-from typing import DefaultDict, Dict, List, Sequence, Set
+from typing import DefaultDict, Dict, Generic, List, Sequence, Set
 
 from more_itertools import bucket
 
 from dbt_semantic_interfaces.protocols.metric import Metric
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import (
+    SemanticManifest,
+    SemanticManifestT,
+)
 from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
@@ -23,14 +26,14 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class SemanticModelMeasuresUniqueRule(SemanticManifestValidationRule):
+class SemanticModelMeasuresUniqueRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Asserts all measure names are unique across the model."""
 
     @staticmethod
     @validate_safely(
         whats_being_done="running model validation ensuring measures exist in only one configured semantic model"
     )
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         measure_references_to_semantic_models: Dict[MeasureReference, List] = defaultdict(list)
@@ -55,7 +58,7 @@ class SemanticModelMeasuresUniqueRule(SemanticManifestValidationRule):
         return issues
 
 
-class MeasureConstraintAliasesRule(SemanticManifestValidationRule):
+class MeasureConstraintAliasesRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that aliases are configured correctly for constrained measure references.
 
     These are, currently, only applicable for PydanticMetric types, since the MetricInputMeasure is only
@@ -124,7 +127,7 @@ class MeasureConstraintAliasesRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking constrained measures are aliased properly")
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:
         """Ensures measures that might need an alias have one set, and that the alias is distinct.
 
         We do not allow aliases to collide with other alias or measure names, since that could create
@@ -181,7 +184,7 @@ class MeasureConstraintAliasesRule(SemanticManifestValidationRule):
         return issues
 
 
-class MetricMeasuresRule(SemanticManifestValidationRule):
+class MetricMeasuresRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that the measures referenced in the metrics exist."""
 
     @staticmethod
@@ -207,7 +210,7 @@ class MetricMeasuresRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring metric measures exist")
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
         valid_measure_names = _get_measure_names_from_model(semantic_manifest)
 
@@ -218,12 +221,12 @@ class MetricMeasuresRule(SemanticManifestValidationRule):
         return issues
 
 
-class MeasuresNonAdditiveDimensionRule(SemanticManifestValidationRule):
+class MeasuresNonAdditiveDimensionRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that the measure's non_additive_dimensions are properly defined."""
 
     @staticmethod
     @validate_safely(whats_being_done="ensuring that a measure's non_additive_dimensions is valid")
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
         for semantic_model in semantic_manifest.semantic_models or []:
             for measure in semantic_model.measures:
@@ -373,14 +376,14 @@ class MeasuresNonAdditiveDimensionRule(SemanticManifestValidationRule):
         return issues
 
 
-class CountAggregationExprRule(SemanticManifestValidationRule):
+class CountAggregationExprRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that COUNT measures have an expr provided."""
 
     @staticmethod
     @validate_safely(
         whats_being_done="running model validation ensuring expr exist for measures with count aggregation"
     )
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         for semantic_model in semantic_manifest.semantic_models:
@@ -424,7 +427,7 @@ class CountAggregationExprRule(SemanticManifestValidationRule):
         return issues
 
 
-class PercentileAggregationRule(SemanticManifestValidationRule):
+class PercentileAggregationRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that only PERCENTILE measures have agg_params and valid percentile value provided."""
 
     @staticmethod
@@ -432,7 +435,7 @@ class PercentileAggregationRule(SemanticManifestValidationRule):
         whats_being_done="running model validation ensuring the agg_params.percentile value exist for measures with "
         "percentile aggregation"
     )
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         for semantic_model in semantic_manifest.semantic_models:

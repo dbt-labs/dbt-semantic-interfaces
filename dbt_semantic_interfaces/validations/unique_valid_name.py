@@ -2,10 +2,13 @@ from __future__ import annotations
 
 import enum
 import re
-from typing import Dict, List, Optional, Sequence, Tuple
+from typing import Dict, Generic, List, Optional, Sequence, Tuple
 
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import (
+    SemanticManifest,
+    SemanticManifestT,
+)
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     ElementReference,
@@ -49,7 +52,7 @@ class MetricFlowReservedKeywords(enum.Enum):
             assert_values_exhausted(keyword)
 
 
-class UniqueAndValidNameRule(SemanticManifestValidationRule):
+class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Check that names are unique and valid.
 
     * Names of elements in semantic models are unique / valid within the semantic model.
@@ -217,7 +220,7 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring elements have adequately unique names")
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
         issues += UniqueAndValidNameRule._validate_top_level_objects(model=semantic_manifest)
 

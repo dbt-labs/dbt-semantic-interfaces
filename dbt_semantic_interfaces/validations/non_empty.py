@@ -1,8 +1,9 @@
-from typing import List, Sequence
+from typing import Generic, List, Sequence
 
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationRule,
     ValidationError,
@@ -11,7 +12,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class NonEmptyRule(SemanticManifestValidationRule):
+class NonEmptyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Check if the model contains semantic models and metrics."""
 
     @staticmethod

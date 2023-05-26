@@ -1,10 +1,13 @@
 import traceback
-from typing import List, Sequence
+from typing import Generic, List, Sequence
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.metric import PydanticMetricTimeWindow
 from dbt_semantic_interfaces.protocols.metric import Metric, MetricType
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import (
+    SemanticManifest,
+    SemanticManifestT,
+)
 from dbt_semantic_interfaces.references import MetricModelReference
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
@@ -17,7 +20,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class CumulativeMetricRule(SemanticManifestValidationRule):
+class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that cumulative sum metrics are configured properly."""
 
     @staticmethod
@@ -58,7 +61,7 @@ class CumulativeMetricRule(SemanticManifestValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring cumulative sum metrics are valid")
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         for metric in semantic_manifest.metrics or []:
@@ -67,7 +70,7 @@ class CumulativeMetricRule(SemanticManifestValidationRule):
         return issues
 
 
-class DerivedMetricRule(SemanticManifestValidationRule):
+class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that derived metrics are configured properly."""
 
     @staticmethod
@@ -141,7 +144,7 @@ class DerivedMetricRule(SemanticManifestValidationRule):
     @validate_safely(
         whats_being_done="running model validation ensuring derived metrics properties are configured properly"
     )
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         issues += DerivedMetricRule._validate_input_metrics_exist(model=semantic_manifest)

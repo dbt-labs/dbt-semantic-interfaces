@@ -1,7 +1,7 @@
 import logging
-from typing import List, Sequence
+from typing import Generic, List, Sequence
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelReference
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
@@ -18,12 +18,14 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 logger = logging.getLogger(__name__)
 
 
-class SemanticModelTimeDimensionWarningsRule(SemanticManifestValidationRule):
+class SemanticModelTimeDimensionWarningsRule(
+    SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]
+):
     """Checks time dimensions in semantic models."""
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring time dimensions are defined properly")
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         for semantic_model in semantic_manifest.semantic_models:
@@ -78,12 +80,12 @@ class SemanticModelTimeDimensionWarningsRule(SemanticManifestValidationRule):
         return issues
 
 
-class SemanticModelValidityWindowRule(SemanticManifestValidationRule):
+class SemanticModelValidityWindowRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks validity windows in semantic models to ensure they comply with runtime requirements."""
 
     @staticmethod
     @validate_safely(whats_being_done="checking correctness of the time dimension validity parameters in the model")
-    def validate_manifest(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:
         """Checks the validity param definitions in every semantic model in the model."""
         issues: List[ValidationIssue] = []
 
