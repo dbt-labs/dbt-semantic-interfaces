@@ -168,7 +168,7 @@ def parse_yaml_files_to_validation_ready_model(
         if apply_transformations:
             model = ModelTransformer.transform(model)
     except Exception as e:
-        transformation_issue_results = SemanticManifestValidationResults(errors=[ValidationError(message=str(e))])
+        transformation_issue_results = SemanticManifestValidationResults(errors=(ValidationError(message=str(e)),))
         build_issues = SemanticManifestValidationResults.merge([build_issues, transformation_issue_results])
 
     if raise_issues_as_exceptions and build_issues.has_blocking_issues:

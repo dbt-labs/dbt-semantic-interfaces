@@ -67,7 +67,6 @@ def list_of_issues() -> List[ValidationIssue]:  # noqa: D
         ValidationError(
             context=SemanticModelElementContext(
                 file_context=file_context,
-                semantic_model_name=semantic_model_name,
                 semantic_model_element=SemanticModelElementReference(
                     semantic_model_name=semantic_model_name, element_name="My measure"
                 ),
@@ -102,21 +101,25 @@ def test_creating_model_validation_results_from_issue_list(  # noqa: D
     assert len(model_validation_issues.errors) == len(errors)
     assert model_validation_issues.has_blocking_issues
 
-    model_validation_issues = SemanticManifestValidationResults(warnings=warnings, future_errors=future_errors)
+    model_validation_issues = SemanticManifestValidationResults(
+        warnings=model_validation_issues.warnings,
+        future_errors=model_validation_issues.future_errors,
+    )
     assert not model_validation_issues.has_blocking_issues
 
 
 def test_jsonifying_and_reloading_model_validation_results_is_equal(  # noqa: D
     list_of_issues: List[ValidationIssue],
 ) -> None:
-    warnings = [issue for issue in list_of_issues if issue.level == ValidationIssueLevel.WARNING]
-    errors = [issue for issue in list_of_issues if issue.level == ValidationIssueLevel.ERROR]
     set_context_types = set([issue.context.__class__ for issue in list_of_issues])
 
     model_validation_issues = SemanticManifestValidationResults.from_issues_sequence(list_of_issues)
     model_validation_issues_new = SemanticManifestValidationResults.parse_raw(model_validation_issues.json())
     assert model_validation_issues_new == model_validation_issues
-    assert model_validation_issues_new != SemanticManifestValidationResults(warnings=warnings, errors=errors)
+    assert model_validation_issues_new != SemanticManifestValidationResults(
+        warnings=model_validation_issues.warnings,
+        errors=model_validation_issues.errors,
+    )
 
     # ensure ValidationContexts were properly parsed into the differen subclasses
     new_context_types = [issue.context.__class__ for issue in model_validation_issues_new.warnings]
