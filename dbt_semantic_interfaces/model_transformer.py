@@ -15,7 +15,7 @@ from dbt_semantic_interfaces.transformations.transform_rule import (
 logger = logging.getLogger(__name__)
 
 
-class SemanticManifestTransformer:
+class PydanticSemanticManifestTransformer:
     """Helps to make transformations to a model for convenience.
 
     Generally used to make it more convenient for the user to develop their model.

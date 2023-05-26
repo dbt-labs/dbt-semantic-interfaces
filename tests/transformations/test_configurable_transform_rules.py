@@ -1,7 +1,9 @@
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.model_transformer import SemanticManifestTransformer
+from dbt_semantic_interfaces.model_transformer import (
+    PydanticSemanticManifestTransformer,
+)
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -28,5 +30,5 @@ def test_can_configure_model_transform_rules(  # noqa: D
 
     # Confirms that a custom transformation works `for ModelTransformer.transform`
     rules = [SliceNamesRule()]
-    transformed_model = SemanticManifestTransformer.transform(pre_model, ordered_rule_sequences=(rules,))
+    transformed_model = PydanticSemanticManifestTransformer.transform(pre_model, ordered_rule_sequences=(rules,))
     assert all(len(x.name) == 3 for x in transformed_model.semantic_models)

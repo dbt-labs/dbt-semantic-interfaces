@@ -13,7 +13,9 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
-from dbt_semantic_interfaces.model_transformer import SemanticManifestTransformer
+from dbt_semantic_interfaces.model_transformer import (
+    PydanticSemanticManifestTransformer,
+)
 from dbt_semantic_interfaces.parsing.objects import Version, YamlConfigFile
 from dbt_semantic_interfaces.parsing.schemas import (
     metric_validator,
@@ -166,7 +168,7 @@ def parse_yaml_files_to_validation_ready_model(
     build_issues = build_result.issues
     try:
         if apply_transformations:
-            model = SemanticManifestTransformer.transform(model)
+            model = PydanticSemanticManifestTransformer.transform(model)
     except Exception as e:
         transformation_issue_results = SemanticManifestValidationResults(errors=(ValidationError(message=str(e)),))
         build_issues = SemanticManifestValidationResults.merge([build_issues, transformation_issue_results])
