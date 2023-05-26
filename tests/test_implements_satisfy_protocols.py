@@ -7,11 +7,14 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
 )
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
-from dbt_semantic_interfaces.implementations.metadata import FileSlice, Metadata
+from dbt_semantic_interfaces.implementations.metadata import (
+    PydanticFileSlice,
+    PydanticMetadata,
+)
 from dbt_semantic_interfaces.implementations.metric import (
-    Metric,
-    MetricInputMeasure,
-    MetricTypeParams,
+    PydanticMetric,
+    PydanticMetricInputMeasure,
+    PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.implementations.semantic_model import (
@@ -54,10 +57,10 @@ def test_semantic_manifest_protocol() -> None:  # noqa: D
         measures=[],
         dimensions=[],
     )
-    metric = Metric(
+    metric = PydanticMetric(
         name="test_metric",
         type=MetricType.MEASURE_PROXY,
-        type_params=MetricTypeParams(measure=MetricInputMeasure(name="test_measure")),
+        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
     )
     semantic_manifest = SemanticManifest(
         semantic_models=[semantic_model],
@@ -95,10 +98,10 @@ class RuntimeCheckableMetric(MetricProtocol, Protocol):
 
 
 def test_metric_protocol() -> None:  # noqa: D
-    test_metric = Metric(
+    test_metric = PydanticMetric(
         name="test_metric",
         type=MetricType.MEASURE_PROXY,
-        type_params=MetricTypeParams(measure=MetricInputMeasure(name="test_measure")),
+        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
     )
     assert isinstance(test_metric, RuntimeCheckableMetric)
 
@@ -171,9 +174,9 @@ class RuntimeCheckableMetadata(MetadataProtocol, Protocol):
 
 
 def test_metadata_protocol() -> None:  # noqa: D
-    metadata = Metadata(
+    metadata = PydanticMetadata(
         repo_file_path="/path/to/cats.txt",
-        file_slice=FileSlice(
+        file_slice=PydanticFileSlice(
             filename="cats.txt",
             content="I like cats",
             start_line_number=0,

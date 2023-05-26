@@ -2,10 +2,10 @@ import logging
 
 from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.metric import (
-    Metric,
-    MetricInputMeasure,
     MetricType,
-    MetricTypeParams,
+    PydanticMetric,
+    PydanticMetricInputMeasure,
+    PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
@@ -43,11 +43,11 @@ class CreateProxyMeasureRule(ModelTransformRule):
 
                 if add_metric is True:
                     model.metrics.append(
-                        Metric(
+                        PydanticMetric(
                             name=measure.name,
                             type=MetricType.MEASURE_PROXY,
-                            type_params=MetricTypeParams(
-                                measures=[MetricInputMeasure(name=measure.name)],
+                            type_params=PydanticMetricTypeParams(
+                                measures=[PydanticMetricInputMeasure(name=measure.name)],
                                 expr=measure.name,
                             ),
                         )

@@ -6,7 +6,7 @@ from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
-from dbt_semantic_interfaces.implementations.metadata import Metadata
+from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import MeasureReference, TimeDimensionReference
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 
@@ -41,7 +41,7 @@ class PydanticMeasure(HashableBaseModel, ModelWithMetadataParsing):
     create_metric: Optional[bool]
     expr: Optional[str] = None
     agg_params: Optional[PydanticMeasureAggregationParameters]
-    metadata: Optional[Metadata]
+    metadata: Optional[PydanticMetadata]
     non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters] = None
     agg_time_dimension: Optional[str] = None
 

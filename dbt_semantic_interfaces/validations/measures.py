@@ -3,8 +3,8 @@ from typing import DefaultDict, Dict, List, Sequence, Set
 
 from more_itertools import bucket
 
-from dbt_semantic_interfaces.implementations.metric import Metric
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.metric import Metric
 from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
@@ -58,7 +58,7 @@ class SemanticModelMeasuresUniqueRule(ModelValidationRule):
 class MeasureConstraintAliasesRule(ModelValidationRule):
     """Checks that aliases are configured correctly for constrained measure references.
 
-    These are, currently, only applicable for Metric types, since the MetricInputMeasure is only
+    These are, currently, only applicable for PydanticMetric types, since the MetricInputMeasure is only
     """
 
     @staticmethod
@@ -96,8 +96,8 @@ class MeasureConstraintAliasesRule(ModelValidationRule):
                     ValidationWarning(
                         context=metric_context,
                         message=(
-                            f"Metric {metric.name} has multiple identical input measures specifications for measure "
-                            f"{name}. This might be hiding a semantic error. Input measure specification: "
+                            f"PydanticMetric {metric.name} has multiple identical input measures specifications for "
+                            f"measure {name}. This might be hiding a semantic error. Input measure specification: "
                             f"{input_measures[0]}."
                         ),
                     )
@@ -112,9 +112,10 @@ class MeasureConstraintAliasesRule(ModelValidationRule):
                     ValidationError(
                         context=metric_context,
                         message=(
-                            f"Metric {metric.name} depends on multiple different constrained versions of measure "
-                            f"{name}. In such cases, aliases must be provided, but the following input measures have "
-                            f"constraints specified without an alias: {constrained_measures_without_aliases}."
+                            f"PydanticMetric {metric.name} depends on multiple different constrained versions of "
+                            f"measure {name}. In such cases, aliases must be provided, but the following input "
+                            f"measures have constraints specified without an alias: "
+                            f"{constrained_measures_without_aliases}."
                         ),
                     )
                 )

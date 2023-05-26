@@ -6,7 +6,7 @@ from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
-from dbt_semantic_interfaces.implementations.metadata import Metadata
+from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     TimeDimensionReference,
@@ -48,7 +48,7 @@ class PydanticDimension(HashableBaseModel, ModelWithMetadataParsing):
     is_partition: bool = False
     type_params: Optional[PydanticDimensionTypeParams]
     expr: Optional[str] = None
-    metadata: Optional[Metadata]
+    metadata: Optional[PydanticMetadata]
 
     @property
     def is_primary_time(self) -> bool:  # noqa: D

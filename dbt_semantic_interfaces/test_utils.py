@@ -11,11 +11,14 @@ from dbt_semantic_interfaces.implementations.elements.measure import PydanticMea
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
 )
-from dbt_semantic_interfaces.implementations.metadata import FileSlice, Metadata
+from dbt_semantic_interfaces.implementations.metadata import (
+    PydanticFileSlice,
+    PydanticMetadata,
+)
 from dbt_semantic_interfaces.implementations.metric import (
-    Metric,
     MetricType,
-    MetricTypeParams,
+    PydanticMetric,
+    PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.implementations.semantic_model import (
@@ -50,7 +53,7 @@ def find_semantic_model_with(
     raise Exception("Unable to find a semantic_model matching function criteria")
 
 
-def find_metric_with(model: SemanticManifest, function: Callable[[Metric], bool]) -> Tuple[Metric, int]:
+def find_metric_with(model: SemanticManifest, function: Callable[[PydanticMetric], bool]) -> Tuple[PydanticMetric, int]:
     """Returns a metric from the model which matches the criteria defined by the passed in function'.
 
     This is useful because the order of metrics in the list is non-determinant, thus it's impossible to
@@ -100,11 +103,11 @@ def base_semantic_manifest_file() -> YamlConfigFile:
     return YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
 
-def default_meta() -> Metadata:
+def default_meta() -> PydanticMetadata:
     """Returns a Metadata object with the required information."""
-    return Metadata(
+    return PydanticMetadata(
         repo_file_path="/not/from/a/repo",
-        file_slice=FileSlice(
+        file_slice=PydanticFileSlice(
             filename="not_from_file.py",
             content="N/A",
             start_line_number=0,
@@ -116,16 +119,16 @@ def default_meta() -> Metadata:
 def metric_with_guaranteed_meta(
     name: str,
     type: MetricType,
-    type_params: MetricTypeParams,
+    type_params: PydanticMetricTypeParams,
     where_filter: Optional[PydanticWhereFilter] = None,
-    metadata: Metadata = default_meta(),
+    metadata: PydanticMetadata = default_meta(),
     description: str = "adhoc metric",
-) -> Metric:
+) -> PydanticMetric:
     """Creates a metric with the given input.
 
     If a metadata object is not supplied, a default metadata object is used.
     """
-    return Metric(
+    return PydanticMetric(
         name=name,
         description=description,
         type=type,
@@ -139,7 +142,7 @@ def semantic_model_with_guaranteed_meta(
     name: str,
     description: Optional[str] = None,
     node_relation: Optional[NodeRelation] = None,
-    metadata: Metadata = default_meta(),
+    metadata: PydanticMetadata = default_meta(),
     entities: Sequence[PydanticEntity] = (),
     measures: Sequence[PydanticMeasure] = (),
     dimensions: Sequence[PydanticDimension] = (),

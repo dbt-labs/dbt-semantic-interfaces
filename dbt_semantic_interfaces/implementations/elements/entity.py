@@ -6,7 +6,7 @@ from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
-from dbt_semantic_interfaces.implementations.metadata import Metadata
+from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import EntityReference
 from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 
@@ -19,7 +19,7 @@ class PydanticEntity(HashableBaseModel, ModelWithMetadataParsing):
     type: EntityType
     role: Optional[str]
     expr: Optional[str] = None
-    metadata: Optional[Metadata] = None
+    metadata: Optional[PydanticMetadata] = None
 
     @property
     def reference(self) -> EntityReference:  # noqa: D

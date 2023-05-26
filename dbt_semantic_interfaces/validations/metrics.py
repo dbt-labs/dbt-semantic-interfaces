@@ -3,11 +3,11 @@ from typing import List, Sequence
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.metric import (
-    Metric,
-    MetricTimeWindow,
     MetricType,
+    PydanticMetricTimeWindow,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.metric import Metric
 from dbt_semantic_interfaces.references import MetricModelReference
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
@@ -42,7 +42,8 @@ class CumulativeMetricRule(ModelValidationRule):
 
             if metric.type_params.window:
                 try:
-                    MetricTimeWindow.parse(metric.type_params.window.to_string())
+                    window_str = f"{metric.type_params.window.count} {metric.type_params.window.granularity.value}"
+                    PydanticMetricTimeWindow.parse(window_str)
                 except ParsingException as e:
                     issues.append(
                         ValidationError(

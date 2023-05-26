@@ -21,7 +21,7 @@ def test_pformat_big_objects() -> None:  # noqa: D
     assert pformat_big_objects(meta) == (
         textwrap.dedent(
             """\
-                {'class': 'Metadata',
+                {'class': 'PydanticMetadata',
                  'repo_file_path': '/not/from/a/repo',
                  'file_slice': {'filename': 'not_from_file.py',
                                 'content': 'N/A',
@@ -35,7 +35,7 @@ def test_pformat_big_objects() -> None:  # noqa: D
         textwrap.dedent(
             """\
                 meta:
-                    {'class': 'Metadata',
+                    {'class': 'PydanticMetadata',
                      'repo_file_path': '/not/from/a/repo',
                      'file_slice': {'filename': 'not_from_file.py',
                                     'content': 'N/A',

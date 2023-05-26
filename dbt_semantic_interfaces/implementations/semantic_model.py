@@ -11,7 +11,7 @@ from dbt_semantic_interfaces.implementations.base import (
 from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
-from dbt_semantic_interfaces.implementations.metadata import Metadata
+from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import (
     LinkableElementReference,
     MeasureReference,
@@ -71,7 +71,7 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
     measures: Sequence[PydanticMeasure] = []
     dimensions: Sequence[PydanticDimension] = []
 
-    metadata: Optional[Metadata]
+    metadata: Optional[PydanticMetadata]
 
     @property
     def entity_references(self) -> List[LinkableElementReference]:  # noqa: D

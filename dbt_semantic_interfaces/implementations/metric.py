@@ -12,7 +12,7 @@ from dbt_semantic_interfaces.implementations.base import (
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
 )
-from dbt_semantic_interfaces.implementations.metadata import Metadata
+from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums.metric_type import MetricType
 from dbt_semantic_interfaces.type_enums.time_granularity import (
@@ -21,7 +21,7 @@ from dbt_semantic_interfaces.type_enums.time_granularity import (
 )
 
 
-class MetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
+class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
     """Provides a pointer to a measure along with metric-specific processing directives.
 
     If an alias is set, this will be used as the string name reference for this measure after the aggregation
@@ -33,15 +33,15 @@ class MetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
     alias: Optional[str]
 
     @classmethod
-    def _from_yaml_value(cls, input: PydanticParseableValueType) -> MetricInputMeasure:
+    def _from_yaml_value(cls, input: PydanticParseableValueType) -> PydanticMetricInputMeasure:
         """Parses a MetricInputMeasure from a string (name only) or object (struct spec) input.
 
-        For user input cases, the original YAML spec for a Metric included measure(s) specified as string names
+        For user input cases, the original YAML spec for a PydanticMetric included measure(s) specified as string names
         or lists of string names. As such, configs pre-dating the addition of this model type will only provide the
         base name for this object.
         """
         if isinstance(input, str):
-            return MetricInputMeasure(name=input)
+            return PydanticMetricInputMeasure(name=input)
         else:
             raise ValueError(
                 f"MetricInputMeasure inputs from model configs are expected to be of either type string or "
@@ -59,23 +59,20 @@ class MetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
         return MeasureReference(element_name=self.alias or self.name)
 
 
-class MetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
+class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
     """Describes the window of time the metric should be accumulated over, e.g., '1 day', '2 weeks', etc."""
 
     count: int
     granularity: TimeGranularity
 
-    def to_string(self) -> str:  # noqa: D
-        return f"{self.count} {self.granularity.value}"
-
     @classmethod
-    def _from_yaml_value(cls, input: PydanticParseableValueType) -> MetricTimeWindow:
+    def _from_yaml_value(cls, input: PydanticParseableValueType) -> PydanticMetricTimeWindow:
         """Parses a MetricTimeWindow from a string input found in a user provided model specification.
 
         The MetricTimeWindow is always expected to be provided as a string in user-defined YAML configs.
         """
         if isinstance(input, str):
-            return MetricTimeWindow.parse(input)
+            return PydanticMetricTimeWindow.parse(input)
         else:
             raise ValueError(
                 f"MetricTimeWindow inputs from model configs are expected to always be of type string, but got "
@@ -83,7 +80,7 @@ class MetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
             )
 
     @staticmethod
-    def parse(window: str) -> MetricTimeWindow:
+    def parse(window: str) -> PydanticMetricTimeWindow:
         """Returns window values if parsing succeeds, None otherwise.
 
         Output of the form: (<time unit count>, <time granularity>, <error message>) - error message is None if window
@@ -110,19 +107,19 @@ class MetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         if not count.isdigit():
             raise ParsingException(f"Invalid count ({count}) in cumulative metric window string: ({window})")
 
-        return MetricTimeWindow(
+        return PydanticMetricTimeWindow(
             count=int(count),
             granularity=string_to_time_granularity(granularity),
         )
 
 
-class MetricInput(HashableBaseModel):
+class PydanticMetricInput(HashableBaseModel):
     """Provides a pointer to a metric along with the additional properties used on that metric."""
 
     name: str
     filter: Optional[PydanticWhereFilter]
     alias: Optional[str]
-    offset_window: Optional[MetricTimeWindow]
+    offset_window: Optional[PydanticMetricTimeWindow]
     offset_to_grain: Optional[TimeGranularity]
 
     @property
@@ -131,17 +128,17 @@ class MetricInput(HashableBaseModel):
         return MetricReference(element_name=self.name)
 
 
-class MetricTypeParams(HashableBaseModel):
+class PydanticMetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
-    measure: Optional[MetricInputMeasure]
-    measures: Optional[List[MetricInputMeasure]]
-    numerator: Optional[MetricInputMeasure]
-    denominator: Optional[MetricInputMeasure]
+    measure: Optional[PydanticMetricInputMeasure]
+    measures: Optional[List[PydanticMetricInputMeasure]]
+    numerator: Optional[PydanticMetricInputMeasure]
+    denominator: Optional[PydanticMetricInputMeasure]
     expr: Optional[str]
-    window: Optional[MetricTimeWindow]
+    window: Optional[PydanticMetricTimeWindow]
     grain_to_date: Optional[TimeGranularity]
-    metrics: Optional[List[MetricInput]]
+    metrics: Optional[List[PydanticMetricInput]]
 
     @property
     def numerator_measure_reference(self) -> Optional[MeasureReference]:
@@ -154,18 +151,18 @@ class MetricTypeParams(HashableBaseModel):
         return self.denominator.measure_reference if self.denominator else None
 
 
-class Metric(HashableBaseModel, ModelWithMetadataParsing):
+class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a metric."""
 
     name: str
     description: Optional[str]
     type: MetricType
-    type_params: MetricTypeParams
+    type_params: PydanticMetricTypeParams
     filter: Optional[PydanticWhereFilter]
-    metadata: Optional[Metadata]
+    metadata: Optional[PydanticMetadata]
 
     @property
-    def input_measures(self) -> List[MetricInputMeasure]:
+    def input_measures(self) -> List[PydanticMetricInputMeasure]:
         """Return the complete list of input measure configurations for this metric."""
         tp = self.type_params
         res = tp.measures or []
@@ -184,6 +181,6 @@ class Metric(HashableBaseModel, ModelWithMetadataParsing):
         return [x.measure_reference for x in self.input_measures]
 
     @property
-    def input_metrics(self) -> List[MetricInput]:
+    def input_metrics(self) -> List[PydanticMetricInput]:
         """Return the associated input metrics for this metric."""
         return self.type_params.metrics or []

@@ -7,9 +7,9 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
-    MetricInput,
     MetricType,
-    MetricTypeParams,
+    PydanticMetricInput,
+    PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.model_validator import ModelValidator
@@ -71,7 +71,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                 metric_with_guaranteed_meta(
                     name="metric_with_no_time_dim",
                     type=MetricType.MEASURE_PROXY,
-                    type_params=MetricTypeParams(measures=[measure_name]),
+                    type_params=PydanticMetricTypeParams(measures=[measure_name]),
                 )
             ],
         )
@@ -101,7 +101,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name="metric_with_no_time_dim",
                         type=MetricType.MEASURE_PROXY,
-                        type_params=MetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
                     )
                 ],
             )
@@ -142,7 +142,7 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name="foo",
                         type=MetricType.MEASURE_PROXY,
-                        type_params=MetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
                     )
                 ],
             )
@@ -216,46 +216,50 @@ def test_derived_metric() -> None:  # noqa: D
                 metric_with_guaranteed_meta(
                     name="random_metric",
                     type=MetricType.MEASURE_PROXY,
-                    type_params=MetricTypeParams(measures=[measure_name]),
+                    type_params=PydanticMetricTypeParams(measures=[measure_name]),
                 ),
                 metric_with_guaranteed_meta(
                     name="random_metric2",
                     type=MetricType.MEASURE_PROXY,
-                    type_params=MetricTypeParams(measures=[measure_name]),
+                    type_params=PydanticMetricTypeParams(measures=[measure_name]),
                 ),
                 metric_with_guaranteed_meta(
                     name="alias_collision",
                     type=MetricType.DERIVED,
-                    type_params=MetricTypeParams(
+                    type_params=PydanticMetricTypeParams(
                         expr="random_metric2 * 2",
                         metrics=[
-                            MetricInput(name="random_metric", alias="random_metric2"),
-                            MetricInput(name="random_metric2"),
+                            PydanticMetricInput(name="random_metric", alias="random_metric2"),
+                            PydanticMetricInput(name="random_metric2"),
                         ],
                     ),
                 ),
                 metric_with_guaranteed_meta(
                     name="doesntexist",
                     type=MetricType.DERIVED,
-                    type_params=MetricTypeParams(expr="notexist * 2", metrics=[MetricInput(name="notexist")]),
+                    type_params=PydanticMetricTypeParams(
+                        expr="notexist * 2", metrics=[PydanticMetricInput(name="notexist")]
+                    ),
                 ),
                 metric_with_guaranteed_meta(
                     name="has_valid_time_window_params",
                     type=MetricType.DERIVED,
-                    type_params=MetricTypeParams(
+                    type_params=PydanticMetricTypeParams(
                         expr="random_metric / random_metric3",
                         metrics=[
-                            MetricInput(name="random_metric", offset_window="3 weeks"),
-                            MetricInput(name="random_metric", offset_to_grain="month", alias="random_metric3"),
+                            PydanticMetricInput(name="random_metric", offset_window="3 weeks"),
+                            PydanticMetricInput(name="random_metric", offset_to_grain="month", alias="random_metric3"),
                         ],
                     ),
                 ),
                 metric_with_guaranteed_meta(
                     name="has_both_time_offset_params_on_same_input_metric",
                     type=MetricType.DERIVED,
-                    type_params=MetricTypeParams(
+                    type_params=PydanticMetricTypeParams(
                         expr="random_metric * 2",
-                        metrics=[MetricInput(name="random_metric", offset_window="3 weeks", offset_to_grain="month")],
+                        metrics=[
+                            PydanticMetricInput(name="random_metric", offset_window="3 weeks", offset_to_grain="month")
+                        ],
                     ),
                 ),
             ],

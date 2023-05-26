@@ -3,6 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import List, Optional, Protocol, Sequence
 
+from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilter
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums.metric_type import MetricType
@@ -194,3 +195,8 @@ class Metric(Protocol):
     def input_metrics(self) -> List[MetricInput]:
         """Return the associated input metrics for this metric."""
         ...
+
+    @property
+    @abstractmethod
+    def metadata(self) -> Optional[Metadata]:  # noqa: D
+        pass

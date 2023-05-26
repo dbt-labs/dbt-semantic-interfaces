@@ -4,10 +4,10 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
 )
 from dbt_semantic_interfaces.implementations.metric import (
-    MetricInput,
-    MetricInputMeasure,
-    MetricTimeWindow,
     MetricType,
+    PydanticMetricInput,
+    PydanticMetricInputMeasure,
+    PydanticMetricTimeWindow,
 )
 from dbt_semantic_interfaces.parsing.dir_to_model import parse_yaml_files_to_model
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
@@ -36,7 +36,7 @@ def test_legacy_measure_metric_parsing() -> None:
     metric = build_result.model.metrics[0]
     assert metric.name == "legacy_test"
     assert metric.type is MetricType.MEASURE_PROXY
-    assert metric.type_params.measure == MetricInputMeasure(name="legacy_measure")
+    assert metric.type_params.measure == PydanticMetricInputMeasure(name="legacy_measure")
     assert metric.type_params.measures is None
 
 
@@ -59,14 +59,14 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
 
     assert len(build_result.model.metrics) == 1
     metric = build_result.model.metrics[0]
-    assert metric.type_params.measure == MetricInputMeasure(
+    assert metric.type_params.measure == PydanticMetricInputMeasure(
         name="legacy_measure_from_object",
         filter=PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}"""),
     )
 
 
 def test_metric_metadata_parsing() -> None:
-    """Test for asserting that internal metadata is parsed into the Metric object."""
+    """Test for asserting that internal metadata is parsed into the PydanticMetric object."""
     yaml_contents = textwrap.dedent(
         """\
         metric:
@@ -118,8 +118,8 @@ def test_ratio_metric_parsing() -> None:
     metric = build_result.model.metrics[0]
     assert metric.name == "ratio_test"
     assert metric.type is MetricType.RATIO
-    assert metric.type_params.numerator == MetricInputMeasure(name="numerator_measure")
-    assert metric.type_params.denominator == MetricInputMeasure(name="denominator_measure")
+    assert metric.type_params.numerator == PydanticMetricInputMeasure(name="numerator_measure")
+    assert metric.type_params.denominator == PydanticMetricInputMeasure(name="denominator_measure")
     assert metric.type_params.measures is None
 
 
@@ -144,13 +144,13 @@ def test_ratio_metric_input_measure_object_parsing() -> None:
 
     assert len(build_result.model.metrics) == 1
     metric = build_result.model.metrics[0]
-    assert metric.type_params.numerator == MetricInputMeasure(
+    assert metric.type_params.numerator == PydanticMetricInputMeasure(
         name="numerator_measure_from_object",
         filter=PydanticWhereFilter(
             where_sql_template="some_number > 5",
         ),
     )
-    assert metric.type_params.denominator == MetricInputMeasure(name="denominator_measure_from_object")
+    assert metric.type_params.denominator == PydanticMetricInputMeasure(name="denominator_measure_from_object")
 
 
 def test_expr_metric_parsing() -> None:
@@ -175,8 +175,8 @@ def test_expr_metric_parsing() -> None:
     assert metric.name == "expr_test"
     assert metric.type is MetricType.EXPR
     assert metric.type_params.measures == [
-        MetricInputMeasure(name="measure_one"),
-        MetricInputMeasure(name="measure_two"),
+        PydanticMetricInputMeasure(name="measure_one"),
+        PydanticMetricInputMeasure(name="measure_two"),
     ]
 
 
@@ -203,11 +203,11 @@ def test_expr_metric_input_measure_object_parsing() -> None:
     assert metric.name == "expr_test"
     assert metric.type is MetricType.EXPR
     assert metric.type_params.measures == [
-        MetricInputMeasure(
+        PydanticMetricInputMeasure(
             name="measure_one_from_object",
             filter=PydanticWhereFilter(where_sql_template="some_bool"),
         ),
-        MetricInputMeasure(name="measure_two_from_object"),
+        PydanticMetricInputMeasure(name="measure_two_from_object"),
     ]
 
 
@@ -232,8 +232,8 @@ def test_cumulative_window_metric_parsing() -> None:
     metric = build_result.model.metrics[0]
     assert metric.name == "cumulative_test"
     assert metric.type is MetricType.CUMULATIVE
-    assert metric.type_params.measures == [MetricInputMeasure(name="cumulative_measure")]
-    assert metric.type_params.window == MetricTimeWindow(count=7, granularity=TimeGranularity.DAY)
+    assert metric.type_params.measures == [PydanticMetricInputMeasure(name="cumulative_measure")]
+    assert metric.type_params.window == PydanticMetricTimeWindow(count=7, granularity=TimeGranularity.DAY)
 
 
 def test_grain_to_date_metric_parsing() -> None:
@@ -257,7 +257,7 @@ def test_grain_to_date_metric_parsing() -> None:
     metric = build_result.model.metrics[0]
     assert metric.name == "grain_to_date_test"
     assert metric.type is MetricType.CUMULATIVE
-    assert metric.type_params.measures == [MetricInputMeasure(name="cumulative_measure")]
+    assert metric.type_params.measures == [PydanticMetricInputMeasure(name="cumulative_measure")]
     assert metric.type_params.window is None
     assert metric.type_params.grain_to_date is TimeGranularity.WEEK
 
@@ -290,7 +290,7 @@ def test_derived_metric_offset_window_parsing() -> None:
     assert metric.type_params.metrics and len(metric.type_params.metrics) == 2
     metric1, metric2 = metric.type_params.metrics
     assert metric1.offset_window is None
-    assert metric2.offset_window == MetricTimeWindow(count=14, granularity=TimeGranularity.DAY)
+    assert metric2.offset_window == PydanticMetricTimeWindow(count=14, granularity=TimeGranularity.DAY)
     assert metric1.alias is None
     assert metric2.alias == "bookings_2_weeks_ago"
     assert metric.type_params.expr == "bookings / bookings_2_weeks_ago"
@@ -383,8 +383,8 @@ def test_derived_metric_input_parsing() -> None:
     assert metric.type_params
     assert metric.type_params.metrics
     assert len(metric.type_params.metrics) == 2
-    assert metric.type_params.metrics[0] == MetricInput(name="input_metric")
-    assert metric.type_params.metrics[1] == MetricInput(
+    assert metric.type_params.metrics[0] == PydanticMetricInput(name="input_metric")
+    assert metric.type_params.metrics[1] == PydanticMetricInput(
         name="input_metric",
         alias="constrained_input_metric",
         filter=PydanticWhereFilter(where_sql_template="input_metric < 10"),
