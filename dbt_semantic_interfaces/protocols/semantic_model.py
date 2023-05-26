@@ -6,6 +6,7 @@ from typing import List, Optional, Protocol, Sequence
 from dbt_semantic_interfaces.implementations.elements.dimension import Dimension
 from dbt_semantic_interfaces.protocols.entity import Entity
 from dbt_semantic_interfaces.protocols.measure import Measure
+from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.references import (
     LinkableElementReference,
     MeasureReference,
@@ -123,3 +124,8 @@ class SemanticModel(Protocol):
     def reference(self) -> SemanticModelReference:
         """Returns a reference to this semantic model."""
         ...
+
+    @property
+    @abstractmethod
+    def metadata(self) -> Optional[Metadata]:  # noqa: D
+        pass
