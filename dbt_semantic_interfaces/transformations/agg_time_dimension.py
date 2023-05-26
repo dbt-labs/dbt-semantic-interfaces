@@ -1,10 +1,13 @@
 import logging
 from typing import Optional
 
+from typing_extensions import override
+
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.references import TimeDimensionReference
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
@@ -14,8 +17,12 @@ from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 logger = logging.getLogger(__name__)
 
 
-class SetMeasureAggregationTimeDimensionRule(SemanticManifestTransformRule):
+class SetMeasureAggregationTimeDimensionRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
     """Sets the aggregation time dimension for measures to the primary time dimension if not defined."""
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @staticmethod
     def _find_primary_time_dimension(semantic_model: PydanticSemanticModel) -> Optional[TimeDimensionReference]:

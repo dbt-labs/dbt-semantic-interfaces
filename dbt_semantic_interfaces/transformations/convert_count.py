@@ -1,7 +1,10 @@
+from typing_extensions import override
+
 from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -10,8 +13,12 @@ from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 ONE = "1"
 
 
-class ConvertCountToSumRule(SemanticManifestTransformRule):
+class ConvertCountToSumRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
     """Converts any COUNT measures to SUM equivalent."""
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @staticmethod
     def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D

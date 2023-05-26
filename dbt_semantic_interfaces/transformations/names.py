@@ -1,9 +1,12 @@
 import logging
 
+from typing_extensions import override
+
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -11,8 +14,12 @@ from dbt_semantic_interfaces.transformations.transform_rule import (
 logger = logging.getLogger(__name__)
 
 
-class LowerCaseNamesRule(SemanticManifestTransformRule):
+class LowerCaseNamesRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
     """Lowercases the names of both top level objects and semantic model elements in a model."""
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @staticmethod
     def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D

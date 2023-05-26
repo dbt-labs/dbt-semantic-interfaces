@@ -1,5 +1,7 @@
 from typing import Set
 
+from typing_extensions import override
+
 from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.metric import (
     MetricType,
@@ -8,13 +10,18 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
 
 
-class AddInputMetricMeasuresRule(SemanticManifestTransformRule):
+class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
     """Add all measures corresponding to the input metrics of the derived metric."""
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @staticmethod
     def _get_measures_for_metric(model: PydanticSemanticManifest, metric_name: str) -> Set[PydanticMetricInputMeasure]:
