@@ -1,6 +1,9 @@
 import logging
 from typing import Sequence
 
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.transformations.add_input_metric_measures import (
     AddInputMetricMeasuresRule,
 )
@@ -27,14 +30,14 @@ class PydanticSemanticManifestTransformRuleSet:
     """Transform rules that should be used for the Pydantic implementation of SemanticManifest."""
 
     @property
-    def primary_rules(self) -> Sequence[SemanticManifestTransformRule]:  # noqa:
+    def primary_rules(self) -> Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]:  # noqa:
         return (
             LowerCaseNamesRule(),
             SetMeasureAggregationTimeDimensionRule(),
         )
 
     @property
-    def secondary_rules(self) -> Sequence[SemanticManifestTransformRule]:  # noqa: D
+    def secondary_rules(self) -> Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]:  # noqa: D
         return (
             CreateProxyMeasureRule(),
             BooleanMeasureAggregationRule(),
@@ -44,5 +47,5 @@ class PydanticSemanticManifestTransformRuleSet:
         )
 
     @property
-    def all_rules(self) -> Sequence[Sequence[SemanticManifestTransformRule]]:  # noqa: D
+    def all_rules(self) -> Sequence[Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]]:  # noqa: D
         return self.primary_rules, self.secondary_rules
