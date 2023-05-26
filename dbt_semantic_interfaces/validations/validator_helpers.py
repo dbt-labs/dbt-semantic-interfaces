@@ -272,7 +272,7 @@ class ModelValidationResults(FrozenBaseModel):
         """Creates a new ModelValidatorResults instance from multiple instances.
 
         This is useful when there are multiple validators that are run and the
-        combined results are desirable. For instance there is a ModelValidator
+        combined results are desirable. For instance there is a SemanticManifestValidator
         and a DataWarehouseModelValidator. These both return validation issues.
         If it's desirable to combine the results, the following makes it easy.
         """

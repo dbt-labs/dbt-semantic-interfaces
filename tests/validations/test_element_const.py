@@ -8,7 +8,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
-from dbt_semantic_interfaces.model_validator import ModelValidator
+from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.validations.element_const import ElementConsistencyRule
@@ -58,7 +58,7 @@ def test_cross_element_names(  # noqa:D
             "model"
         ),
     ):
-        ModelValidator([ElementConsistencyRule()]).checked_validations(model)
+        SemanticManifestValidator([ElementConsistencyRule()]).checked_validations(model)
 
     model.semantic_models[usable_ds_index] = ds_measure_x_entity
     with pytest.raises(
@@ -68,7 +68,7 @@ def test_cross_element_names(  # noqa:D
             "used as types .*?SemanticModelElementType.ENTITY.*?SemanticModelElementType.MEASURE.*? across the model"
         ),
     ):
-        ModelValidator([ElementConsistencyRule()]).checked_validations(model)
+        SemanticManifestValidator([ElementConsistencyRule()]).checked_validations(model)
 
     model.semantic_models[usable_ds_index] = ds_dimension_x_entity
     with pytest.raises(
@@ -78,4 +78,4 @@ def test_cross_element_names(  # noqa:D
             "used as types .*?SemanticModelElementType.DIMENSION.*?SemanticModelElementType.ENTITY.*? across the model"
         ),
     ):
-        ModelValidator([ElementConsistencyRule()]).checked_validations(model)
+        SemanticManifestValidator([ElementConsistencyRule()]).checked_validations(model)

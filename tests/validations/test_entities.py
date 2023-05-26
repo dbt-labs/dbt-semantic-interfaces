@@ -8,7 +8,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
-from dbt_semantic_interfaces.model_validator import ModelValidator
+from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_validation_ready_model,
 )
@@ -43,7 +43,7 @@ def test_semantic_model_cant_have_more_than_one_primary_entity(
         entity.type = EntityType.PRIMARY
         entity_references.add(entity.reference)
 
-    model_issues = ModelValidator([OnePrimaryEntityPerSemanticModelRule()]).validate_model(model)
+    model_issues = SemanticManifestValidator([OnePrimaryEntityPerSemanticModelRule()]).validate_model(model)
 
     future_issue = (
         f"Semantic models can have only one primary entity. The semantic model"
@@ -95,7 +95,7 @@ def test_multiple_natural_entities() -> None:
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), natural_entity_file])
 
     with pytest.raises(ModelValidationException, match="can have at most one natural entity"):
-        ModelValidator([NaturalEntityConfigurationRule()]).checked_validations(model.model)
+        SemanticManifestValidator([NaturalEntityConfigurationRule()]).checked_validations(model.model)
 
 
 def test_natural_entity_used_in_wrong_context() -> None:
@@ -119,4 +119,4 @@ def test_natural_entity_used_in_wrong_context() -> None:
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), natural_entity_file])
 
     with pytest.raises(ModelValidationException, match="use of `natural` entities is currently supported only in"):
-        ModelValidator([NaturalEntityConfigurationRule()]).checked_validations(model.model)
+        SemanticManifestValidator([NaturalEntityConfigurationRule()]).checked_validations(model.model)

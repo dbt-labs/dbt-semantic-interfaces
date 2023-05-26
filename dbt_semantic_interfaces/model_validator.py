@@ -43,7 +43,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 logger = logging.getLogger(__name__)
 
 
-class ModelValidator:
+class SemanticManifestValidator:
     """A Validator that acts on SemanticManifest."""
 
     DEFAULT_RULES = (
@@ -76,7 +76,9 @@ class ModelValidator:
         """
         # Raises an error if 'rules' is an empty sequence or None
         if not rules:
-            raise ValueError("ModelValidator 'rules' must be a sequence with at least one ModelValidationRule.")
+            raise ValueError(
+                "SemanticManifestValidator 'rules' must be a sequence with at least one ModelValidationRule."
+            )
 
         self._rules = rules
         self._executor = ProcessPoolExecutor(max_workers=max_workers)
