@@ -11,7 +11,7 @@ from dbt_semantic_interfaces.references import MeasureReference, TimeDimensionRe
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 
 
-class NonAdditiveDimensionParameters(HashableBaseModel):
+class PydanticNonAdditiveDimensionParameters(HashableBaseModel):
     """Describes the params for specifying non-additive dimensions in a measure.
 
     NOTE: Currently, only TimeDimensions are supported for this filter
@@ -24,7 +24,7 @@ class NonAdditiveDimensionParameters(HashableBaseModel):
     window_groupings: List[str] = []
 
 
-class MeasureAggregationParameters(HashableBaseModel):
+class PydanticMeasureAggregationParameters(HashableBaseModel):
     """Describes parameters for aggregations."""
 
     percentile: Optional[float] = None
@@ -32,7 +32,7 @@ class MeasureAggregationParameters(HashableBaseModel):
     use_approximate_percentile: bool = False
 
 
-class Measure(HashableBaseModel, ModelWithMetadataParsing):
+class PydanticMeasure(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a measure."""
 
     name: str
@@ -40,9 +40,9 @@ class Measure(HashableBaseModel, ModelWithMetadataParsing):
     description: Optional[str]
     create_metric: Optional[bool]
     expr: Optional[str] = None
-    agg_params: Optional[MeasureAggregationParameters]
+    agg_params: Optional[PydanticMeasureAggregationParameters]
     metadata: Optional[Metadata]
-    non_additive_dimension: Optional[NonAdditiveDimensionParameters] = None
+    non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters] = None
     agg_time_dimension: Optional[str] = None
 
     @property

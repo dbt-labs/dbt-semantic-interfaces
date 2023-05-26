@@ -4,7 +4,7 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimension,
     PydanticDimensionTypeParams,
 )
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
     Metric,
     MetricType,
@@ -47,7 +47,7 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="dim1",
-                        measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
+                        measures=[PydanticMeasure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
                             PydanticDimension(
                                 name=dim_name,
@@ -85,7 +85,7 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="dim1",
-                        measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
+                        measures=[PydanticMeasure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
                             PydanticDimension(
                                 name=dim_name,
@@ -139,7 +139,7 @@ def test_multiple_primary_time_dimensions() -> None:  # noqa:D
                             schema_name="schema",
                         ),
                         measures=[
-                            Measure(
+                            PydanticMeasure(
                                 name=measure_reference.element_name,
                                 agg=AggregationType.SUM,
                                 agg_time_dimension=dimension_reference.element_name,

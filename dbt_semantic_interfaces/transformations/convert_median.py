@@ -1,6 +1,6 @@
 from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.elements.measure import (
-    MeasureAggregationParameters,
+    PydanticMeasureAggregationParameters,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
@@ -20,7 +20,7 @@ class ConvertMedianToPercentileRule(ModelTransformRule):
                     measure.agg = AggregationType.PERCENTILE
 
                     if not measure.agg_params:
-                        measure.agg_params = MeasureAggregationParameters()
+                        measure.agg_params = PydanticMeasureAggregationParameters()
                     else:
                         if measure.agg_params.percentile is not None and measure.agg_params.percentile != 0.5:
                             raise ModelTransformError(

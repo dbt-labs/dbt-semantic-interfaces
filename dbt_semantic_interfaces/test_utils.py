@@ -6,9 +6,11 @@ from typing import Callable, Optional, Sequence, Tuple
 import dateutil.parser
 
 from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
-from dbt_semantic_interfaces.implementations.elements.entity import Entity
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
-from dbt_semantic_interfaces.implementations.filters.where_filter import WhereFilter
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
+    PydanticWhereFilter,
+)
 from dbt_semantic_interfaces.implementations.metadata import FileSlice, Metadata
 from dbt_semantic_interfaces.implementations.metric import (
     Metric,
@@ -115,7 +117,7 @@ def metric_with_guaranteed_meta(
     name: str,
     type: MetricType,
     type_params: MetricTypeParams,
-    where_filter: Optional[WhereFilter] = None,
+    where_filter: Optional[PydanticWhereFilter] = None,
     metadata: Metadata = default_meta(),
     description: str = "adhoc metric",
 ) -> Metric:
@@ -138,8 +140,8 @@ def semantic_model_with_guaranteed_meta(
     description: Optional[str] = None,
     node_relation: Optional[NodeRelation] = None,
     metadata: Metadata = default_meta(),
-    entities: Sequence[Entity] = (),
-    measures: Sequence[Measure] = (),
+    entities: Sequence[PydanticEntity] = (),
+    measures: Sequence[PydanticMeasure] = (),
     dimensions: Sequence[PydanticDimension] = (),
 ) -> SemanticModel:
     """Creates a semantic model with the given input.

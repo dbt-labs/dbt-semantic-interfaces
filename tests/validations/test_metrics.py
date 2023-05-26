@@ -4,8 +4,8 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimension,
     PydanticDimensionTypeParams,
 )
-from dbt_semantic_interfaces.implementations.elements.entity import Entity
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
     MetricInput,
     MetricType,
@@ -48,7 +48,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure2",
                     measures=[
-                        Measure(
+                        PydanticMeasure(
                             name=measure_name,
                             agg=AggregationType.SUM,
                             agg_time_dimension=dim2_name,
@@ -88,7 +88,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="sum_measure",
-                        measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
+                        measures=[PydanticMeasure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
                             PydanticDimension(
                                 name=dim_name,
@@ -119,7 +119,7 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="sum_measure",
-                        measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
+                        measures=[PydanticMeasure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
                             PydanticDimension(
                                 name=dim_name,
@@ -157,7 +157,9 @@ def test_generated_metrics_only() -> None:  # noqa:D
     entity_reference = EntityReference(element_name="primary")
     semantic_model = semantic_model_with_guaranteed_meta(
         name="dim1",
-        measures=[Measure(name=measure_name, agg=AggregationType.SUM, agg_time_dimension=dim2_reference.element_name)],
+        measures=[
+            PydanticMeasure(name=measure_name, agg=AggregationType.SUM, agg_time_dimension=dim2_reference.element_name)
+        ],
         dimensions=[
             PydanticDimension(name=dim_reference.element_name, type=DimensionType.CATEGORICAL),
             PydanticDimension(
@@ -170,7 +172,7 @@ def test_generated_metrics_only() -> None:  # noqa:D
             ),
         ],
         entities=[
-            Entity(name=entity_reference.element_name, type=EntityType.PRIMARY),
+            PydanticEntity(name=entity_reference.element_name, type=EntityType.PRIMARY),
         ],
     )
     semantic_model.measures[0].create_metric = True
@@ -192,7 +194,7 @@ def test_derived_metric() -> None:  # noqa: D
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure",
                     measures=[
-                        Measure(
+                        PydanticMeasure(
                             name=measure_name,
                             agg=AggregationType.SUM,
                             agg_time_dimension="ds",

@@ -5,8 +5,8 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimensionTypeParams,
     PydanticDimensionValidityParams,
 )
-from dbt_semantic_interfaces.implementations.elements.entity import Entity
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metadata import FileSlice, Metadata
 from dbt_semantic_interfaces.implementations.metric import (
     Metric,
@@ -111,7 +111,7 @@ class RuntimeCheckableEntity(EntityProtocol, Protocol):
 
 
 def test_entity_protocol() -> None:  # noqa: D
-    test_entity = Entity(
+    test_entity = PydanticEntity(
         name="test_name",
         type=EntityType.PRIMARY,
     )
@@ -126,7 +126,7 @@ class RuntimeCheckableMeasure(MeasureProtocol, Protocol):
 
 
 def test_measure_protocol() -> None:  # noqa: D
-    test_measure = Measure(
+    test_measure = PydanticMeasure(
         name="test_measure",
         agg=AggregationType.SUM,
         agg_time_dimension="some_time_dimension",

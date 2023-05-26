@@ -11,7 +11,7 @@ from dbt_semantic_interfaces.references import EntityReference
 from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 
 
-class Entity(HashableBaseModel, ModelWithMetadataParsing):
+class PydanticEntity(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a entity."""
 
     name: str

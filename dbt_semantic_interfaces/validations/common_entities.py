@@ -1,6 +1,6 @@
 from typing import Dict, List, Sequence, Set
 
-from dbt_semantic_interfaces.implementations.elements.entity import Entity
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
@@ -36,7 +36,7 @@ class CommonEntitysRule(ModelValidationRule):
     @staticmethod
     @validate_safely(whats_being_done="checking entity exists on more than one semantic model")
     def _check_entity(
-        entity: Entity,
+        entity: PydanticEntity,
         semantic_model: SemanticModel,
         entities_to_semantic_models: Dict[EntityReference, Set[str]],
     ) -> List[ValidationIssue]:

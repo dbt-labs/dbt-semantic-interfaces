@@ -5,7 +5,7 @@ from typing import Sequence
 
 import pytest
 
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metadata import Metadata
 from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
 from dbt_semantic_interfaces.parsing.yaml_loader import YamlConfigLoader
@@ -90,7 +90,7 @@ def _assert_metadata_filename_is_valid(metadata: Metadata) -> None:
     ), f"Expected repo file path to be fully resolved, but it is filename only. Metadata: {metadata}"
 
 
-def _assert_measure_metadata_is_valid(measures: Sequence[Measure]) -> None:
+def _assert_measure_metadata_is_valid(measures: Sequence[PydanticMeasure]) -> None:
     """Sequence of assertion steps to show that we are parsing metadata consistently for measures.
 
     The assertions check that:

@@ -9,7 +9,9 @@ from dbt_semantic_interfaces.implementations.base import (
     PydanticCustomInputParser,
     PydanticParseableValueType,
 )
-from dbt_semantic_interfaces.implementations.filters.where_filter import WhereFilter
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
+    PydanticWhereFilter,
+)
 from dbt_semantic_interfaces.implementations.metadata import Metadata
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums.metric_type import MetricType
@@ -27,7 +29,7 @@ class MetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
     """
 
     name: str
-    filter: Optional[WhereFilter]
+    filter: Optional[PydanticWhereFilter]
     alias: Optional[str]
 
     @classmethod
@@ -118,7 +120,7 @@ class MetricInput(HashableBaseModel):
     """Provides a pointer to a metric along with the additional properties used on that metric."""
 
     name: str
-    filter: Optional[WhereFilter]
+    filter: Optional[PydanticWhereFilter]
     alias: Optional[str]
     offset_window: Optional[MetricTimeWindow]
     offset_to_grain: Optional[TimeGranularity]
@@ -159,7 +161,7 @@ class Metric(HashableBaseModel, ModelWithMetadataParsing):
     description: Optional[str]
     type: MetricType
     type_params: MetricTypeParams
-    filter: Optional[WhereFilter]
+    filter: Optional[PydanticWhereFilter]
     metadata: Optional[Metadata]
 
     @property

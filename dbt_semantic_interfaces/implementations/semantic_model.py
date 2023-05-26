@@ -9,8 +9,8 @@ from dbt_semantic_interfaces.implementations.base import (
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
-from dbt_semantic_interfaces.implementations.elements.entity import Entity
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metadata import Metadata
 from dbt_semantic_interfaces.references import (
     LinkableElementReference,
@@ -67,8 +67,8 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
     description: Optional[str]
     node_relation: NodeRelation
 
-    entities: Sequence[Entity] = []
-    measures: Sequence[Measure] = []
+    entities: Sequence[PydanticEntity] = []
+    measures: Sequence[PydanticMeasure] = []
     dimensions: Sequence[PydanticDimension] = []
 
     metadata: Optional[Metadata]
@@ -126,7 +126,7 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
     def reference(self) -> SemanticModelReference:  # noqa: D
         return SemanticModelReference(semantic_model_name=self.name)
 
-    def get_measure(self, measure_reference: MeasureReference) -> Measure:  # noqa: D
+    def get_measure(self, measure_reference: MeasureReference) -> PydanticMeasure:  # noqa: D
         for measure in self.measures:
             if measure.reference == measure_reference:
                 return measure
@@ -142,7 +142,7 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
 
         raise ValueError(f"No dimension with name ({dimension_reference}) in semantic_model with name ({self.name})")
 
-    def get_entity(self, entity_reference: LinkableElementReference) -> Entity:  # noqa: D
+    def get_entity(self, entity_reference: LinkableElementReference) -> PydanticEntity:  # noqa: D
         for entity in self.entities:
             if entity.reference == entity_reference:
                 return entity
