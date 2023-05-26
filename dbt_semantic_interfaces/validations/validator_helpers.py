@@ -376,7 +376,7 @@ class DimensionInvariants:
     is_partition: bool
 
 
-class ModelValidationRule(ABC):
+class SemanticManifestValidationRule(ABC):
     """Encapsulates logic for checking the values of objects in a model."""
 
     @classmethod

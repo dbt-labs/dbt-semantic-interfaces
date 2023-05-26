@@ -4,14 +4,14 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     ValidationError,
     ValidationIssue,
     validate_safely,
 )
 
 
-class NonEmptyRule(ModelValidationRule):
+class NonEmptyRule(SemanticManifestValidationRule):
     """Check if the model contains semantic models and metrics."""
 
     @staticmethod

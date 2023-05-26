@@ -7,7 +7,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 from dbt_semantic_interfaces.references import SemanticModelReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelContext,
     SemanticModelElementType,
     ValidationError,
@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class ElementConsistencyRule(ModelValidationRule):
+class ElementConsistencyRule(SemanticManifestValidationRule):
     """Checks that elements in semantic models with the same name are of the same element type across the model.
 
     This reduces the potential confusion that might arise from having an entity named `country` and a dimension

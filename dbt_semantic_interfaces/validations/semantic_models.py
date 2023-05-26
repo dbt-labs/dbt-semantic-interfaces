@@ -8,7 +8,7 @@ from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelContext,
     ValidationError,
     ValidationIssue,
@@ -18,7 +18,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 logger = logging.getLogger(__name__)
 
 
-class SemanticModelTimeDimensionWarningsRule(ModelValidationRule):
+class SemanticModelTimeDimensionWarningsRule(SemanticManifestValidationRule):
     """Checks time dimensions in semantic models."""
 
     @staticmethod
@@ -78,7 +78,7 @@ class SemanticModelTimeDimensionWarningsRule(ModelValidationRule):
         return issues
 
 
-class SemanticModelValidityWindowRule(ModelValidationRule):
+class SemanticModelValidityWindowRule(SemanticManifestValidationRule):
     """Checks validity windows in semantic models to ensure they comply with runtime requirements."""
 
     @staticmethod

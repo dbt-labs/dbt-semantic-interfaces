@@ -12,7 +12,7 @@ from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     DimensionInvariants,
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelElementContext,
     SemanticModelElementType,
     ValidationError,
@@ -21,7 +21,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class DimensionConsistencyRule(ModelValidationRule):
+class DimensionConsistencyRule(SemanticManifestValidationRule):
     """Checks for consistent dimension properties in the semantic models in a model.
 
     * Dimensions with the same name should be of the same type.

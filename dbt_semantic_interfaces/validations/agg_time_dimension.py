@@ -9,7 +9,7 @@ from dbt_semantic_interfaces.references import (
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelElementContext,
     SemanticModelElementType,
     ValidationError,
@@ -18,7 +18,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class AggregationTimeDimensionRule(ModelValidationRule):
+class AggregationTimeDimensionRule(SemanticManifestValidationRule):
     """Checks that the agg time dimension for a measure points to a valid time dimension in the semantic model."""
 
     @staticmethod

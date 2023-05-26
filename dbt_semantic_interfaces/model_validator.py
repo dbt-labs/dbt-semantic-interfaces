@@ -36,8 +36,8 @@ from dbt_semantic_interfaces.validations.semantic_models import (
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
     ModelValidationException,
-    ModelValidationRule,
     SemanticManifestValidationResults,
+    SemanticManifestValidationRule,
 )
 
 logger = logging.getLogger(__name__)
@@ -67,7 +67,7 @@ class SemanticManifestValidator:
         MeasuresNonAdditiveDimensionRule(),
     )
 
-    def __init__(self, rules: Sequence[ModelValidationRule] = DEFAULT_RULES, max_workers: int = 1) -> None:
+    def __init__(self, rules: Sequence[SemanticManifestValidationRule] = DEFAULT_RULES, max_workers: int = 1) -> None:
         """Constructor.
 
         Args:
@@ -77,7 +77,7 @@ class SemanticManifestValidator:
         # Raises an error if 'rules' is an empty sequence or None
         if not rules:
             raise ValueError(
-                "SemanticManifestValidator 'rules' must be a sequence with at least one ModelValidationRule."
+                "SemanticManifestValidator 'rules' must be a sequence with at least one SemanticManifestValidationRule."
             )
 
         self._rules = rules

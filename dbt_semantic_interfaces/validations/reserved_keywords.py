@@ -5,7 +5,7 @@ from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelElementReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelContext,
     SemanticModelElementContext,
     SemanticModelElementType,
@@ -47,7 +47,7 @@ RESERVED_KEYWORDS = (
 )
 
 
-class ReservedKeywordsRule(ModelValidationRule):
+class ReservedKeywordsRule(SemanticManifestValidationRule):
     """Check that any element that ends up being selected by name (instead of expr) isn't a commonly reserved keyword.
 
     Note: This rule DOES NOT catch all keywords. That is because keywords are

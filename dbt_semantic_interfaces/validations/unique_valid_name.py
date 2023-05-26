@@ -17,7 +17,7 @@ from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     MetricContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelContext,
     SemanticModelElementContext,
     SemanticModelElementType,
@@ -49,7 +49,7 @@ class MetricFlowReservedKeywords(enum.Enum):
             assert_values_exhausted(keyword)
 
 
-class UniqueAndValidNameRule(ModelValidationRule):
+class UniqueAndValidNameRule(SemanticManifestValidationRule):
     """Check that names are unique and valid.
 
     * Names of elements in semantic models are unique / valid within the semantic model.

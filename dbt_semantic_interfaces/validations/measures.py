@@ -12,7 +12,7 @@ from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValid
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     MetricContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelElementContext,
     SemanticModelElementReference,
     SemanticModelElementType,
@@ -23,7 +23,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class SemanticModelMeasuresUniqueRule(ModelValidationRule):
+class SemanticModelMeasuresUniqueRule(SemanticManifestValidationRule):
     """Asserts all measure names are unique across the model."""
 
     @staticmethod
@@ -55,7 +55,7 @@ class SemanticModelMeasuresUniqueRule(ModelValidationRule):
         return issues
 
 
-class MeasureConstraintAliasesRule(ModelValidationRule):
+class MeasureConstraintAliasesRule(SemanticManifestValidationRule):
     """Checks that aliases are configured correctly for constrained measure references.
 
     These are, currently, only applicable for PydanticMetric types, since the MetricInputMeasure is only
@@ -181,7 +181,7 @@ class MeasureConstraintAliasesRule(ModelValidationRule):
         return issues
 
 
-class MetricMeasuresRule(ModelValidationRule):
+class MetricMeasuresRule(SemanticManifestValidationRule):
     """Checks that the measures referenced in the metrics exist."""
 
     @staticmethod
@@ -218,7 +218,7 @@ class MetricMeasuresRule(ModelValidationRule):
         return issues
 
 
-class MeasuresNonAdditiveDimensionRule(ModelValidationRule):
+class MeasuresNonAdditiveDimensionRule(SemanticManifestValidationRule):
     """Checks that the measure's non_additive_dimensions are properly defined."""
 
     @staticmethod
@@ -373,7 +373,7 @@ class MeasuresNonAdditiveDimensionRule(ModelValidationRule):
         return issues
 
 
-class CountAggregationExprRule(ModelValidationRule):
+class CountAggregationExprRule(SemanticManifestValidationRule):
     """Checks that COUNT measures have an expr provided."""
 
     @staticmethod
@@ -424,7 +424,7 @@ class CountAggregationExprRule(ModelValidationRule):
         return issues
 
 
-class PercentileAggregationRule(ModelValidationRule):
+class PercentileAggregationRule(SemanticManifestValidationRule):
     """Checks that only PERCENTILE measures have agg_params and valid percentile value provided."""
 
     @staticmethod

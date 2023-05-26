@@ -8,7 +8,7 @@ from dbt_semantic_interfaces.references import SemanticModelReference
 from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelContext,
     ValidationError,
     ValidationFutureError,
@@ -19,7 +19,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 logger = logging.getLogger(__name__)
 
 
-class NaturalEntityConfigurationRule(ModelValidationRule):
+class NaturalEntityConfigurationRule(SemanticManifestValidationRule):
     """Ensures that entities marked as EntityType.NATURAL are configured correctly."""
 
     @staticmethod
@@ -72,7 +72,7 @@ class NaturalEntityConfigurationRule(ModelValidationRule):
         return issues
 
 
-class OnePrimaryEntityPerSemanticModelRule(ModelValidationRule):
+class OnePrimaryEntityPerSemanticModelRule(SemanticManifestValidationRule):
     """Ensures that each semantic model has only one primary entity."""
 
     @staticmethod

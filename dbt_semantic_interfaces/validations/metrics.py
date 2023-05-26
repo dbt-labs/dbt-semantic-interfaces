@@ -10,14 +10,14 @@ from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValid
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     MetricContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     ValidationError,
     ValidationIssue,
     validate_safely,
 )
 
 
-class CumulativeMetricRule(ModelValidationRule):
+class CumulativeMetricRule(SemanticManifestValidationRule):
     """Checks that cumulative sum metrics are configured properly."""
 
     @staticmethod
@@ -67,7 +67,7 @@ class CumulativeMetricRule(ModelValidationRule):
         return issues
 
 
-class DerivedMetricRule(ModelValidationRule):
+class DerivedMetricRule(SemanticManifestValidationRule):
     """Checks that derived metrics are configured properly."""
 
     @staticmethod

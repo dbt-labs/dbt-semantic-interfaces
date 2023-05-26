@@ -9,7 +9,7 @@ from dbt_semantic_interfaces.references import (
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelElementContext,
     SemanticModelElementType,
     ValidationIssue,
@@ -18,7 +18,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class CommonEntitysRule(ModelValidationRule):
+class CommonEntitysRule(SemanticManifestValidationRule):
     """Checks that entities exist on more than one semantic model."""
 
     @staticmethod
