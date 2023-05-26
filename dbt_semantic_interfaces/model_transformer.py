@@ -1,10 +1,12 @@
 import copy
 import logging
-from typing import Optional, Sequence
+from abc import abstractmethod
+from typing import Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.transformations.pydantic_rule_set import (
     PydanticSemanticManifestTransformRuleSet,
 )
@@ -15,17 +17,18 @@ from dbt_semantic_interfaces.transformations.transform_rule import (
 logger = logging.getLogger(__name__)
 
 
-class PydanticSemanticManifestTransformer:
+class SemanticManifestTransformer(Protocol[SemanticManifestT]):
     """Helps to make transformations to a model for convenience.
 
     Generally used to make it more convenient for the user to develop their model.
     """
 
-    @staticmethod
+    @abstractmethod
     def transform(
-        model: PydanticSemanticManifest,
+        self,
+        model: SemanticManifestT,
         ordered_rule_sequences: Optional[Sequence[Sequence[SemanticManifestTransformRule]]] = None,
-    ) -> PydanticSemanticManifest:
+    ) -> SemanticManifestT:
         """Copies the passed in model, applies the rules to the new model, and then returns that model.
 
         It's important to note that some rules need to happen before or after other rules. Thus rules
@@ -33,6 +36,17 @@ class PydanticSemanticManifestTransformer:
         secondary rules. We don't currently have tertiary, quaternary, or etc currently, but this
         system easily allows for it.
         """
+        pass
+
+
+class PydanticSemanticManifestTransformer:
+    """Transforms PydanticSemanticManifest."""
+
+    @staticmethod
+    def transform(  # noqa: D
+        model: PydanticSemanticManifest,
+        ordered_rule_sequences: Optional[Sequence[Sequence[SemanticManifestTransformRule]]] = None,
+    ) -> PydanticSemanticManifest:
         if ordered_rule_sequences is None:
             ordered_rule_sequences = PydanticSemanticManifestTransformRuleSet().all_rules
 
