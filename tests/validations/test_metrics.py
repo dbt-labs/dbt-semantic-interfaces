@@ -30,7 +30,7 @@ from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
 )
 
 
@@ -81,7 +81,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
 
 
 def test_metric_no_time_dim() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException):
+    with pytest.raises(SemanticManifestValidationException):
         dim_name = "country"
         measure_name = "foo"
         model_validator = SemanticManifestValidator()
@@ -111,7 +111,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
 
 
 def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException):
+    with pytest.raises(SemanticManifestValidationException):
         dim_name = "date_created"
         dim2_name = "date_deleted"
         measure_name = "foo"

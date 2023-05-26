@@ -13,7 +13,7 @@ from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.validations.element_const import ElementConsistencyRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
     SemanticModelElementType,
 )
 
@@ -51,7 +51,7 @@ def test_cross_element_names(  # noqa:D
 
     model.semantic_models[usable_ds_index] = ds_measure_x_dimension
     with pytest.raises(
-        ModelValidationException,
+        SemanticManifestValidationException,
         match=(
             f"element `{measure_reference.element_name}` is of type {SemanticModelElementType.DIMENSION}, but it is "
             "used as types .*?SemanticModelElementType.DIMENSION.*?SemanticModelElementType.MEASURE.*? across the "
@@ -62,7 +62,7 @@ def test_cross_element_names(  # noqa:D
 
     model.semantic_models[usable_ds_index] = ds_measure_x_entity
     with pytest.raises(
-        ModelValidationException,
+        SemanticManifestValidationException,
         match=(
             f"element `{measure_reference.element_name}` is of type {SemanticModelElementType.ENTITY}, but it is "
             "used as types .*?SemanticModelElementType.ENTITY.*?SemanticModelElementType.MEASURE.*? across the model"
@@ -72,7 +72,7 @@ def test_cross_element_names(  # noqa:D
 
     model.semantic_models[usable_ds_index] = ds_dimension_x_entity
     with pytest.raises(
-        ModelValidationException,
+        SemanticManifestValidationException,
         match=(
             f"element `{dimension_reference.element_name}` is of type {SemanticModelElementType.DIMENSION}, but it is "
             "used as types .*?SemanticModelElementType.DIMENSION.*?SemanticModelElementType.ENTITY.*? across the model"

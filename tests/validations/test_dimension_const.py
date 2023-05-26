@@ -35,12 +35,12 @@ from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelTimeDimensionWarningsRule,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
 )
 
 
 def test_incompatible_dimension_type() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException, match=r"type conflict for dimension"):
+    with pytest.raises(SemanticManifestValidationException, match=r"type conflict for dimension"):
         dim_name = "dim"
         measure_name = "measure"
         model_validator = SemanticManifestValidator([DimensionConsistencyRule()])
@@ -78,7 +78,7 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
 
 
 def test_incompatible_dimension_is_partition() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException, match=r"conflicting is_partition attribute for dimension"):
+    with pytest.raises(SemanticManifestValidationException, match=r"conflicting is_partition attribute for dimension"):
         dim_name = "dim1"
         measure_name = "measure"
         model_validator = SemanticManifestValidator([DimensionConsistencyRule()])
@@ -126,7 +126,7 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
 
 
 def test_multiple_primary_time_dimensions() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException, match=r"one of many defined as primary"):
+    with pytest.raises(SemanticManifestValidationException, match=r"one of many defined as primary"):
         dimension_reference = TimeDimensionReference(element_name="ds")
         dimension_reference2 = DimensionReference(element_name="not_ds")
         measure_reference = MeasureReference(element_name="measure")

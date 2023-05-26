@@ -26,7 +26,7 @@ from dbt_semantic_interfaces.parsing.yaml_loader import (
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationException,
+    SemanticManifestValidationException,
     SemanticManifestValidationResults,
     ValidationError,
     ValidationIssue,
@@ -172,7 +172,7 @@ def parse_yaml_files_to_validation_ready_model(
         build_issues = SemanticManifestValidationResults.merge([build_issues, transformation_issue_results])
 
     if raise_issues_as_exceptions and build_issues.has_blocking_issues:
-        raise ModelValidationException(build_issues.all_issues)
+        raise SemanticManifestValidationException(build_issues.all_issues)
 
     return ModelBuildResult(model=model, issues=build_issues)
 

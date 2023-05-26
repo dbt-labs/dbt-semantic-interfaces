@@ -386,7 +386,7 @@ class SemanticManifestValidationRule(ABC):
         pass
 
 
-class ModelValidationException(Exception):
+class SemanticManifestValidationException(Exception):
     """Exception raised when validation of a model fails."""
 
     def __init__(self, issues: Tuple[ValidationIssue, ...]) -> None:  # noqa: D

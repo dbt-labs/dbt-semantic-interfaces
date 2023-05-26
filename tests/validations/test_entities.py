@@ -23,7 +23,7 @@ from dbt_semantic_interfaces.validations.entities import (
     OnePrimaryEntityPerSemanticModelRule,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
 )
 
 
@@ -94,7 +94,7 @@ def test_multiple_natural_entities() -> None:
     natural_entity_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), natural_entity_file])
 
-    with pytest.raises(ModelValidationException, match="can have at most one natural entity"):
+    with pytest.raises(SemanticManifestValidationException, match="can have at most one natural entity"):
         SemanticManifestValidator([NaturalEntityConfigurationRule()]).checked_validations(model.model)
 
 
@@ -118,5 +118,7 @@ def test_natural_entity_used_in_wrong_context() -> None:
     natural_entity_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), natural_entity_file])
 
-    with pytest.raises(ModelValidationException, match="use of `natural` entities is currently supported only in"):
+    with pytest.raises(
+        SemanticManifestValidationException, match="use of `natural` entities is currently supported only in"
+    ):
         SemanticManifestValidator([NaturalEntityConfigurationRule()]).checked_validations(model.model)

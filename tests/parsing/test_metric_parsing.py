@@ -13,7 +13,7 @@ from dbt_semantic_interfaces.parsing.dir_to_model import parse_yaml_files_to_mod
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
 )
 
 
@@ -407,7 +407,9 @@ def test_invalid_metric_type_parsing_error() -> None:
 
     build_result = parse_yaml_files_to_model(files=[file])
     assert build_result.issues.has_blocking_issues
-    assert "'this is not a valid type' is not one of" in str(ModelValidationException(build_result.issues.all_issues))
+    assert "'this is not a valid type' is not one of" in str(
+        SemanticManifestValidationException(build_result.issues.all_issues)
+    )
 
 
 def test_invalid_cumulative_metric_window_format_parsing_error() -> None:
@@ -427,7 +429,7 @@ def test_invalid_cumulative_metric_window_format_parsing_error() -> None:
 
     build_result = parse_yaml_files_to_model(files=[file])
     assert build_result.issues.has_blocking_issues
-    assert "Invalid window" in str(ModelValidationException(build_result.issues.all_issues))
+    assert "Invalid window" in str(SemanticManifestValidationException(build_result.issues.all_issues))
 
 
 def test_invalid_cumulative_metric_window_granularity_parsing_error() -> None:
@@ -447,7 +449,7 @@ def test_invalid_cumulative_metric_window_granularity_parsing_error() -> None:
 
     build_result = parse_yaml_files_to_model(files=[file])
     assert build_result.issues.has_blocking_issues
-    assert "Invalid time granularity" in str(ModelValidationException(build_result.issues.all_issues))
+    assert "Invalid time granularity" in str(SemanticManifestValidationException(build_result.issues.all_issues))
 
 
 def test_invalid_cumulative_metric_window_count_parsing_error() -> None:
@@ -467,4 +469,4 @@ def test_invalid_cumulative_metric_window_count_parsing_error() -> None:
 
     build_result = parse_yaml_files_to_model(files=[file])
     assert build_result.issues.has_blocking_issues
-    assert "Invalid count" in str(ModelValidationException(build_result.issues.all_issues))
+    assert "Invalid count" in str(SemanticManifestValidationException(build_result.issues.all_issues))

@@ -33,7 +33,7 @@ from dbt_semantic_interfaces.validations.semantic_models import (
 )
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
     SemanticManifestValidationResults,
     SemanticManifestValidationRule,
 )
@@ -113,4 +113,4 @@ class SemanticManifestValidator:
         model_copy = copy.deepcopy(model)
         model_issues = self.validate_model(model_copy)
         if model_issues.has_blocking_issues:
-            raise ModelValidationException(issues=tuple(model_issues.all_issues))
+            raise SemanticManifestValidationException(issues=tuple(model_issues.all_issues))

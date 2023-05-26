@@ -17,7 +17,7 @@ from dbt_semantic_interfaces.validations.measures import (
     SemanticModelMeasuresUniqueRule,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
 )
 
 
@@ -42,7 +42,7 @@ def test_metric_missing_measure() -> None:
     model = parse_yaml_files_to_validation_ready_model([metric_missing_measure_file])
 
     with pytest.raises(
-        ModelValidationException,
+        SemanticManifestValidationException,
         match=f"Measure {measure_name} referenced in metric {metric_name} is not defined in the model!",
     ):
         SemanticManifestValidator([MetricMeasuresRule()]).checked_validations(model=model.model)
