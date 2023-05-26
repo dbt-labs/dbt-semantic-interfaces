@@ -3,7 +3,9 @@ from copy import deepcopy
 import more_itertools
 import pytest
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.validations.unique_valid_name import (
@@ -29,7 +31,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 
 
 def test_duplicate_semantic_model_name(  # noqa: D
-    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     model = deepcopy(simple_semantic_manifest__with_primary_transforms)
     duplicated_semantic_model = model.semantic_models[0]
@@ -42,7 +44,9 @@ def test_duplicate_semantic_model_name(  # noqa: D
         ModelValidator([UniqueAndValidNameRule()]).checked_validations(model)
 
 
-def test_duplicate_metric_name(simple_semantic_manifest__with_primary_transforms: SemanticManifest) -> None:  # noqa:D
+def test_duplicate_metric_name(  # noqa:D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
     model = deepcopy(simple_semantic_manifest__with_primary_transforms)
     duplicated_metric = model.metrics[0]
     model.metrics.append(duplicated_metric)
@@ -54,7 +58,7 @@ def test_duplicate_metric_name(simple_semantic_manifest__with_primary_transforms
 
 
 def test_top_level_metric_can_have_same_name_as_any_other_top_level_item(  # noqa: D
-    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     metric_name = simple_semantic_manifest__with_primary_transforms.metrics[0].name
 
@@ -77,7 +81,9 @@ def test_top_level_metric_can_have_same_name_as_any_other_top_level_item(  # noq
 """
 
 
-def test_duplicate_measure_name(simple_semantic_manifest__with_primary_transforms: SemanticManifest) -> None:  # noqa:D
+def test_duplicate_measure_name(  # noqa:D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
     model = deepcopy(simple_semantic_manifest__with_primary_transforms)
 
     # Ensure we have a usable semantic model for the test
@@ -98,7 +104,7 @@ def test_duplicate_measure_name(simple_semantic_manifest__with_primary_transform
 
 
 def test_duplicate_dimension_name(  # noqa: D
-    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     model = deepcopy(simple_semantic_manifest__with_primary_transforms)
 
@@ -119,7 +125,9 @@ def test_duplicate_dimension_name(  # noqa: D
         ModelValidator([UniqueAndValidNameRule()]).checked_validations(model)
 
 
-def test_duplicate_entity_name(simple_semantic_manifest__with_primary_transforms: SemanticManifest) -> None:  # noqa:D
+def test_duplicate_entity_name(  # noqa:D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
     model = deepcopy(simple_semantic_manifest__with_primary_transforms)
 
     # Ensure we have a usable semantic model for the test

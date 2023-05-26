@@ -2,7 +2,9 @@ from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.elements.measure import (
     PydanticMeasureAggregationParameters,
 )
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 
@@ -13,7 +15,7 @@ class ConvertMedianToPercentileRule(ModelTransformRule):
     """Converts any MEDIAN measures to percentile equivalent."""
 
     @staticmethod
-    def transform_model(model: SemanticManifest) -> SemanticManifest:  # noqa: D
+    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
         for semantic_model in model.semantic_models:
             for measure in semantic_model.measures:
                 if measure.agg == AggregationType.MEDIAN:

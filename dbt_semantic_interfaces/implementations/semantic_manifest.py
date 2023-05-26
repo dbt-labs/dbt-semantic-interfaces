@@ -8,7 +8,7 @@ from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
 
 
-class SemanticManifest(HashableBaseModel):
+class PydanticSemanticManifest(HashableBaseModel):
     """Model holds all the information the SemanticLayer needs to render a query."""
 
     semantic_models: List[SemanticModel]

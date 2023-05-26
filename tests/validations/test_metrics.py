@@ -11,7 +11,9 @@ from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetricInput,
     PydanticMetricTypeParams,
 )
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.references import (
     DimensionReference,
@@ -38,7 +40,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
     measure_name = "foo"
     model_validator = ModelValidator()
     model_validator.checked_validations(
-        SemanticManifest(
+        PydanticSemanticManifest(
             semantic_models=[
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure",
@@ -84,7 +86,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
         measure_name = "foo"
         model_validator = ModelValidator()
         model_validator.checked_validations(
-            SemanticManifest(
+            PydanticSemanticManifest(
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="sum_measure",
@@ -115,7 +117,7 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
         measure_name = "foo"
         model_validator = ModelValidator()
         model_validator.checked_validations(
-            SemanticManifest(
+            PydanticSemanticManifest(
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="sum_measure",
@@ -178,7 +180,7 @@ def test_generated_metrics_only() -> None:  # noqa:D
     semantic_model.measures[0].create_metric = True
 
     ModelValidator().checked_validations(
-        SemanticManifest(
+        PydanticSemanticManifest(
             semantic_models=[semantic_model],
             metrics=[],
         )
@@ -189,7 +191,7 @@ def test_derived_metric() -> None:  # noqa: D
     measure_name = "foo"
     model_validator = ModelValidator([DerivedMetricRule()])
     model_issues = model_validator.validate_model(
-        SemanticManifest(
+        PydanticSemanticManifest(
             semantic_models=[
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure",

@@ -7,11 +7,13 @@ import pytest
 
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.parsing.yaml_loader import YamlConfigLoader
 
 
-def test_semantic_model_metadata_parsing(simple_semantic_manifest: SemanticManifest) -> None:
+def test_semantic_model_metadata_parsing(simple_semantic_manifest: PydanticSemanticManifest) -> None:
     """Tests internal metadata object parsing from a file into the Semantic Model model object.
 
     This only tests some basic file name parsing for each semantic model since they are not guaranteed
@@ -26,7 +28,7 @@ def test_semantic_model_metadata_parsing(simple_semantic_manifest: SemanticManif
         _assert_metadata_filename_is_valid(semantic_model.metadata)
 
 
-def test_metric_metadata_parsing(simple_semantic_manifest: SemanticManifest) -> None:
+def test_metric_metadata_parsing(simple_semantic_manifest: PydanticSemanticManifest) -> None:
     """Tests internal metadata object parsing from a file into the PydanticMetric model object.
 
     This only tests some basic file name parsing for each metric since they are not guaranteed
@@ -43,7 +45,7 @@ def test_metric_metadata_parsing(simple_semantic_manifest: SemanticManifest) -> 
 
 @pytest.mark.skip("TODO: Determine what to do with measure proxy metric metadata")
 def test_metric_metadata_parsing_with_measure_proxy(
-    simple_semantic_manifest: SemanticManifest,
+    simple_semantic_manifest: PydanticSemanticManifest,
 ) -> None:
     """Tests internal metadata object parsing from a file into the PydanticMetric model object via measure proxy.
 
@@ -62,7 +64,7 @@ def test_metric_metadata_parsing_with_measure_proxy(
         _assert_metadata_filename_is_valid(metric.metadata)
 
 
-def test_measure_metadata_parsing(simple_semantic_manifest: SemanticManifest) -> None:
+def test_measure_metadata_parsing(simple_semantic_manifest: PydanticSemanticManifest) -> None:
     """Tests internal metadata object parsing from a file into the Measure model object.
 
     This tests the complete parsing process for Measure object metadata, including some baseline testing of things

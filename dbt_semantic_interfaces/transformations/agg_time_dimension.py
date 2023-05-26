@@ -1,7 +1,9 @@
 import logging
 from typing import Optional
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import TimeDimensionReference
 from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
@@ -21,7 +23,7 @@ class SetMeasureAggregationTimeDimensionRule(ModelTransformRule):
         return None
 
     @staticmethod
-    def transform_model(model: SemanticManifest) -> SemanticManifest:  # noqa: D
+    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
         for semantic_model in model.semantic_models:
             primary_time_dimension_reference = SetMeasureAggregationTimeDimensionRule._find_primary_time_dimension(
                 semantic_model

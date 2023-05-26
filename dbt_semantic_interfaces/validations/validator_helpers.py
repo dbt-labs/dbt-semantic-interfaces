@@ -12,7 +12,9 @@ import click
 from pydantic import BaseModel, Extra
 
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.references import (
     MetricModelReference,
@@ -381,7 +383,7 @@ class ModelValidationRule(ABC):
 
     @classmethod
     @abstractmethod
-    def validate_model(cls, model: SemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_model(cls, model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:
         """Check the given model and return a list of validation issues."""
         pass
 
@@ -394,7 +396,7 @@ class ModelValidationRule(ABC):
         idiosyncratic behavior and inscrutable errors due to interactions between pickling and pydantic objects.
         """
         return ModelValidationResults.from_issues_sequence(
-            cls.validate_model(SemanticManifest.parse_raw(serialized_model))
+            cls.validate_model(PydanticSemanticManifest.parse_raw(serialized_model))
         ).json()
 
 

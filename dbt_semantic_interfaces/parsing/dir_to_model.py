@@ -9,7 +9,9 @@ from jsonschema import exceptions
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.metric import PydanticMetric
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
 from dbt_semantic_interfaces.model_transformer import ModelTransformer
 from dbt_semantic_interfaces.parsing.objects import Version, YamlConfigFile
@@ -40,7 +42,7 @@ DOCUMENT_TYPES = [METRIC_TYPE, SEMANTIC_MODEL_TYPE]
 
 @dataclass(frozen=True)
 class ModelBuildResult:  # noqa: D
-    model: SemanticManifest
+    model: PydanticSemanticManifest
     # Issues found in the model.
     issues: ModelValidationResults = ModelValidationResults()
 
@@ -215,7 +217,7 @@ def parse_yaml_files_to_model(
         issues += file_issues
 
     return ModelBuildResult(
-        model=SemanticManifest(
+        model=PydanticSemanticManifest(
             semantic_models=semantic_models,
             metrics=metrics,
         ),

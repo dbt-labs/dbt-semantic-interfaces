@@ -20,7 +20,9 @@ from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
     PydanticMetricTypeParams,
 )
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.implementations.semantic_model import (
     NodeRelation,
     SemanticModel,
@@ -36,7 +38,7 @@ def as_datetime(date_string: str) -> datetime.datetime:
 
 
 def find_semantic_model_with(
-    model: SemanticManifest, function: Callable[[SemanticModel], bool]
+    model: PydanticSemanticManifest, function: Callable[[SemanticModel], bool]
 ) -> Tuple[SemanticModel, int]:
     """Returns a semantic model from the model which matches the criteria defined by the passed in function'.
 
@@ -53,7 +55,9 @@ def find_semantic_model_with(
     raise Exception("Unable to find a semantic_model matching function criteria")
 
 
-def find_metric_with(model: SemanticManifest, function: Callable[[PydanticMetric], bool]) -> Tuple[PydanticMetric, int]:
+def find_metric_with(
+    model: PydanticSemanticManifest, function: Callable[[PydanticMetric], bool]
+) -> Tuple[PydanticMetric, int]:
     """Returns a metric from the model which matches the criteria defined by the passed in function'.
 
     This is useful because the order of metrics in the list is non-determinant, thus it's impossible to

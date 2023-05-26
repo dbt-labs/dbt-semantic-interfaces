@@ -16,7 +16,9 @@ from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetricInputMeasure,
     PydanticMetricTypeParams,
 )
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.implementations.semantic_model import (
     NodeRelation,
     SemanticModel,
@@ -62,7 +64,7 @@ def test_semantic_manifest_protocol() -> None:  # noqa: D
         type=MetricType.MEASURE_PROXY,
         type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
     )
-    semantic_manifest = SemanticManifest(
+    semantic_manifest = PydanticSemanticManifest(
         semantic_models=[semantic_model],
         metrics=[metric],
     )
