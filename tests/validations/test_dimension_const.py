@@ -70,7 +70,7 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                 metrics=[
                     metric_with_guaranteed_meta(
                         name=measure_name,
-                        type=MetricType.MEASURE_PROXY,
+                        type=MetricType.SIMPLE,
                         type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
                     )
                 ],
@@ -118,7 +118,7 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                 metrics=[
                     metric_with_guaranteed_meta(
                         name=measure_name,
-                        type=MetricType.MEASURE_PROXY,
+                        type=MetricType.SIMPLE,
                         type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
                     )
                 ],
@@ -173,7 +173,7 @@ def test_multiple_primary_time_dimensions() -> None:  # noqa:D
                 metrics=[
                     PydanticMetric(
                         name=measure_reference.element_name,
-                        type=MetricType.MEASURE_PROXY,
+                        type=MetricType.SIMPLE,
                         type_params=PydanticMetricTypeParams(
                             measures=[PydanticMetricInputMeasure(name=measure_reference.element_name)]
                         ),

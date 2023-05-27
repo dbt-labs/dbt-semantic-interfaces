@@ -61,7 +61,7 @@ def test_semantic_manifest_protocol() -> None:  # noqa: D
     )
     metric = PydanticMetric(
         name="test_metric",
-        type=MetricType.MEASURE_PROXY,
+        type=MetricType.SIMPLE,
         type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
     )
     semantic_manifest = PydanticSemanticManifest(
@@ -102,7 +102,7 @@ class RuntimeCheckableMetric(MetricProtocol, Protocol):
 def test_metric_protocol() -> None:  # noqa: D
     test_metric = PydanticMetric(
         name="test_metric",
-        type=MetricType.MEASURE_PROXY,
+        type=MetricType.SIMPLE,
         type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
     )
     assert isinstance(test_metric, RuntimeCheckableMetric)

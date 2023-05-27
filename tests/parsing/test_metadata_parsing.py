@@ -44,7 +44,7 @@ def test_metric_metadata_parsing(simple_semantic_manifest: PydanticSemanticManif
 
 
 @pytest.mark.skip("TODO: Determine what to do with measure proxy metric metadata")
-def test_metric_metadata_parsing_with_measure_proxy(
+def test_metric_metadata_parsing_with_simple(
     simple_semantic_manifest: PydanticSemanticManifest,
 ) -> None:
     """Tests internal metadata object parsing from a file into the PydanticMetric model object via measure proxy.
