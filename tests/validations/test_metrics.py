@@ -64,7 +64,6 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                             name=dim2_name,
                             type=DimensionType.TIME,
                             type_params=PydanticDimensionTypeParams(
-                                is_primary=True,
                                 time_granularity=TimeGranularity.DAY,
                             ),
                         ),
@@ -170,7 +169,6 @@ def test_generated_metrics_only() -> None:  # noqa:D
                 name=dim2_reference.element_name,
                 type=DimensionType.TIME,
                 type_params=PydanticDimensionTypeParams(
-                    is_primary=True,
                     time_granularity=TimeGranularity.DAY,
                 ),
             ),
@@ -209,7 +207,6 @@ def test_derived_metric() -> None:  # noqa: D
                             name="ds",
                             type=DimensionType.TIME,
                             type_params=PydanticDimensionTypeParams(
-                                is_primary=True,
                                 time_granularity=TimeGranularity.DAY,
                             ),
                         ),

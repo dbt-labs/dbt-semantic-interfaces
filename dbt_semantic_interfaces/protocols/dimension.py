@@ -38,11 +38,6 @@ class DimensionTypeParams(Protocol):
 
     @property
     @abstractmethod
-    def is_primary(self) -> bool:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
     def time_granularity(self) -> TimeGranularity:  # noqa: D
         pass
 
@@ -89,12 +84,6 @@ class Dimension(Protocol):
     @abstractmethod
     def metadata(self) -> Optional[Metadata]:  # noqa: D
         pass
-
-    @property
-    @abstractmethod
-    def is_primary_time(self) -> bool:
-        """Returns boolean of whether the dimension is a the primary time dimension."""
-        ...
 
     @property
     @abstractmethod

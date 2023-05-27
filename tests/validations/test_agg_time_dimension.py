@@ -65,7 +65,6 @@ def test_missing_primary_time_ok_if_all_measures_have_agg_time_dim(  # noqa:D
     for dimension in semantic_model_with_measures.dimensions:
         if dimension.type == DimensionType.TIME:
             assert dimension.type_params, f"Time dimension `{dimension.name}` is missing `type_params`"
-            dimension.type_params.is_primary = False
 
     model_validator = SemanticManifestValidator[PydanticSemanticManifest]([AggregationTimeDimensionRule()])
     model_validator.checked_validations(model)

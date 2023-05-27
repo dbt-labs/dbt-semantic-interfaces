@@ -43,7 +43,6 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                                 name=dim_name,
                                 type=DimensionType.TIME,
                                 type_params=PydanticDimensionTypeParams(
-                                    is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             )
@@ -82,7 +81,6 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                                 type=DimensionType.TIME,
                                 is_partition=True,
                                 type_params=PydanticDimensionTypeParams(
-                                    is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             )
