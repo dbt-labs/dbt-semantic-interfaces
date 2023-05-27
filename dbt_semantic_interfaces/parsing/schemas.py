@@ -235,6 +235,18 @@ node_relation_schema = {
     "required": ["alias", "schema_name"],
 }
 
+
+semantic_model_defaults_schema = {
+    "$id": "semantic_model_defaults_schema",
+    "type": "object",
+    "properties": {
+        "agg_time_dimension": {"type": "string"},
+    },
+    "additionalProperties": False,
+    "required": [],
+}
+
+
 semantic_model_schema = {
     "$id": "semantic_model",
     "type": "object",
@@ -244,6 +256,7 @@ semantic_model_schema = {
             "pattern": TRANSFORM_OBJECT_NAME_PATTERN,
         },
         "node_relation": {"$ref": "node_relation_schema"},
+        "defaults": {"$ref": "semantic_model_defaults_schema"},
         "entities": {"type": "array", "items": {"$ref": "entity_schema"}},
         "measures": {"type": "array", "items": {"$ref": "measure_schema"}},
         "dimensions": {"type": "array", "items": {"$ref": "dimension_schema"}},
@@ -288,6 +301,7 @@ schema_store = {
     non_additive_dimension_schema["$id"]: non_additive_dimension_schema,
     metric_input_schema["$id"]: metric_input_schema,
     node_relation_schema["$id"]: node_relation_schema,
+    semantic_model_defaults_schema["$id"]: semantic_model_defaults_schema,
 }
 
 

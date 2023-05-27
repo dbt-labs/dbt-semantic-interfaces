@@ -7,6 +7,9 @@ semantic_model:
     schema_name: $source_schema
     alias: fct_bookings
 
+  defaults:
+    agg_time_dimension: ds
+
   measures:
     - name: bookings
       expr: "1"
@@ -70,7 +73,6 @@ semantic_model:
     - name: ds
       type: time
       type_params:
-        is_primary: True
         time_granularity: day
     - name: ds_partitioned
       type: time

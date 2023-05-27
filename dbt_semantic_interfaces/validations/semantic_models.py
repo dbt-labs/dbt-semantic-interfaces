@@ -4,7 +4,6 @@ from typing import Generic, List, Sequence
 from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelReference
-from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
@@ -39,41 +38,16 @@ class SemanticModelTimeDimensionWarningsRule(
     def _validate_semantic_model(semantic_model: SemanticModel) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
-        primary_time_dimensions = []
-
-        for dim in semantic_model.dimensions:
-            if dim.type == DimensionType.TIME and dim.type_params is not None and dim.type_params.is_primary:
-                primary_time_dimensions.append(dim)
-
-        # A semantic model must have a primary time dimension if it has
-        # any measures that don't have an `agg_time_dimension` set
-        if (
-            len(primary_time_dimensions) == 0
-            and len(semantic_model.measures) > 0
-            and any(measure.agg_time_dimension is None for measure in semantic_model.measures)
-        ):
-            issues.append(
-                ValidationError(
-                    context=SemanticModelContext(
-                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                        semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
-                    ),
-                    message=f"No primary time dimension in semantic model with name ({semantic_model.name}). "
-                    "Please add one",
-                )
-            )
-
-        if len(primary_time_dimensions) > 1:
-            for primary_time_dimension in primary_time_dimensions:
+        for measure in semantic_model.measures:
+            if measure.agg_time_dimension is None:
                 issues.append(
                     ValidationError(
                         context=SemanticModelContext(
                             file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
                             semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
                         ),
-                        message=f"In semantic model {semantic_model.name}, "
-                        f"Primary time dimension with name: {primary_time_dimension.name} "
-                        f"is one of many defined as primary.",
+                        message=f"Aggregation time dimension not specified for measure named '{measure.name}' in the "
+                        f"semantic model named '{semantic_model.name}'. Please add one",
                     )
                 )
 

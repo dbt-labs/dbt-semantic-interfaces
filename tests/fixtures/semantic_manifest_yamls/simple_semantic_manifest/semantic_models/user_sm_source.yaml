@@ -7,11 +7,13 @@ semantic_model:
     schema_name: $source_schema
     alias: dim_users
 
+  defaults:
+    agg_time_dimension: ds
+
   dimensions:
     - name: ds
       type: time
       type_params:
-        is_primary: True
         time_granularity: day
     - name: created_at
       type: time

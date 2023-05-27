@@ -7,23 +7,13 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
     MetricType,
-    PydanticMetric,
     PydanticMetricInputMeasure,
     PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.implementations.semantic_model import (
-    NodeRelation,
-    PydanticSemanticModel,
-)
 from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
-from dbt_semantic_interfaces.references import (
-    DimensionReference,
-    MeasureReference,
-    TimeDimensionReference,
-)
 from dbt_semantic_interfaces.test_utils import (
     metric_with_guaranteed_meta,
     semantic_model_with_guaranteed_meta,
@@ -32,9 +22,6 @@ from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.dimension_const import DimensionConsistencyRule
-from dbt_semantic_interfaces.validations.semantic_models import (
-    SemanticModelTimeDimensionWarningsRule,
-)
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
@@ -120,63 +107,6 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                         name=measure_name,
                         type=MetricType.SIMPLE,
                         type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
-                    )
-                ],
-            )
-        )
-
-
-def test_multiple_primary_time_dimensions() -> None:  # noqa:D
-    with pytest.raises(SemanticManifestValidationException, match=r"one of many defined as primary"):
-        dimension_reference = TimeDimensionReference(element_name="ds")
-        dimension_reference2 = DimensionReference(element_name="not_ds")
-        measure_reference = MeasureReference(element_name="measure")
-        model_validator = SemanticManifestValidator[PydanticSemanticManifest](
-            [SemanticModelTimeDimensionWarningsRule()]
-        )
-        model_validator.checked_validations(
-            model=PydanticSemanticManifest(
-                semantic_models=[
-                    PydanticSemanticModel(
-                        name="dim1",
-                        node_relation=NodeRelation(
-                            alias="table",
-                            schema_name="schema",
-                        ),
-                        measures=[
-                            PydanticMeasure(
-                                name=measure_reference.element_name,
-                                agg=AggregationType.SUM,
-                                agg_time_dimension=dimension_reference.element_name,
-                            )
-                        ],
-                        dimensions=[
-                            PydanticDimension(
-                                name=dimension_reference.element_name,
-                                type=DimensionType.TIME,
-                                type_params=PydanticDimensionTypeParams(
-                                    is_primary=True,
-                                    time_granularity=TimeGranularity.DAY,
-                                ),
-                            ),
-                            PydanticDimension(
-                                name=dimension_reference2.element_name,
-                                type=DimensionType.TIME,
-                                type_params=PydanticDimensionTypeParams(
-                                    is_primary=True,
-                                    time_granularity=TimeGranularity.DAY,
-                                ),
-                            ),
-                        ],
-                    ),
-                ],
-                metrics=[
-                    PydanticMetric(
-                        name=measure_reference.element_name,
-                        type=MetricType.SIMPLE,
-                        type_params=PydanticMetricTypeParams(
-                            measures=[PydanticMetricInputMeasure(name=measure_reference.element_name)]
-                        ),
                     )
                 ],
             )

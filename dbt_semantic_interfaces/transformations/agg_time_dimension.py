@@ -18,7 +18,7 @@ logger = logging.getLogger(__name__)
 
 
 class SetMeasureAggregationTimeDimensionRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
-    """Sets the aggregation time dimension for measures to the primary time dimension if not defined."""
+    """Sets the aggregation time dimension for measures to the one specified as default."""
 
     @override
     def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
@@ -34,16 +34,14 @@ class SetMeasureAggregationTimeDimensionRule(ProtocolHint[SemanticManifestTransf
     @staticmethod
     def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
         for semantic_model in model.semantic_models:
-            primary_time_dimension_reference = SetMeasureAggregationTimeDimensionRule._find_primary_time_dimension(
-                semantic_model
-            )
+            if semantic_model.defaults is None:
+                continue
 
-            if not primary_time_dimension_reference:
-                # PydanticDimension semantic models won't have a primary time dimension.
+            if semantic_model.defaults.agg_time_dimension is None:
                 continue
 
             for measure in semantic_model.measures:
                 if not measure.agg_time_dimension:
-                    measure.agg_time_dimension = primary_time_dimension_reference.element_name
+                    measure.agg_time_dimension = semantic_model.defaults.agg_time_dimension
 
         return model
