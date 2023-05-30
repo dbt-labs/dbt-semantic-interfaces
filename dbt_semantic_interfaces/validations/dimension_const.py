@@ -1,8 +1,8 @@
 from typing import Dict, List, Sequence
 
-from dbt_semantic_interfaces.implementations.elements.dimension import Dimension
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.protocols.dimension import Dimension
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     SemanticModelElementReference,

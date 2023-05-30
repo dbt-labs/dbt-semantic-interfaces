@@ -8,7 +8,9 @@ from typing import Dict
 
 import pytest
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.model_transformer import ModelTransformer
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_directory_of_yaml_files_to_model,
@@ -27,7 +29,7 @@ def template_mapping() -> Dict[str, str]:
 
 
 @pytest.fixture(scope="session")
-def simple_semantic_manifest(template_mapping: Dict[str, str]) -> SemanticManifest:
+def simple_semantic_manifest(template_mapping: Dict[str, str]) -> PydanticSemanticManifest:
     """Semantic Manifest used for many tests."""
     model_build_result = parse_directory_of_yaml_files_to_model(
         os.path.join(os.path.dirname(__file__), "semantic_manifest_yamls/simple_semantic_manifest"),
@@ -37,7 +39,7 @@ def simple_semantic_manifest(template_mapping: Dict[str, str]) -> SemanticManife
 
 
 @pytest.fixture(scope="session")
-def simple_semantic_manifest__with_primary_transforms(template_mapping: Dict[str, str]) -> SemanticManifest:
+def simple_semantic_manifest__with_primary_transforms(template_mapping: Dict[str, str]) -> PydanticSemanticManifest:
     """Semantic Manifest used for tests pre-transformations."""
     model_build_result = parse_directory_of_yaml_files_to_model(
         os.path.join(os.path.dirname(__file__), "semantic_manifest_yamls/simple_semantic_manifest"),

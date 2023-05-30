@@ -8,10 +8,10 @@ from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
-from dbt_semantic_interfaces.implementations.elements.dimension import Dimension
-from dbt_semantic_interfaces.implementations.elements.entity import Entity
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
-from dbt_semantic_interfaces.implementations.metadata import Metadata
+from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import (
     LinkableElementReference,
     MeasureReference,
@@ -60,18 +60,18 @@ class NodeRelation(HashableBaseModel):
         )
 
 
-class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
+class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a semantic model."""
 
     name: str
     description: Optional[str]
     node_relation: NodeRelation
 
-    entities: Sequence[Entity] = []
-    measures: Sequence[Measure] = []
-    dimensions: Sequence[Dimension] = []
+    entities: Sequence[PydanticEntity] = []
+    measures: Sequence[PydanticMeasure] = []
+    dimensions: Sequence[PydanticDimension] = []
 
-    metadata: Optional[Metadata]
+    metadata: Optional[PydanticMetadata]
 
     @property
     def entity_references(self) -> List[LinkableElementReference]:  # noqa: D
@@ -90,7 +90,7 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
         return any([dim.validity_params is not None for dim in self.dimensions])
 
     @property
-    def validity_start_dimension(self) -> Optional[Dimension]:  # noqa: D
+    def validity_start_dimension(self) -> Optional[PydanticDimension]:  # noqa: D
         validity_start_dims = [dim for dim in self.dimensions if dim.validity_params and dim.validity_params.is_start]
         if not validity_start_dims:
             return None
@@ -100,7 +100,7 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
         return validity_start_dims[0]
 
     @property
-    def validity_end_dimension(self) -> Optional[Dimension]:  # noqa: D
+    def validity_end_dimension(self) -> Optional[PydanticDimension]:  # noqa: D
         validity_end_dims = [dim for dim in self.dimensions if dim.validity_params and dim.validity_params.is_end]
         if not validity_end_dims:
             return None
@@ -110,11 +110,11 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
         return validity_end_dims[0]
 
     @property
-    def partitions(self) -> List[Dimension]:  # noqa: D
+    def partitions(self) -> List[PydanticDimension]:  # noqa: D
         return [dim for dim in self.dimensions or [] if dim.is_partition]
 
     @property
-    def partition(self) -> Optional[Dimension]:  # noqa: D
+    def partition(self) -> Optional[PydanticDimension]:  # noqa: D
         partitions = self.partitions
         if not partitions:
             return None
@@ -126,7 +126,7 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
     def reference(self) -> SemanticModelReference:  # noqa: D
         return SemanticModelReference(semantic_model_name=self.name)
 
-    def get_measure(self, measure_reference: MeasureReference) -> Measure:  # noqa: D
+    def get_measure(self, measure_reference: MeasureReference) -> PydanticMeasure:  # noqa: D
         for measure in self.measures:
             if measure.reference == measure_reference:
                 return measure
@@ -135,14 +135,14 @@ class SemanticModel(HashableBaseModel, ModelWithMetadataParsing):
             f"No dimension with name ({measure_reference.element_name}) in semantic_model with name ({self.name})"
         )
 
-    def get_dimension(self, dimension_reference: LinkableElementReference) -> Dimension:  # noqa: D
+    def get_dimension(self, dimension_reference: LinkableElementReference) -> PydanticDimension:  # noqa: D
         for dim in self.dimensions:
             if dim.reference == dimension_reference:
                 return dim
 
         raise ValueError(f"No dimension with name ({dimension_reference}) in semantic_model with name ({self.name})")
 
-    def get_entity(self, entity_reference: LinkableElementReference) -> Entity:  # noqa: D
+    def get_entity(self, entity_reference: LinkableElementReference) -> PydanticEntity:  # noqa: D
         for entity in self.entities:
             if entity.reference == entity_reference:
                 return entity

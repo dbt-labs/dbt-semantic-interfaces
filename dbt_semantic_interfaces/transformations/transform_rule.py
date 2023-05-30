@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 
 
 class ModelTransformRule(ABC):
@@ -8,6 +10,6 @@ class ModelTransformRule(ABC):
 
     @staticmethod
     @abstractmethod
-    def transform_model(model: SemanticManifest) -> SemanticManifest:
+    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:
         """Copy and transform the given model into a new model."""
         pass

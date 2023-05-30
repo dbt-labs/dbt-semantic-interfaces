@@ -1,20 +1,22 @@
 import copy
 import re
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.validations.common_entities import CommonEntitysRule
 
 
 def test_lonely_entity_raises_issue(  # noqa: D
-    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     model = copy.deepcopy(simple_semantic_manifest__with_primary_transforms)
     lonely_entity_name = "hi_im_lonely"
 
-    def func(semantic_model: SemanticModel) -> bool:
+    def func(semantic_model: PydanticSemanticModel) -> bool:
         return len(semantic_model.entities) > 0
 
     semantic_model_with_entities, _ = find_semantic_model_with(model, func)

@@ -2,7 +2,9 @@ from copy import deepcopy
 
 import pytest
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
@@ -14,7 +16,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-def test_invalid_aggregation_time_dimension(simple_semantic_manifest: SemanticManifest) -> None:  # noqa:D
+def test_invalid_aggregation_time_dimension(simple_semantic_manifest: PydanticSemanticManifest) -> None:  # noqa:D
     model = deepcopy(simple_semantic_manifest)
     semantic_model_with_measures, _ = find_semantic_model_with(
         model,
@@ -34,7 +36,7 @@ def test_invalid_aggregation_time_dimension(simple_semantic_manifest: SemanticMa
         model_validator.checked_validations(model)
 
 
-def test_unset_aggregation_time_dimension(simple_semantic_manifest: SemanticManifest) -> None:  # noqa:D
+def test_unset_aggregation_time_dimension(simple_semantic_manifest: PydanticSemanticManifest) -> None:  # noqa:D
     model = deepcopy(simple_semantic_manifest)
     semantic_model_with_measures, _ = find_semantic_model_with(
         model,
@@ -52,7 +54,7 @@ def test_unset_aggregation_time_dimension(simple_semantic_manifest: SemanticMani
 
 
 def test_missing_primary_time_ok_if_all_measures_have_agg_time_dim(  # noqa:D
-    simple_semantic_manifest: SemanticManifest,
+    simple_semantic_manifest: PydanticSemanticManifest,
 ) -> None:
     model = deepcopy(simple_semantic_manifest)
     semantic_model_with_measures, _ = find_semantic_model_with(

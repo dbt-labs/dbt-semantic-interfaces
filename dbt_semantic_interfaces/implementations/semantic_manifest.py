@@ -4,15 +4,15 @@ from importlib_metadata import version
 from pydantic import validator
 
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
-from dbt_semantic_interfaces.implementations.metric import Metric
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.implementations.metric import PydanticMetric
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 
 
-class SemanticManifest(HashableBaseModel):
+class PydanticSemanticManifest(HashableBaseModel):
     """Model holds all the information the SemanticLayer needs to render a query."""
 
-    semantic_models: List[SemanticModel]
-    metrics: List[Metric]
+    semantic_models: List[PydanticSemanticModel]
+    metrics: List[PydanticMetric]
     interfaces_version: str = ""
 
     @validator("interfaces_version", always=True)

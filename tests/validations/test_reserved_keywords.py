@@ -1,7 +1,9 @@
 import random
 from copy import deepcopy
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.implementations.semantic_model import NodeRelation
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.validations.reserved_keywords import (
@@ -15,13 +17,15 @@ def random_keyword() -> str:  # noqa: D
     return random.choice(RESERVED_KEYWORDS)
 
 
-def test_no_reserved_keywords(simple_semantic_manifest__with_primary_transforms: SemanticManifest) -> None:  # noqa: D
+def test_no_reserved_keywords(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
     issues = ReservedKeywordsRule.validate_model(simple_semantic_manifest__with_primary_transforms)
     assert len(issues) == 0
 
 
 def test_reserved_keywords_in_dimensions(  # noqa: D
-    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     model = deepcopy(simple_semantic_manifest__with_primary_transforms)
     (semantic_model, _index) = find_semantic_model_with(
@@ -36,7 +40,7 @@ def test_reserved_keywords_in_dimensions(  # noqa: D
 
 
 def test_reserved_keywords_in_measures(  # noqa: D
-    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     model = deepcopy(simple_semantic_manifest__with_primary_transforms)
     (semantic_model, _index) = find_semantic_model_with(
@@ -51,7 +55,7 @@ def test_reserved_keywords_in_measures(  # noqa: D
 
 
 def test_reserved_keywords_in_entities(  # noqa: D
-    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     model = deepcopy(simple_semantic_manifest__with_primary_transforms)
     (semantic_model, _index) = find_semantic_model_with(
@@ -66,7 +70,7 @@ def test_reserved_keywords_in_entities(  # noqa: D
 
 
 def test_reserved_keywords_in_node_relation(  # noqa: D
-    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     model = deepcopy(simple_semantic_manifest__with_primary_transforms)
     (semantic_model_with_node_relation, _index) = find_semantic_model_with(

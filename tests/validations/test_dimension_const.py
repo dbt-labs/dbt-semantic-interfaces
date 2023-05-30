@@ -1,19 +1,21 @@
 import pytest
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
-    Dimension,
-    DimensionTypeParams,
+    PydanticDimension,
+    PydanticDimensionTypeParams,
 )
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
-    Metric,
     MetricType,
-    MetricTypeParams,
+    PydanticMetric,
+    PydanticMetricTypeParams,
 )
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.implementations.semantic_model import (
     NodeRelation,
-    SemanticModel,
+    PydanticSemanticModel,
 )
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.references import (
@@ -43,16 +45,16 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
         measure_name = "measure"
         model_validator = ModelValidator([DimensionConsistencyRule()])
         model_validator.checked_validations(
-            SemanticManifest(
+            PydanticSemanticManifest(
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="dim1",
-                        measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
+                        measures=[PydanticMeasure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
@@ -61,14 +63,14 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                     ),
                     semantic_model_with_guaranteed_meta(
                         name="categoricaldim",
-                        dimensions=[Dimension(name=dim_name, type=DimensionType.CATEGORICAL)],
+                        dimensions=[PydanticDimension(name=dim_name, type=DimensionType.CATEGORICAL)],
                     ),
                 ],
                 metrics=[
                     metric_with_guaranteed_meta(
                         name=measure_name,
                         type=MetricType.MEASURE_PROXY,
-                        type_params=MetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
                     )
                 ],
             )
@@ -81,17 +83,17 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
         measure_name = "measure"
         model_validator = ModelValidator([DimensionConsistencyRule()])
         model_validator.checked_validations(
-            SemanticManifest(
+            PydanticSemanticManifest(
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="dim1",
-                        measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
+                        measures=[PydanticMeasure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.TIME,
                                 is_partition=True,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
@@ -101,11 +103,11 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                     semantic_model_with_guaranteed_meta(
                         name="dim2",
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.TIME,
                                 is_partition=False,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             )
@@ -116,7 +118,7 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name=measure_name,
                         type=MetricType.MEASURE_PROXY,
-                        type_params=MetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
                     )
                 ],
             )
@@ -130,34 +132,34 @@ def test_multiple_primary_time_dimensions() -> None:  # noqa:D
         measure_reference = MeasureReference(element_name="measure")
         model_validator = ModelValidator([SemanticModelTimeDimensionWarningsRule()])
         model_validator.checked_validations(
-            model=SemanticManifest(
+            model=PydanticSemanticManifest(
                 semantic_models=[
-                    SemanticModel(
+                    PydanticSemanticModel(
                         name="dim1",
                         node_relation=NodeRelation(
                             alias="table",
                             schema_name="schema",
                         ),
                         measures=[
-                            Measure(
+                            PydanticMeasure(
                                 name=measure_reference.element_name,
                                 agg=AggregationType.SUM,
                                 agg_time_dimension=dimension_reference.element_name,
                             )
                         ],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dimension_reference.element_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             ),
-                            Dimension(
+                            PydanticDimension(
                                 name=dimension_reference2.element_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     is_primary=True,
                                     time_granularity=TimeGranularity.DAY,
                                 ),
@@ -166,10 +168,10 @@ def test_multiple_primary_time_dimensions() -> None:  # noqa:D
                     ),
                 ],
                 metrics=[
-                    Metric(
+                    PydanticMetric(
                         name=measure_reference.element_name,
                         type=MetricType.MEASURE_PROXY,
-                        type_params=MetricTypeParams(measures=[measure_reference.element_name]),
+                        type_params=PydanticMetricTypeParams(measures=[measure_reference.element_name]),
                     )
                 ],
             )

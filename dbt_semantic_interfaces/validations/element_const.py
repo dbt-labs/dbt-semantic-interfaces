@@ -1,7 +1,9 @@
 from collections import defaultdict
 from typing import DefaultDict, List, Sequence
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.references import SemanticModelReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
@@ -25,7 +27,7 @@ class ElementConsistencyRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring model wide element consistency")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
         element_name_to_types = ElementConsistencyRule._get_element_name_to_types(model=model)
         invalid_elements = {
@@ -51,7 +53,7 @@ class ElementConsistencyRule(ModelValidationRule):
 
     @staticmethod
     def _get_element_name_to_types(
-        model: SemanticManifest,
+        model: PydanticSemanticManifest,
     ) -> DefaultDict[str, DefaultDict[SemanticModelElementType, List[SemanticModelContext]]]:
         """Create a mapping of element names in the semantic manifest to types with a list of associated contexts."""
         element_types: DefaultDict[

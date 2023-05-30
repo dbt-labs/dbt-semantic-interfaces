@@ -4,8 +4,10 @@ import textwrap
 
 import pytest
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_validation_ready_model,
@@ -26,12 +28,12 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 
 
 def test_semantic_model_cant_have_more_than_one_primary_entity(
-    simple_semantic_manifest__with_primary_transforms: SemanticManifest,
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:  # noqa: D
     """Add an additional primary entity to a semantic model and assert that it cannot have two."""
     model = copy.deepcopy(simple_semantic_manifest__with_primary_transforms)
 
-    def func(semantic_model: SemanticModel) -> bool:
+    def func(semantic_model: PydanticSemanticModel) -> bool:
         return len(semantic_model.entities) > 1
 
     multiple_entity_semantic_model, _ = find_semantic_model_with(model, func)

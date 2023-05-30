@@ -1,8 +1,8 @@
 import pytest
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
-    Dimension,
-    DimensionTypeParams,
+    PydanticDimension,
+    PydanticDimensionTypeParams,
 )
 from dbt_semantic_interfaces.test_utils import semantic_model_with_guaranteed_meta
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
@@ -18,10 +18,10 @@ def test_semantic_model_invalid_sql() -> None:  # noqa:D
         semantic_model_with_guaranteed_meta(
             name="invalid_sql_source",
             dimensions=[
-                Dimension(
+                PydanticDimension(
                     name="ds",
                     type=DimensionType.TIME,
-                    type_params=DimensionTypeParams(
+                    type_params=PydanticDimensionTypeParams(
                         time_granularity=TimeGranularity.DAY,
                     ),
                 )

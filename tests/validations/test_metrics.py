@@ -1,17 +1,19 @@
 import pytest
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
-    Dimension,
-    DimensionTypeParams,
+    PydanticDimension,
+    PydanticDimensionTypeParams,
 )
-from dbt_semantic_interfaces.implementations.elements.entity import Entity
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
-    MetricInput,
     MetricType,
-    MetricTypeParams,
+    PydanticMetricInput,
+    PydanticMetricTypeParams,
 )
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.references import (
     DimensionReference,
@@ -38,28 +40,28 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
     measure_name = "foo"
     model_validator = ModelValidator()
     model_validator.checked_validations(
-        SemanticManifest(
+        PydanticSemanticManifest(
             semantic_models=[
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure",
                     measures=[],
-                    dimensions=[Dimension(name=dim_name, type=DimensionType.CATEGORICAL)],
+                    dimensions=[PydanticDimension(name=dim_name, type=DimensionType.CATEGORICAL)],
                 ),
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure2",
                     measures=[
-                        Measure(
+                        PydanticMeasure(
                             name=measure_name,
                             agg=AggregationType.SUM,
                             agg_time_dimension=dim2_name,
                         )
                     ],
                     dimensions=[
-                        Dimension(name=dim_name, type=DimensionType.CATEGORICAL),
-                        Dimension(
+                        PydanticDimension(name=dim_name, type=DimensionType.CATEGORICAL),
+                        PydanticDimension(
                             name=dim2_name,
                             type=DimensionType.TIME,
-                            type_params=DimensionTypeParams(
+                            type_params=PydanticDimensionTypeParams(
                                 is_primary=True,
                                 time_granularity=TimeGranularity.DAY,
                             ),
@@ -71,7 +73,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                 metric_with_guaranteed_meta(
                     name="metric_with_no_time_dim",
                     type=MetricType.MEASURE_PROXY,
-                    type_params=MetricTypeParams(measures=[measure_name]),
+                    type_params=PydanticMetricTypeParams(measures=[measure_name]),
                 )
             ],
         )
@@ -84,13 +86,13 @@ def test_metric_no_time_dim() -> None:  # noqa:D
         measure_name = "foo"
         model_validator = ModelValidator()
         model_validator.checked_validations(
-            SemanticManifest(
+            PydanticSemanticManifest(
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="sum_measure",
-                        measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
+                        measures=[PydanticMeasure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.CATEGORICAL,
                             )
@@ -101,7 +103,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name="metric_with_no_time_dim",
                         type=MetricType.MEASURE_PROXY,
-                        type_params=MetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
                     )
                 ],
             )
@@ -115,23 +117,23 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
         measure_name = "foo"
         model_validator = ModelValidator()
         model_validator.checked_validations(
-            SemanticManifest(
+            PydanticSemanticManifest(
                 semantic_models=[
                     semantic_model_with_guaranteed_meta(
                         name="sum_measure",
-                        measures=[Measure(name=measure_name, agg=AggregationType.SUM)],
+                        measures=[PydanticMeasure(name=measure_name, agg=AggregationType.SUM)],
                         dimensions=[
-                            Dimension(
+                            PydanticDimension(
                                 name=dim_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             ),
-                            Dimension(
+                            PydanticDimension(
                                 name=dim2_name,
                                 type=DimensionType.TIME,
-                                type_params=DimensionTypeParams(
+                                type_params=PydanticDimensionTypeParams(
                                     time_granularity=TimeGranularity.DAY,
                                 ),
                             ),
@@ -142,7 +144,7 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name="foo",
                         type=MetricType.MEASURE_PROXY,
-                        type_params=MetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
                     )
                 ],
             )
@@ -157,26 +159,28 @@ def test_generated_metrics_only() -> None:  # noqa:D
     entity_reference = EntityReference(element_name="primary")
     semantic_model = semantic_model_with_guaranteed_meta(
         name="dim1",
-        measures=[Measure(name=measure_name, agg=AggregationType.SUM, agg_time_dimension=dim2_reference.element_name)],
+        measures=[
+            PydanticMeasure(name=measure_name, agg=AggregationType.SUM, agg_time_dimension=dim2_reference.element_name)
+        ],
         dimensions=[
-            Dimension(name=dim_reference.element_name, type=DimensionType.CATEGORICAL),
-            Dimension(
+            PydanticDimension(name=dim_reference.element_name, type=DimensionType.CATEGORICAL),
+            PydanticDimension(
                 name=dim2_reference.element_name,
                 type=DimensionType.TIME,
-                type_params=DimensionTypeParams(
+                type_params=PydanticDimensionTypeParams(
                     is_primary=True,
                     time_granularity=TimeGranularity.DAY,
                 ),
             ),
         ],
         entities=[
-            Entity(name=entity_reference.element_name, type=EntityType.PRIMARY),
+            PydanticEntity(name=entity_reference.element_name, type=EntityType.PRIMARY),
         ],
     )
     semantic_model.measures[0].create_metric = True
 
     ModelValidator().checked_validations(
-        SemanticManifest(
+        PydanticSemanticManifest(
             semantic_models=[semantic_model],
             metrics=[],
         )
@@ -187,22 +191,22 @@ def test_derived_metric() -> None:  # noqa: D
     measure_name = "foo"
     model_validator = ModelValidator([DerivedMetricRule()])
     model_issues = model_validator.validate_model(
-        SemanticManifest(
+        PydanticSemanticManifest(
             semantic_models=[
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure",
                     measures=[
-                        Measure(
+                        PydanticMeasure(
                             name=measure_name,
                             agg=AggregationType.SUM,
                             agg_time_dimension="ds",
                         )
                     ],
                     dimensions=[
-                        Dimension(
+                        PydanticDimension(
                             name="ds",
                             type=DimensionType.TIME,
-                            type_params=DimensionTypeParams(
+                            type_params=PydanticDimensionTypeParams(
                                 is_primary=True,
                                 time_granularity=TimeGranularity.DAY,
                             ),
@@ -214,46 +218,50 @@ def test_derived_metric() -> None:  # noqa: D
                 metric_with_guaranteed_meta(
                     name="random_metric",
                     type=MetricType.MEASURE_PROXY,
-                    type_params=MetricTypeParams(measures=[measure_name]),
+                    type_params=PydanticMetricTypeParams(measures=[measure_name]),
                 ),
                 metric_with_guaranteed_meta(
                     name="random_metric2",
                     type=MetricType.MEASURE_PROXY,
-                    type_params=MetricTypeParams(measures=[measure_name]),
+                    type_params=PydanticMetricTypeParams(measures=[measure_name]),
                 ),
                 metric_with_guaranteed_meta(
                     name="alias_collision",
                     type=MetricType.DERIVED,
-                    type_params=MetricTypeParams(
+                    type_params=PydanticMetricTypeParams(
                         expr="random_metric2 * 2",
                         metrics=[
-                            MetricInput(name="random_metric", alias="random_metric2"),
-                            MetricInput(name="random_metric2"),
+                            PydanticMetricInput(name="random_metric", alias="random_metric2"),
+                            PydanticMetricInput(name="random_metric2"),
                         ],
                     ),
                 ),
                 metric_with_guaranteed_meta(
                     name="doesntexist",
                     type=MetricType.DERIVED,
-                    type_params=MetricTypeParams(expr="notexist * 2", metrics=[MetricInput(name="notexist")]),
+                    type_params=PydanticMetricTypeParams(
+                        expr="notexist * 2", metrics=[PydanticMetricInput(name="notexist")]
+                    ),
                 ),
                 metric_with_guaranteed_meta(
                     name="has_valid_time_window_params",
                     type=MetricType.DERIVED,
-                    type_params=MetricTypeParams(
+                    type_params=PydanticMetricTypeParams(
                         expr="random_metric / random_metric3",
                         metrics=[
-                            MetricInput(name="random_metric", offset_window="3 weeks"),
-                            MetricInput(name="random_metric", offset_to_grain="month", alias="random_metric3"),
+                            PydanticMetricInput(name="random_metric", offset_window="3 weeks"),
+                            PydanticMetricInput(name="random_metric", offset_to_grain="month", alias="random_metric3"),
                         ],
                     ),
                 ),
                 metric_with_guaranteed_meta(
                     name="has_both_time_offset_params_on_same_input_metric",
                     type=MetricType.DERIVED,
-                    type_params=MetricTypeParams(
+                    type_params=PydanticMetricTypeParams(
                         expr="random_metric * 2",
-                        metrics=[MetricInput(name="random_metric", offset_window="3 weeks", offset_to_grain="month")],
+                        metrics=[
+                            PydanticMetricInput(name="random_metric", offset_window="3 weeks", offset_to_grain="month")
+                        ],
                     ),
                 ),
             ],

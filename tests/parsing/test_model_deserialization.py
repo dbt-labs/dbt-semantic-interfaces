@@ -1,7 +1,9 @@
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 
 
-def test_model_serialization_deserialization(simple_semantic_manifest: SemanticManifest) -> None:
+def test_model_serialization_deserialization(simple_semantic_manifest: PydanticSemanticManifest) -> None:
     """Tests Pydantic serialization and deserialization of a SemanticManifest.
 
     This ensures any custom parsing operations internal to our Pydantic models are properly applied to not only

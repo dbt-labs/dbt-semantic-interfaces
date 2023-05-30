@@ -24,7 +24,7 @@ from dbt_semantic_interfaces.references import (
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 
 
-class WhereFilter(PydanticCustomInputParser, HashableBaseModel):
+class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
     """A filter applied to the data set containing measures, dimensions, identifiers relevant to the query.
 
     TODO: Clarify whether the filter applies to aggregated or un-aggregated data sets.
@@ -39,14 +39,14 @@ class WhereFilter(PydanticCustomInputParser, HashableBaseModel):
     def _from_yaml_value(
         cls,
         input: PydanticParseableValueType,
-    ) -> WhereFilter:
+    ) -> PydanticWhereFilter:
         """Parses a WhereFilter from a string found in a user-provided model specification.
 
         User-provided constraint strings are SQL snippets conforming to the expectations of SQL WHERE clauses,
         and as such we parse them using our standard parse method below.
         """
         if isinstance(input, str):
-            return WhereFilter(where_sql_template=input)
+            return PydanticWhereFilter(where_sql_template=input)
         else:
             raise ValueError(f"Expected input to be of type string, but got type {type(input)} with value: {input}")
 

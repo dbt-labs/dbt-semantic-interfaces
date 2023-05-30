@@ -5,13 +5,15 @@ from typing import Sequence
 
 import pytest
 
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
-from dbt_semantic_interfaces.implementations.metadata import Metadata
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.parsing.yaml_loader import YamlConfigLoader
 
 
-def test_semantic_model_metadata_parsing(simple_semantic_manifest: SemanticManifest) -> None:
+def test_semantic_model_metadata_parsing(simple_semantic_manifest: PydanticSemanticManifest) -> None:
     """Tests internal metadata object parsing from a file into the Semantic Model model object.
 
     This only tests some basic file name parsing for each semantic model since they are not guaranteed
@@ -26,8 +28,8 @@ def test_semantic_model_metadata_parsing(simple_semantic_manifest: SemanticManif
         _assert_metadata_filename_is_valid(semantic_model.metadata)
 
 
-def test_metric_metadata_parsing(simple_semantic_manifest: SemanticManifest) -> None:
-    """Tests internal metadata object parsing from a file into the Metric model object.
+def test_metric_metadata_parsing(simple_semantic_manifest: PydanticSemanticManifest) -> None:
+    """Tests internal metadata object parsing from a file into the PydanticMetric model object.
 
     This only tests some basic file name parsing for each metric since they are not guaranteed
     to be collected in the same file in the simple model, and the output here has been transformed
@@ -43,9 +45,9 @@ def test_metric_metadata_parsing(simple_semantic_manifest: SemanticManifest) -> 
 
 @pytest.mark.skip("TODO: Determine what to do with measure proxy metric metadata")
 def test_metric_metadata_parsing_with_measure_proxy(
-    simple_semantic_manifest: SemanticManifest,
+    simple_semantic_manifest: PydanticSemanticManifest,
 ) -> None:
-    """Tests internal metadata object parsing from a file into the Metric model object via measure proxy.
+    """Tests internal metadata object parsing from a file into the PydanticMetric model object via measure proxy.
 
     The simple model has a broader array of metric definitions, but it does not appear to have a measure proxy
     added via transformation. This test includes such a metric.
@@ -62,7 +64,7 @@ def test_metric_metadata_parsing_with_measure_proxy(
         _assert_metadata_filename_is_valid(metric.metadata)
 
 
-def test_measure_metadata_parsing(simple_semantic_manifest: SemanticManifest) -> None:
+def test_measure_metadata_parsing(simple_semantic_manifest: PydanticSemanticManifest) -> None:
     """Tests internal metadata object parsing from a file into the Measure model object.
 
     This tests the complete parsing process for Measure object metadata, including some baseline testing of things
@@ -75,7 +77,7 @@ def test_measure_metadata_parsing(simple_semantic_manifest: SemanticManifest) ->
         _assert_measure_metadata_is_valid(semantic_model.measures)
 
 
-def _assert_metadata_filename_is_valid(metadata: Metadata) -> None:
+def _assert_metadata_filename_is_valid(metadata: PydanticMetadata) -> None:
     """Sequence of assertion steps to ensure the metadata object has consistent file name parsing."""
     assert YamlConfigLoader.is_valid_yaml_file_ending(metadata.repo_file_path), (
         f"Expected repo file path in measure metadata to be a yaml file with an appropriate ending. "
@@ -90,7 +92,7 @@ def _assert_metadata_filename_is_valid(metadata: Metadata) -> None:
     ), f"Expected repo file path to be fully resolved, but it is filename only. Metadata: {metadata}"
 
 
-def _assert_measure_metadata_is_valid(measures: Sequence[Measure]) -> None:
+def _assert_measure_metadata_is_valid(measures: Sequence[PydanticMeasure]) -> None:
     """Sequence of assertion steps to show that we are parsing metadata consistently for measures.
 
     The assertions check that:

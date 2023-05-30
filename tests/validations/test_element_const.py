@@ -3,9 +3,11 @@ from typing import Tuple
 
 import pytest
 
-from dbt_semantic_interfaces.implementations.elements.dimension import Dimension
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
-from dbt_semantic_interfaces.implementations.semantic_model import SemanticModel
+from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.model_validator import ModelValidator
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
@@ -16,11 +18,13 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-def _categorical_dimensions(semantic_model: SemanticModel) -> Tuple[Dimension, ...]:
+def _categorical_dimensions(semantic_model: PydanticSemanticModel) -> Tuple[PydanticDimension, ...]:
     return tuple(dim for dim in semantic_model.dimensions if dim.type == DimensionType.CATEGORICAL)
 
 
-def test_cross_element_names(simple_semantic_manifest__with_primary_transforms: SemanticManifest) -> None:  # noqa:D
+def test_cross_element_names(  # noqa:D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
     model = copy.deepcopy(simple_semantic_manifest__with_primary_transforms)
 
     # ensure we have a usable semantic model for the test

@@ -3,7 +3,9 @@ import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import List, Sequence
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.validations.agg_time_dimension import (
     AggregationTimeDimensionRule,
 )
@@ -79,7 +81,7 @@ class ModelValidator:
         self._rules = rules
         self._executor = ProcessPoolExecutor(max_workers=max_workers)
 
-    def validate_model(self, model: SemanticManifest) -> ModelValidationResults:
+    def validate_model(self, model: PydanticSemanticManifest) -> ModelValidationResults:
         """Validate a model according to configured rules."""
         serialized_model = model.json()
 
@@ -96,7 +98,7 @@ class ModelValidator:
 
         return ModelValidationResults.merge(results)
 
-    def checked_validations(self, model: SemanticManifest) -> None:
+    def checked_validations(self, model: PydanticSemanticManifest) -> None:
         """Similar to validate(), but throws an exception if validation fails."""
         model_copy = copy.deepcopy(model)
         model_issues = self.validate_model(model_copy)

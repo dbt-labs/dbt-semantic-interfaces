@@ -1,22 +1,27 @@
 from typing import Protocol, runtime_checkable
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
-    Dimension,
-    DimensionTypeParams,
-    DimensionValidityParams,
+    PydanticDimension,
+    PydanticDimensionTypeParams,
+    PydanticDimensionValidityParams,
 )
-from dbt_semantic_interfaces.implementations.elements.entity import Entity
-from dbt_semantic_interfaces.implementations.elements.measure import Measure
-from dbt_semantic_interfaces.implementations.metadata import FileSlice, Metadata
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.metadata import (
+    PydanticFileSlice,
+    PydanticMetadata,
+)
 from dbt_semantic_interfaces.implementations.metric import (
-    Metric,
-    MetricInputMeasure,
-    MetricTypeParams,
+    PydanticMetric,
+    PydanticMetricInputMeasure,
+    PydanticMetricTypeParams,
 )
-from dbt_semantic_interfaces.implementations.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
 from dbt_semantic_interfaces.implementations.semantic_model import (
     NodeRelation,
-    SemanticModel,
+    PydanticSemanticModel,
 )
 from dbt_semantic_interfaces.protocols.dimension import Dimension as DimensionProtocol
 from dbt_semantic_interfaces.protocols.entity import Entity as EntityProtocol
@@ -44,7 +49,7 @@ class RuntimeCheckableSemanticManifest(SemanticManifestProtocol, Protocol):
 
 
 def test_semantic_manifest_protocol() -> None:  # noqa: D
-    semantic_model = SemanticModel(
+    semantic_model = PydanticSemanticModel(
         name="test_semantic_model",
         node_relation=NodeRelation(
             alias="test_alias",
@@ -54,12 +59,12 @@ def test_semantic_manifest_protocol() -> None:  # noqa: D
         measures=[],
         dimensions=[],
     )
-    metric = Metric(
+    metric = PydanticMetric(
         name="test_metric",
         type=MetricType.MEASURE_PROXY,
-        type_params=MetricTypeParams(measure=MetricInputMeasure(name="test_measure")),
+        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
     )
-    semantic_manifest = SemanticManifest(
+    semantic_manifest = PydanticSemanticManifest(
         semantic_models=[semantic_model],
         metrics=[metric],
     )
@@ -74,7 +79,7 @@ class RuntimeCheckableSemanticModel(SemanticModelProtocol, Protocol):
 
 
 def test_semantic_model_protocol() -> None:  # noqa: D
-    test_semantic_model = SemanticModel(
+    test_semantic_model = PydanticSemanticModel(
         name="test_semantic_model",
         node_relation=NodeRelation(
             alias="test_alias",
@@ -95,10 +100,10 @@ class RuntimeCheckableMetric(MetricProtocol, Protocol):
 
 
 def test_metric_protocol() -> None:  # noqa: D
-    test_metric = Metric(
+    test_metric = PydanticMetric(
         name="test_metric",
         type=MetricType.MEASURE_PROXY,
-        type_params=MetricTypeParams(measure=MetricInputMeasure(name="test_measure")),
+        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
     )
     assert isinstance(test_metric, RuntimeCheckableMetric)
 
@@ -111,7 +116,7 @@ class RuntimeCheckableEntity(EntityProtocol, Protocol):
 
 
 def test_entity_protocol() -> None:  # noqa: D
-    test_entity = Entity(
+    test_entity = PydanticEntity(
         name="test_name",
         type=EntityType.PRIMARY,
     )
@@ -126,7 +131,7 @@ class RuntimeCheckableMeasure(MeasureProtocol, Protocol):
 
 
 def test_measure_protocol() -> None:  # noqa: D
-    test_measure = Measure(
+    test_measure = PydanticMeasure(
         name="test_measure",
         agg=AggregationType.SUM,
         agg_time_dimension="some_time_dimension",
@@ -142,12 +147,12 @@ class RuntimeCheckableDimension(DimensionProtocol, Protocol):
 
 
 def test_dimension_protocol() -> None:  # noqa: D
-    time_dim = Dimension(
+    time_dim = PydanticDimension(
         name="test_time_dim",
         type=DimensionType.TIME,
-        type_params=DimensionTypeParams(
+        type_params=PydanticDimensionTypeParams(
             time_granularity=TimeGranularity.DAY,
-            validity_params=DimensionValidityParams(),
+            validity_params=PydanticDimensionValidityParams(),
         ),
     )
     assert isinstance(time_dim, RuntimeCheckableDimension)
@@ -156,7 +161,7 @@ def test_dimension_protocol() -> None:  # noqa: D
     # exception if DimensionType != TIME. The isinstance check seems to actually run the function thus
     # raising an exception during the assertion.
     # of
-    # categorical_dim = Dimension(
+    # categorical_dim = PydanticDimension(
     #     name="test_categorical_dim",
     #     type=DimensionType.CATEGORICAL,
     # )
@@ -171,9 +176,9 @@ class RuntimeCheckableMetadata(MetadataProtocol, Protocol):
 
 
 def test_metadata_protocol() -> None:  # noqa: D
-    metadata = Metadata(
+    metadata = PydanticMetadata(
         repo_file_path="/path/to/cats.txt",
-        file_slice=FileSlice(
+        file_slice=PydanticFileSlice(
             filename="cats.txt",
             content="I like cats",
             start_line_number=0,

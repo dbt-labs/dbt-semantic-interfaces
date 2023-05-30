@@ -6,7 +6,7 @@ from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
-from dbt_semantic_interfaces.implementations.metadata import Metadata
+from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     TimeDimensionReference,
@@ -17,7 +17,7 @@ from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 ISO8601_FMT = "YYYY-MM-DD"
 
 
-class DimensionValidityParams(HashableBaseModel):
+class PydanticDimensionValidityParams(HashableBaseModel):
     """Parameters identifying a given dimension as an entity for validity state.
 
     This construct is used for supporting SCD Type II tables, such as might be
@@ -31,24 +31,24 @@ class DimensionValidityParams(HashableBaseModel):
     is_end: bool = False
 
 
-class DimensionTypeParams(HashableBaseModel):
-    """Dimension type params add additional context to some types (time) of dimensions."""
+class PydanticDimensionTypeParams(HashableBaseModel):
+    """PydanticDimension type params add additional context to some types (time) of dimensions."""
 
     is_primary: bool = False
     time_granularity: TimeGranularity
-    validity_params: Optional[DimensionValidityParams] = None
+    validity_params: Optional[PydanticDimensionValidityParams] = None
 
 
-class Dimension(HashableBaseModel, ModelWithMetadataParsing):
+class PydanticDimension(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a dimension."""
 
     name: str
     description: Optional[str]
     type: DimensionType
     is_partition: bool = False
-    type_params: Optional[DimensionTypeParams]
+    type_params: Optional[PydanticDimensionTypeParams]
     expr: Optional[str] = None
-    metadata: Optional[Metadata]
+    metadata: Optional[PydanticMetadata]
 
     @property
     def is_primary_time(self) -> bool:  # noqa: D
@@ -67,8 +67,8 @@ class Dimension(HashableBaseModel, ModelWithMetadataParsing):
         return TimeDimensionReference(element_name=self.name)
 
     @property
-    def validity_params(self) -> Optional[DimensionValidityParams]:
-        """Returns the DimensionValidityParams property, if it exists.
+    def validity_params(self) -> Optional[PydanticDimensionValidityParams]:
+        """Returns the PydanticDimensionValidityParams property, if it exists.
 
         This is to avoid repeatedly checking that type params is not None before doing anything with ValidityParams
         """
