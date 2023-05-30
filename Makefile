@@ -8,13 +8,13 @@ install-hatch:
 
 # This edits your local pre-commit hook file to use Hatch when executing.
 overwrite-pre-commit:
-	hatch run pre-commit:pre-commit install
-	hatch run pre-commit:sed -i -e "s/exec /exec hatch run pre-commit:/g" .git/hooks/pre-commit
+	hatch run dev-env:pre-commit install
+	hatch run dev-env:sed -i -e "s/exec /exec hatch run dev-env:/g" .git/hooks/pre-commit
 
 install: install-hatch overwrite-pre-commit
 
 test:
-	export FORMAT_JSON_LOGS="1" && hatch run pytest:pytest tests
+	export FORMAT_JSON_LOGS="1" && hatch -v run dev-env:pytest -n auto tests
 
 lint:
-	hatch run pre-commit:pre-commit run --show-diff-on-failure --color=always --all-files
+	hatch run dev-env:pre-commit run --show-diff-on-failure --color=always --all-files
