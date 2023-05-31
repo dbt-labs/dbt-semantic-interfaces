@@ -21,8 +21,8 @@ class ConvertCountToSumRule(ProtocolHint[SemanticManifestTransformRule[PydanticS
         return self
 
     @staticmethod
-    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        for semantic_model in model.semantic_models:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 if measure.agg == AggregationType.COUNT:
                     if measure.expr is None:
@@ -34,4 +34,4 @@ class ConvertCountToSumRule(ProtocolHint[SemanticManifestTransformRule[PydanticS
                         # Just leave it as SUM(1) if we want to count all
                         measure.expr = f"CASE WHEN {measure.expr} IS NOT NULL THEN 1 ELSE 0 END"
                     measure.agg = AggregationType.SUM
-        return model
+        return semantic_manifest

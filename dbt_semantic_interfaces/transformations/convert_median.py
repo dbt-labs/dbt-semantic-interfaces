@@ -24,8 +24,8 @@ class ConvertMedianToPercentileRule(ProtocolHint[SemanticManifestTransformRule[P
         return self
 
     @staticmethod
-    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        for semantic_model in model.semantic_models:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 if measure.agg == AggregationType.MEDIAN:
                     measure.agg = AggregationType.PERCENTILE
@@ -46,4 +46,4 @@ class ConvertMedianToPercentileRule(ProtocolHint[SemanticManifestTransformRule[P
                             )
                     measure.agg_params.percentile = MEDIAN_PERCENTILE
                     # let's not set use_approximate_percentile to be false due to valid performance reasons
-        return model
+        return semantic_manifest

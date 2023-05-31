@@ -31,15 +31,15 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
         return self
 
     @staticmethod
-    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:
         """Creates measure proxy metrics for measures with `create_metric==True`."""
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 if not measure.create_metric:
                     continue
 
                 add_metric = True
-                for metric in model.metrics:
+                for metric in semantic_manifest.metrics:
                     if metric.name == measure.name:
                         if metric.type != MetricType.SIMPLE:
                             raise ModelTransformError(
@@ -53,7 +53,7 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                         add_metric = False
 
                 if add_metric is True:
-                    model.metrics.append(
+                    semantic_manifest.metrics.append(
                         PydanticMetric(
                             name=measure.name,
                             type=MetricType.SIMPLE,
@@ -64,4 +64,4 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                         )
                     )
 
-        return model
+        return semantic_manifest

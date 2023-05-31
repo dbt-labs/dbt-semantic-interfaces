@@ -16,10 +16,10 @@ class SliceNamesRule(SemanticManifestTransformRule):
     """
 
     @staticmethod
-    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        for semantic_model in model.semantic_models:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
+        for semantic_model in semantic_manifest.semantic_models:
             semantic_model.name = semantic_model.name[:3]
-        return model
+        return semantic_manifest
 
 
 def test_can_configure_model_transform_rules(  # noqa: D

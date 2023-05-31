@@ -22,8 +22,8 @@ class BooleanMeasureAggregationRule(ProtocolHint[SemanticManifestTransformRule[P
         return self
 
     @staticmethod
-    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        for semantic_model in model.semantic_models:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 if measure.agg == AggregationType.SUM_BOOLEAN:
                     if measure.expr:
@@ -33,4 +33,4 @@ class BooleanMeasureAggregationRule(ProtocolHint[SemanticManifestTransformRule[P
 
                     measure.agg = AggregationType.SUM
 
-        return model
+        return semantic_manifest

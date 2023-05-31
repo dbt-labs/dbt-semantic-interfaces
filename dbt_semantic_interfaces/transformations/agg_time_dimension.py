@@ -21,8 +21,8 @@ class SetMeasureAggregationTimeDimensionRule(ProtocolHint[SemanticManifestTransf
         return self
 
     @staticmethod
-    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        for semantic_model in model.semantic_models:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
+        for semantic_model in semantic_manifest.semantic_models:
             if semantic_model.defaults is None:
                 continue
 
@@ -33,4 +33,4 @@ class SetMeasureAggregationTimeDimensionRule(ProtocolHint[SemanticManifestTransf
                 if not measure.agg_time_dimension:
                     measure.agg_time_dimension = semantic_model.defaults.agg_time_dimension
 
-        return model
+        return semantic_manifest
