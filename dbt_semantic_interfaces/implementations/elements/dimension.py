@@ -34,7 +34,6 @@ class PydanticDimensionValidityParams(HashableBaseModel):
 class PydanticDimensionTypeParams(HashableBaseModel):
     """PydanticDimension type params add additional context to some types (time) of dimensions."""
 
-    is_primary: bool = False
     time_granularity: TimeGranularity
     validity_params: Optional[PydanticDimensionValidityParams] = None
 
@@ -49,13 +48,6 @@ class PydanticDimension(HashableBaseModel, ModelWithMetadataParsing):
     type_params: Optional[PydanticDimensionTypeParams]
     expr: Optional[str] = None
     metadata: Optional[PydanticMetadata]
-
-    @property
-    def is_primary_time(self) -> bool:  # noqa: D
-        if self.type == DimensionType.TIME and self.type_params is not None:
-            return self.type_params.is_primary
-
-        return False
 
     @property
     def reference(self) -> DimensionReference:  # noqa: D

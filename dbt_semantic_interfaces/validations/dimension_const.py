@@ -79,10 +79,8 @@ class DimensionConsistencyRule(SemanticManifestValidationRule[SemanticManifestT]
             if dimension.reference not in time_dims_to_granularity and dimension.type_params:
                 time_dims_to_granularity[dimension.reference] = dimension.type_params.time_granularity
 
-                # The primary time dimension can be of different time granularities, so don't check for it.
                 if (
                     dimension.type_params is not None
-                    and not dimension.type_params.is_primary
                     and dimension.type_params.time_granularity != time_dims_to_granularity[dimension.reference]
                 ):
                     expected_granularity = time_dims_to_granularity[dimension.reference]

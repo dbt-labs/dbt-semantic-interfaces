@@ -94,6 +94,7 @@ def base_semantic_manifest_file() -> YamlConfigFile:
           measures:
             - name: num_sample_rows
               agg: sum
+              agg_time_dimension: ds
               expr: 1
               create_metric: true
           dimensions:
@@ -101,7 +102,6 @@ def base_semantic_manifest_file() -> YamlConfigFile:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         """
     )
     return YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)

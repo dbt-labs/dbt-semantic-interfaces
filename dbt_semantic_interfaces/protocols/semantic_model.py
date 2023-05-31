@@ -38,12 +38,28 @@ class NodeRelation(Protocol):
         pass
 
 
+class SemanticModelDefaults(Protocol):
+    """Path object to where the data should be."""
+
+    @property
+    @abstractmethod
+    def agg_time_dimension(self) -> Optional[str]:
+        """The aggregation time dimension to use for a measure if one was not specified."""
+        pass
+
+
 class SemanticModel(Protocol):
     """Describes a semantic model."""
 
     @property
     @abstractmethod
     def name(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def defaults(self) -> Optional[SemanticModelDefaults]:
+        """The defaults to use for fields when parsing this model."""
         pass
 
     @property

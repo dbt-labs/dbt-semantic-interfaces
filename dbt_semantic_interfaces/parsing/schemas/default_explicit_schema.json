@@ -98,9 +98,6 @@
             "$id": "dimension_type_params_schema",
             "additionalProperties": false,
             "properties": {
-                "is_primary": {
-                    "type": "boolean"
-                },
                 "time_granularity": {
                     "enum": [
                         "DAY",
@@ -417,6 +414,9 @@
             "$id": "semantic_model",
             "additionalProperties": false,
             "properties": {
+                "defaults": {
+                    "$ref": "#/definitions/semantic_model_defaults_schema"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -449,6 +449,17 @@
             "required": [
                 "name"
             ],
+            "type": "object"
+        },
+        "semantic_model_defaults_schema": {
+            "$id": "semantic_model_defaults_schema",
+            "additionalProperties": false,
+            "properties": {
+                "agg_time_dimension": {
+                    "type": "string"
+                }
+            },
+            "required": [],
             "type": "object"
         },
         "validity_params_schema": {

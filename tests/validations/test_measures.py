@@ -81,7 +81,6 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         """
     )
     base_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents_1)
@@ -119,7 +118,6 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         """
     )
     dup_measure_file = YamlConfigFile(filepath="inline_for_test_2", contents=yaml_contents_2)
@@ -163,7 +161,6 @@ def test_measure_alias_is_set_when_required() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         ---
         metric:
           name: "metric1"
@@ -216,7 +213,6 @@ def test_invalid_measure_alias_name() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         ---
         metric:
           name: "metric1"
@@ -269,7 +265,6 @@ def test_measure_alias_measure_name_conflict() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         ---
         metric:
           name: "metric1"
@@ -326,7 +321,6 @@ def test_reused_measure_alias() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         ---
         metric:
           name: "metric1"
@@ -393,7 +387,6 @@ def test_reused_measure_alias_within_metric() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         ---
         metric:
           name: "metric1"
@@ -463,7 +456,6 @@ def test_invalid_non_additive_dimension_properties() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
             - name: weekly_time
               type: time
               type_params:
@@ -530,7 +522,6 @@ def test_count_measure_missing_expr() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         """
     )
     missing_expr_file = YamlConfigFile(filepath="inline_for_test_2", contents=yaml_contents)
@@ -583,7 +574,6 @@ def test_count_measure_with_distinct_expr() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         """
     )
     distinct_count_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -639,7 +629,6 @@ def test_percentile_measure_missing_agg_params() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         """
     )
     missing_agg_params_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -700,7 +689,6 @@ def test_percentile_measure_bad_percentile_values() -> None:
               type: time
               type_params:
                 time_granularity: day
-                is_primary: true
         """
     )
     bad_percentile_values_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)

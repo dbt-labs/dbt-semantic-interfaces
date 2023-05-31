@@ -7,6 +7,9 @@ semantic_model:
     schema_name: $source_schema
     alias: fct_id_verifications
 
+  defaults:
+    agg_time_dimension: ds
+
   measures:
     - name: identity_verifications
       expr: "1"
@@ -16,7 +19,6 @@ semantic_model:
     - name: ds
       type: time
       type_params:
-        is_primary: True
         time_granularity: day
     - name: ds_partitioned
       type: time

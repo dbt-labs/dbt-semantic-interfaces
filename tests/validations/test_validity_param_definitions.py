@@ -313,7 +313,6 @@ def test_measures_are_prevented() -> None:
                 time_granularity: day
                 validity_params:
                   is_start: true
-                is_primary: true
             - name: window_end
               type: time
               type_params:
@@ -323,6 +322,7 @@ def test_measures_are_prevented() -> None:
           measures:
             - name: num_countries
               agg: count_distinct
+              agg_time_dimension: window_start
               expr: country
         """
     )
