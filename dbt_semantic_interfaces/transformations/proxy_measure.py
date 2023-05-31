@@ -41,7 +41,7 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                 add_metric = True
                 for metric in model.metrics:
                     if metric.name == measure.name:
-                        if metric.type != MetricType.MEASURE_PROXY:
+                        if metric.type != MetricType.SIMPLE:
                             raise ModelTransformError(
                                 f"Cannot have metric with the same name as a measure ({measure.name}) that is not a "
                                 f"proxy for that measure"
@@ -56,7 +56,7 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                     model.metrics.append(
                         PydanticMetric(
                             name=measure.name,
-                            type=MetricType.MEASURE_PROXY,
+                            type=MetricType.SIMPLE,
                             type_params=PydanticMetricTypeParams(
                                 measures=[PydanticMetricInputMeasure(name=measure.name)],
                                 expr=measure.name,

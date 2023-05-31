@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Rename MetricType.MEASURE_PROXY -> MetricType.SIMPLE.
+time: 2023-05-29T19:06:27.182941-07:00
+custom:
+  Author: plypaul
+  Issue: "7"
