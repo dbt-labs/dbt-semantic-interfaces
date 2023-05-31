@@ -6,15 +6,15 @@ import pytest
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.model_transformer import (
-    PydanticSemanticManifestTransformer,
-)
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_validation_ready_model,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.transformations.pydantic_rule_set import (
     PydanticSemanticManifestTransformRuleSet,
+)
+from dbt_semantic_interfaces.transformations.semantic_manifest_transformer import (
+    PydanticSemanticManifestTransformer,
 )
 from dbt_semantic_interfaces.validations.measures import (
     CountAggregationExprRule,

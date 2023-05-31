@@ -1,7 +1,7 @@
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.model_transformer import (
+from dbt_semantic_interfaces.transformations.semantic_manifest_transformer import (
     PydanticSemanticManifestTransformer,
 )
 from dbt_semantic_interfaces.transformations.transform_rule import (
