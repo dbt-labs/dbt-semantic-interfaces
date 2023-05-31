@@ -9,7 +9,6 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 from dbt_semantic_interfaces.model_transformer import (
     PydanticSemanticManifestTransformer,
 )
-from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_validation_ready_model,
 )
@@ -23,6 +22,9 @@ from dbt_semantic_interfaces.validations.measures import (
     MeasuresNonAdditiveDimensionRule,
     MetricMeasuresRule,
     SemanticModelMeasuresUniqueRule,
+)
+from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
+    SemanticManifestValidator,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,

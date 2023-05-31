@@ -16,7 +16,6 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -31,6 +30,9 @@ from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
+from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
+    SemanticManifestValidator,
+)
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )

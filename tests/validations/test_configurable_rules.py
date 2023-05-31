@@ -10,9 +10,11 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
 from dbt_semantic_interfaces.test_utils import metric_with_guaranteed_meta
 from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
+from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
+    SemanticManifestValidator,
+)
 
 
 def test_can_configure_model_validator_rules(  # noqa: D
