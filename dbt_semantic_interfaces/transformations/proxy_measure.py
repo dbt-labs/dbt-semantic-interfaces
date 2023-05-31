@@ -10,12 +10,14 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
+from dbt_semantic_interfaces.transformations.transform_rule import (
+    SemanticManifestTransformRule,
+)
 
 logger = logging.getLogger(__name__)
 
 
-class CreateProxyMeasureRule(ModelTransformRule):
+class CreateProxyMeasureRule(SemanticManifestTransformRule):
     """Adds a proxy metric for measures that have the create_metric flag set, if it does not already exist.
 
     Also checks that a defined metric with the same name as a measure is a proxy metric.

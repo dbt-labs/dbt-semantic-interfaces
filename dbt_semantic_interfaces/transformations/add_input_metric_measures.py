@@ -8,10 +8,12 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.transformations.transform_rule import ModelTransformRule
+from dbt_semantic_interfaces.transformations.transform_rule import (
+    SemanticManifestTransformRule,
+)
 
 
-class AddInputMetricMeasuresRule(ModelTransformRule):
+class AddInputMetricMeasuresRule(SemanticManifestTransformRule):
     """Add all measures corresponding to the input metrics of the derived metric."""
 
     @staticmethod
