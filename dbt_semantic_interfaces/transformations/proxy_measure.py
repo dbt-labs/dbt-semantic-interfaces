@@ -1,5 +1,7 @@
 import logging
 
+from typing_extensions import override
+
 from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.metric import (
     MetricType,
@@ -10,6 +12,7 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -17,11 +20,15 @@ from dbt_semantic_interfaces.transformations.transform_rule import (
 logger = logging.getLogger(__name__)
 
 
-class CreateProxyMeasureRule(SemanticManifestTransformRule):
+class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
     """Adds a proxy metric for measures that have the create_metric flag set, if it does not already exist.
 
     Also checks that a defined metric with the same name as a measure is a proxy metric.
     """
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @staticmethod
     def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:

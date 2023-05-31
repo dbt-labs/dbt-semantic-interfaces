@@ -1,8 +1,11 @@
 import logging
 
+from typing_extensions import override
+
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -11,8 +14,12 @@ from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 logger = logging.getLogger(__name__)
 
 
-class BooleanMeasureAggregationRule(SemanticManifestTransformRule):
+class BooleanMeasureAggregationRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
     """Converts the expression used in boolean measures so that it can be aggregated."""
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @staticmethod
     def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D

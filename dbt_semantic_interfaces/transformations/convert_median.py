@@ -1,3 +1,5 @@
+from typing_extensions import override
+
 from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.elements.measure import (
     PydanticMeasureAggregationParameters,
@@ -5,6 +7,7 @@ from dbt_semantic_interfaces.implementations.elements.measure import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -13,8 +16,12 @@ from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 MEDIAN_PERCENTILE = 0.5
 
 
-class ConvertMedianToPercentileRule(SemanticManifestTransformRule):
+class ConvertMedianToPercentileRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
     """Converts any MEDIAN measures to percentile equivalent."""
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @staticmethod
     def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D

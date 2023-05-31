@@ -3,9 +3,12 @@ import logging
 from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
+from typing_extensions import override
+
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.transformations.pydantic_rule_set import (
     PydanticSemanticManifestTransformRuleSet,
@@ -39,8 +42,12 @@ class SemanticManifestTransformer(Protocol[SemanticManifestT]):
         pass
 
 
-class PydanticSemanticManifestTransformer:
+class PydanticSemanticManifestTransformer(ProtocolHint[SemanticManifestTransformer[PydanticSemanticManifest]]):
     """Transforms PydanticSemanticManifest."""
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformer[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @staticmethod
     def transform(  # noqa: D

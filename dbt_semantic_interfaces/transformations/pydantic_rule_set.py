@@ -1,9 +1,12 @@
 import logging
 from typing import Sequence
 
+from typing_extensions import override
+
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.transformations.add_input_metric_measures import (
     AddInputMetricMeasuresRule,
 )
@@ -19,6 +22,9 @@ from dbt_semantic_interfaces.transformations.convert_median import (
 )
 from dbt_semantic_interfaces.transformations.names import LowerCaseNamesRule
 from dbt_semantic_interfaces.transformations.proxy_measure import CreateProxyMeasureRule
+from dbt_semantic_interfaces.transformations.rule_set import (
+    SemanticManifestTransformRuleSet,
+)
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -26,8 +32,14 @@ from dbt_semantic_interfaces.transformations.transform_rule import (
 logger = logging.getLogger(__name__)
 
 
-class PydanticSemanticManifestTransformRuleSet:
+class PydanticSemanticManifestTransformRuleSet(
+    ProtocolHint[SemanticManifestTransformRuleSet[PydanticSemanticManifest]]
+):
     """Transform rules that should be used for the Pydantic implementation of SemanticManifest."""
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformRuleSet[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @property
     def primary_rules(self) -> Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]:  # noqa:
