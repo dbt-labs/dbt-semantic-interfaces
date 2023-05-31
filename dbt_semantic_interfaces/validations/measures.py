@@ -1,12 +1,13 @@
 from collections import defaultdict
-from typing import DefaultDict, Dict, List, Sequence, Set
+from typing import DefaultDict, Dict, Generic, List, Sequence, Set
 
 from more_itertools import bucket
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import (
-    PydanticSemanticManifest,
-)
 from dbt_semantic_interfaces.protocols.metric import Metric
+from dbt_semantic_interfaces.protocols.semantic_manifest import (
+    SemanticManifest,
+    SemanticManifestT,
+)
 from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
 from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
@@ -14,7 +15,7 @@ from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValid
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     MetricContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelElementContext,
     SemanticModelElementReference,
     SemanticModelElementType,
@@ -25,18 +26,18 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class SemanticModelMeasuresUniqueRule(ModelValidationRule):
+class SemanticModelMeasuresUniqueRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Asserts all measure names are unique across the model."""
 
     @staticmethod
     @validate_safely(
         whats_being_done="running model validation ensuring measures exist in only one configured semantic model"
     )
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         measure_references_to_semantic_models: Dict[MeasureReference, List] = defaultdict(list)
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 if measure.reference in measure_references_to_semantic_models:
                     issues.append(
@@ -57,7 +58,7 @@ class SemanticModelMeasuresUniqueRule(ModelValidationRule):
         return issues
 
 
-class MeasureConstraintAliasesRule(ModelValidationRule):
+class MeasureConstraintAliasesRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that aliases are configured correctly for constrained measure references.
 
     These are, currently, only applicable for PydanticMetric types, since the MetricInputMeasure is only
@@ -126,7 +127,7 @@ class MeasureConstraintAliasesRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="checking constrained measures are aliased properly")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:
         """Ensures measures that might need an alias have one set, and that the alias is distinct.
 
         We do not allow aliases to collide with other alias or measure names, since that could create
@@ -134,9 +135,9 @@ class MeasureConstraintAliasesRule(ModelValidationRule):
         """
         issues: List[ValidationIssue] = []
 
-        measure_names = _get_measure_names_from_model(model)
+        measure_names = _get_measure_names_from_model(semantic_manifest)
         measure_alias_to_metrics: DefaultDict[str, List[str]] = defaultdict(list)
-        for metric in model.metrics:
+        for metric in semantic_manifest.metrics:
             metric_context = MetricContext(
                 file_context=FileContext.from_metadata(metadata=metric.metadata),
                 metric=MetricModelReference(metric_name=metric.name),
@@ -183,7 +184,7 @@ class MeasureConstraintAliasesRule(ModelValidationRule):
         return issues
 
 
-class MetricMeasuresRule(ModelValidationRule):
+class MetricMeasuresRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that the measures referenced in the metrics exist."""
 
     @staticmethod
@@ -209,25 +210,25 @@ class MetricMeasuresRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring metric measures exist")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
-        valid_measure_names = _get_measure_names_from_model(model)
+        valid_measure_names = _get_measure_names_from_model(semantic_manifest)
 
-        for metric in model.metrics or []:
+        for metric in semantic_manifest.metrics or []:
             issues += MetricMeasuresRule._validate_metric_measure_references(
                 metric=metric, valid_measure_names=valid_measure_names
             )
         return issues
 
 
-class MeasuresNonAdditiveDimensionRule(ModelValidationRule):
+class MeasuresNonAdditiveDimensionRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that the measure's non_additive_dimensions are properly defined."""
 
     @staticmethod
     @validate_safely(whats_being_done="ensuring that a measure's non_additive_dimensions is valid")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
-        for semantic_model in model.semantic_models or []:
+        for semantic_model in semantic_manifest.semantic_models or []:
             for measure in semantic_model.measures:
                 non_additive_dimension = measure.non_additive_dimension
                 if non_additive_dimension is None:
@@ -253,8 +254,8 @@ class MeasuresNonAdditiveDimensionRule(ModelValidationRule):
                             ),
                             message=(
                                 f"Measure '{measure.name}' has a agg_time_dimension of "
-                                f"{measure.checked_agg_time_dimension.element_name} ",
-                                f"that is not defined as a dimension in semantic model '{semantic_model.name}'.",
+                                f"{measure.checked_agg_time_dimension.element_name} "
+                                f"that is not defined as a dimension in semantic model '{semantic_model.name}'."
                             ),
                         )
                     )
@@ -375,17 +376,17 @@ class MeasuresNonAdditiveDimensionRule(ModelValidationRule):
         return issues
 
 
-class CountAggregationExprRule(ModelValidationRule):
+class CountAggregationExprRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that COUNT measures have an expr provided."""
 
     @staticmethod
     @validate_safely(
         whats_being_done="running model validation ensuring expr exist for measures with count aggregation"
     )
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 context = SemanticModelElementContext(
                     file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
@@ -426,7 +427,7 @@ class CountAggregationExprRule(ModelValidationRule):
         return issues
 
 
-class PercentileAggregationRule(ModelValidationRule):
+class PercentileAggregationRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that only PERCENTILE measures have agg_params and valid percentile value provided."""
 
     @staticmethod
@@ -434,10 +435,10 @@ class PercentileAggregationRule(ModelValidationRule):
         whats_being_done="running model validation ensuring the agg_params.percentile value exist for measures with "
         "percentile aggregation"
     )
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 context = SemanticModelElementContext(
                     file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
@@ -517,7 +518,7 @@ class PercentileAggregationRule(ModelValidationRule):
         return issues
 
 
-def _get_measure_names_from_model(model: PydanticSemanticManifest) -> Set[str]:
+def _get_measure_names_from_model(model: SemanticManifest) -> Set[str]:
     """Return every distinct measure name specified in the model."""
     measure_names = set()
     for semantic_model in model.semantic_models:

@@ -14,7 +14,7 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.model_validator import ModelValidator
+from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -30,7 +30,7 @@ from dbt_semantic_interfaces.type_enums.entity_type import EntityType
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
 )
 
 
@@ -38,7 +38,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
     dim_name = "country"
     dim2_name = "ename"
     measure_name = "foo"
-    model_validator = ModelValidator()
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]()
     model_validator.checked_validations(
         PydanticSemanticManifest(
             semantic_models=[
@@ -81,10 +81,10 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
 
 
 def test_metric_no_time_dim() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException):
+    with pytest.raises(SemanticManifestValidationException):
         dim_name = "country"
         measure_name = "foo"
-        model_validator = ModelValidator()
+        model_validator = SemanticManifestValidator[PydanticSemanticManifest]()
         model_validator.checked_validations(
             PydanticSemanticManifest(
                 semantic_models=[
@@ -111,11 +111,11 @@ def test_metric_no_time_dim() -> None:  # noqa:D
 
 
 def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException):
+    with pytest.raises(SemanticManifestValidationException):
         dim_name = "date_created"
         dim2_name = "date_deleted"
         measure_name = "foo"
-        model_validator = ModelValidator()
+        model_validator = SemanticManifestValidator[PydanticSemanticManifest]()
         model_validator.checked_validations(
             PydanticSemanticManifest(
                 semantic_models=[
@@ -179,7 +179,7 @@ def test_generated_metrics_only() -> None:  # noqa:D
     )
     semantic_model.measures[0].create_metric = True
 
-    ModelValidator().checked_validations(
+    SemanticManifestValidator[PydanticSemanticManifest]().checked_validations(
         PydanticSemanticManifest(
             semantic_models=[semantic_model],
             metrics=[],
@@ -189,7 +189,7 @@ def test_generated_metrics_only() -> None:  # noqa:D
 
 def test_derived_metric() -> None:  # noqa: D
     measure_name = "foo"
-    model_validator = ModelValidator([DerivedMetricRule()])
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([DerivedMetricRule()])
     model_issues = model_validator.validate_model(
         PydanticSemanticManifest(
             semantic_models=[

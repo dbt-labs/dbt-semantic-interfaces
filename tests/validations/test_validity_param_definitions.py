@@ -2,7 +2,10 @@ import textwrap
 
 import pytest
 
-from dbt_semantic_interfaces.model_validator import ModelValidator
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
+from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_validation_ready_model,
 )
@@ -12,7 +15,7 @@ from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelValidityWindowRule,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
 )
 
 
@@ -48,7 +51,7 @@ def test_validity_window_configuration() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    model_issues = ModelValidator().validate_model(model.model)
+    model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_model(model.model)
 
     assert not model_issues.has_blocking_issues, (
         f"Found blocking issues validating model with validity window properly configured: "
@@ -82,8 +85,10 @@ def test_validity_window_must_have_a_start() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    with pytest.raises(ModelValidationException, match="has 1 dimensions defined with validity params"):
-        ModelValidator([SemanticModelValidityWindowRule()]).checked_validations(model.model)
+    with pytest.raises(SemanticManifestValidationException, match="has 1 dimensions defined with validity params"):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelValidityWindowRule()]).checked_validations(
+            model.model
+        )
 
 
 def test_validity_window_must_have_an_end() -> None:
@@ -112,8 +117,10 @@ def test_validity_window_must_have_an_end() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    with pytest.raises(ModelValidationException, match="has 1 dimensions defined with validity params"):
-        ModelValidator([SemanticModelValidityWindowRule()]).checked_validations(model.model)
+    with pytest.raises(SemanticManifestValidationException, match="has 1 dimensions defined with validity params"):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelValidityWindowRule()]).checked_validations(
+            model.model
+        )
 
 
 def test_validity_window_uses_two_dimensions() -> None:
@@ -146,8 +153,12 @@ def test_validity_window_uses_two_dimensions() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    with pytest.raises(ModelValidationException, match="single validity param dimension that defines its window"):
-        ModelValidator([SemanticModelValidityWindowRule()]).checked_validations(model.model)
+    with pytest.raises(
+        SemanticManifestValidationException, match="single validity param dimension that defines its window"
+    ):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelValidityWindowRule()]).checked_validations(
+            model.model
+        )
 
 
 def test_two_dimension_validity_windows_must_not_overload_start_and_end() -> None:
@@ -183,8 +194,10 @@ def test_two_dimension_validity_windows_must_not_overload_start_and_end() -> Non
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    with pytest.raises(ModelValidationException, match="does not have exactly one each"):
-        ModelValidator([SemanticModelValidityWindowRule()]).checked_validations(model.model)
+    with pytest.raises(SemanticManifestValidationException, match="does not have exactly one each"):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelValidityWindowRule()]).checked_validations(
+            model.model
+        )
 
 
 def test_multiple_validity_windows_are_invalid() -> None:
@@ -231,8 +244,10 @@ def test_multiple_validity_windows_are_invalid() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    with pytest.raises(ModelValidationException, match="has 4 dimensions defined with validity params"):
-        ModelValidator([SemanticModelValidityWindowRule()]).checked_validations(model.model)
+    with pytest.raises(SemanticManifestValidationException, match="has 4 dimensions defined with validity params"):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelValidityWindowRule()]).checked_validations(
+            model.model
+        )
 
 
 def test_empty_validity_windows_are_invalid() -> None:
@@ -267,8 +282,10 @@ def test_empty_validity_windows_are_invalid() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    with pytest.raises(ModelValidationException, match="does not have exactly one each"):
-        ModelValidator([SemanticModelValidityWindowRule()]).checked_validations(model.model)
+    with pytest.raises(SemanticManifestValidationException, match="does not have exactly one each"):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelValidityWindowRule()]).checked_validations(
+            model.model
+        )
 
 
 def test_measures_are_prevented() -> None:
@@ -312,8 +329,12 @@ def test_measures_are_prevented() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    with pytest.raises(ModelValidationException, match="has both measures and validity param dimensions defined"):
-        ModelValidator([SemanticModelValidityWindowRule()]).checked_validations(model.model)
+    with pytest.raises(
+        SemanticManifestValidationException, match="has both measures and validity param dimensions defined"
+    ):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelValidityWindowRule()]).checked_validations(
+            model.model
+        )
 
 
 def test_validity_window_must_have_a_natural_key() -> None:
@@ -348,8 +369,10 @@ def test_validity_window_must_have_a_natural_key() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    with pytest.raises(ModelValidationException, match="does not have an entity with type `natural` set"):
-        ModelValidator([SemanticModelValidityWindowRule()]).checked_validations(model.model)
+    with pytest.raises(SemanticManifestValidationException, match="does not have an entity with type `natural` set"):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelValidityWindowRule()]).checked_validations(
+            model.model
+        )
 
 
 def test_validity_window_does_not_use_primary_key() -> None:
@@ -391,5 +414,7 @@ def test_validity_window_does_not_use_primary_key() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    with pytest.raises(ModelValidationException, match="has one or more entities designated as `primary`"):
-        ModelValidator([SemanticModelValidityWindowRule()]).checked_validations(model.model)
+    with pytest.raises(SemanticManifestValidationException, match="has one or more entities designated as `primary`"):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelValidityWindowRule()]).checked_validations(
+            model.model
+        )

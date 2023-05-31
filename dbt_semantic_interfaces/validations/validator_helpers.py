@@ -6,16 +6,25 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import date
 from enum import Enum
-from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence, Tuple, Union
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    Iterable,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+)
 
 import click
 from pydantic import BaseModel, Extra
 
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
-from dbt_semantic_interfaces.implementations.semantic_manifest import (
-    PydanticSemanticManifest,
-)
 from dbt_semantic_interfaces.protocols.metadata import Metadata
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.references import (
     MetricModelReference,
     SemanticModelElementReference,
@@ -247,7 +256,7 @@ class ValidationError(ValidationIssue, BaseModel):
         return ValidationIssueSet(error_issues=(self,))
 
 
-class ModelValidationResults(FrozenBaseModel):
+class SemanticManifestValidationResults(FrozenBaseModel):
     """Class for organizing the results of running validations."""
 
     warnings: Tuple[ValidationWarning, ...] = tuple()
@@ -256,25 +265,25 @@ class ModelValidationResults(FrozenBaseModel):
 
     @property
     def has_blocking_issues(self) -> bool:
-        """Does the ModelValidationResults have ERROR issues."""
+        """Does the SemanticManifestValidationResults have ERROR issues."""
         return len(self.errors) != 0
 
     @staticmethod
-    def from_issues_sequence(issues: Sequence[ValidationIssue]) -> ModelValidationResults:
-        """Constructs a ModelValidationResults class from a list of ValidationIssues."""
+    def from_issues_sequence(issues: Sequence[ValidationIssue]) -> SemanticManifestValidationResults:
+        """Constructs a SemanticManifestValidationResults class from a list of ValidationIssues."""
         combined_issue_set = ValidationIssueSet.combine(tuple(issue.as_issue_set for issue in issues))
-        return ModelValidationResults(
+        return SemanticManifestValidationResults(
             warnings=tuple(combined_issue_set.warning_issues),
             future_errors=tuple(combined_issue_set.future_error_issues),
             errors=tuple(combined_issue_set.error_issues),
         )
 
     @classmethod
-    def merge(cls, results: Sequence[ModelValidationResults]) -> ModelValidationResults:
+    def merge(cls, results: Sequence[SemanticManifestValidationResults]) -> SemanticManifestValidationResults:
         """Creates a new ModelValidatorResults instance from multiple instances.
 
         This is useful when there are multiple validators that are run and the
-        combined results are desirable. For instance there is a ModelValidator
+        combined results are desirable. For instance there is a SemanticManifestValidator
         and a DataWarehouseModelValidator. These both return validation issues.
         If it's desirable to combine the results, the following makes it easy.
         """
@@ -378,29 +387,17 @@ class DimensionInvariants:
     is_partition: bool
 
 
-class ModelValidationRule(ABC):
-    """Encapsulates logic for checking the values of objects in a model."""
+class SemanticManifestValidationRule(ABC, Generic[SemanticManifestT]):
+    """Encapsulates logic for checking the values of objects in a manifest."""
 
     @classmethod
     @abstractmethod
-    def validate_model(cls, model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:
-        """Check the given model and return a list of validation issues."""
+    def validate_manifest(cls, semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:
+        """Check the given manifest and return a list of validation issues."""
         pass
 
-    @classmethod
-    def validate_model_serialized_for_multiprocessing(cls, serialized_model: str) -> str:
-        """Validate a model serialized via Pydantic's .json() method, and return a list of JSON serialized issues.
 
-        This method exists because our validations are forked into parallel processes via
-        multiprocessing.ProcessPoolExecutor, and passing a model or validation results object can result in
-        idiosyncratic behavior and inscrutable errors due to interactions between pickling and pydantic objects.
-        """
-        return ModelValidationResults.from_issues_sequence(
-            cls.validate_model(PydanticSemanticManifest.parse_raw(serialized_model))
-        ).json()
-
-
-class ModelValidationException(Exception):
+class SemanticManifestValidationException(Exception):
     """Exception raised when validation of a model fails."""
 
     def __init__(self, issues: Tuple[ValidationIssue, ...]) -> None:  # noqa: D

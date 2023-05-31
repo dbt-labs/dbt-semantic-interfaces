@@ -1,7 +1,7 @@
-from typing import Dict, List, Sequence
+from typing import Dict, Generic, List, Sequence
 
 from dbt_semantic_interfaces.protocols.dimension import Dimension
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     DimensionReference,
@@ -12,7 +12,7 @@ from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     DimensionInvariants,
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelElementContext,
     SemanticModelElementType,
     ValidationError,
@@ -21,7 +21,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class DimensionConsistencyRule(ModelValidationRule):
+class DimensionConsistencyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks for consistent dimension properties in the semantic models in a model.
 
     * Dimensions with the same name should be of the same type.
@@ -30,12 +30,12 @@ class DimensionConsistencyRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring dimension consistency")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         dimension_to_invariant: Dict[DimensionReference, DimensionInvariants] = {}
         time_dims_to_granularity: Dict[DimensionReference, TimeGranularity] = {}
         issues: List[ValidationIssue] = []
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             issues += DimensionConsistencyRule._validate_semantic_model(
                 semantic_model=semantic_model, dimension_to_invariant=dimension_to_invariant, update_invariant_dict=True
             )

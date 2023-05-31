@@ -1,13 +1,14 @@
 from collections import defaultdict
-from typing import DefaultDict, List, Sequence
+from typing import DefaultDict, Generic, List, Sequence
 
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.references import SemanticModelReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelContext,
     SemanticModelElementType,
     ValidationError,
@@ -16,7 +17,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class ElementConsistencyRule(ModelValidationRule):
+class ElementConsistencyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that elements in semantic models with the same name are of the same element type across the model.
 
     This reduces the potential confusion that might arise from having an entity named `country` and a dimension
@@ -27,9 +28,9 @@ class ElementConsistencyRule(ModelValidationRule):
 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring model wide element consistency")
-    def validate_model(model: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
-        element_name_to_types = ElementConsistencyRule._get_element_name_to_types(model=model)
+        element_name_to_types = ElementConsistencyRule._get_element_name_to_types(model=semantic_manifest)
         invalid_elements = {
             name: type_mapping for name, type_mapping in element_name_to_types.items() if len(type_mapping) > 1
         }

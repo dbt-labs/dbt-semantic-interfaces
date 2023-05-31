@@ -17,7 +17,7 @@ from dbt_semantic_interfaces.implementations.semantic_model import (
     NodeRelation,
     PydanticSemanticModel,
 )
-from dbt_semantic_interfaces.model_validator import ModelValidator
+from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     MeasureReference,
@@ -35,15 +35,15 @@ from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelTimeDimensionWarningsRule,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    ModelValidationException,
+    SemanticManifestValidationException,
 )
 
 
 def test_incompatible_dimension_type() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException, match=r"type conflict for dimension"):
+    with pytest.raises(SemanticManifestValidationException, match=r"type conflict for dimension"):
         dim_name = "dim"
         measure_name = "measure"
-        model_validator = ModelValidator([DimensionConsistencyRule()])
+        model_validator = SemanticManifestValidator[PydanticSemanticManifest]([DimensionConsistencyRule()])
         model_validator.checked_validations(
             PydanticSemanticManifest(
                 semantic_models=[
@@ -78,10 +78,10 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
 
 
 def test_incompatible_dimension_is_partition() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException, match=r"conflicting is_partition attribute for dimension"):
+    with pytest.raises(SemanticManifestValidationException, match=r"conflicting is_partition attribute for dimension"):
         dim_name = "dim1"
         measure_name = "measure"
-        model_validator = ModelValidator([DimensionConsistencyRule()])
+        model_validator = SemanticManifestValidator[PydanticSemanticManifest]([DimensionConsistencyRule()])
         model_validator.checked_validations(
             PydanticSemanticManifest(
                 semantic_models=[
@@ -126,11 +126,13 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
 
 
 def test_multiple_primary_time_dimensions() -> None:  # noqa:D
-    with pytest.raises(ModelValidationException, match=r"one of many defined as primary"):
+    with pytest.raises(SemanticManifestValidationException, match=r"one of many defined as primary"):
         dimension_reference = TimeDimensionReference(element_name="ds")
         dimension_reference2 = DimensionReference(element_name="not_ds")
         measure_reference = MeasureReference(element_name="measure")
-        model_validator = ModelValidator([SemanticModelTimeDimensionWarningsRule()])
+        model_validator = SemanticManifestValidator[PydanticSemanticManifest](
+            [SemanticModelTimeDimensionWarningsRule()]
+        )
         model_validator.checked_validations(
             model=PydanticSemanticManifest(
                 semantic_models=[

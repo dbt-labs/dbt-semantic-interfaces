@@ -1,11 +1,14 @@
-from typing import List
+from typing import Generic, List
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import (
+    SemanticManifest,
+    SemanticManifestT,
+)
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelElementReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelContext,
     SemanticModelElementContext,
     SemanticModelElementType,
@@ -14,7 +17,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     validate_safely,
 )
 
-# A non-exaustive tuple of reserved keywords
+# A non-exhaustive tuple of reserved keywords
 # This list was created by running an intersection of keywords for redshift,
 # postgres, bigquery, and snowflake
 RESERVED_KEYWORDS = (
@@ -47,7 +50,7 @@ RESERVED_KEYWORDS = (
 )
 
 
-class ReservedKeywordsRule(ModelValidationRule):
+class ReservedKeywordsRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Check that any element that ends up being selected by name (instead of expr) isn't a commonly reserved keyword.
 
     Note: This rule DOES NOT catch all keywords. That is because keywords are
@@ -153,5 +156,5 @@ class ReservedKeywordsRule(ModelValidationRule):
         whats_being_done="running model validation ensuring elements that aren't selected via a defined expr don't "
         "contain reserved keywords"
     )
-    def validate_model(cls, model: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
-        return cls._validate_semantic_models(model=model)
+    def validate_manifest(cls, semantic_manifest: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
+        return cls._validate_semantic_models(model=semantic_manifest)

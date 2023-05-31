@@ -1,6 +1,6 @@
-from typing import List, Sequence
+from typing import Generic, List, Sequence
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     SemanticModelElementReference,
@@ -9,7 +9,7 @@ from dbt_semantic_interfaces.references import (
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    ModelValidationRule,
+    SemanticManifestValidationRule,
     SemanticModelElementContext,
     SemanticModelElementType,
     ValidationError,
@@ -18,14 +18,14 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class AggregationTimeDimensionRule(ModelValidationRule):
+class AggregationTimeDimensionRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that the agg time dimension for a measure points to a valid time dimension in the semantic model."""
 
     @staticmethod
     @validate_safely(whats_being_done="checking aggregation time dimension for semantic models in the model")
-    def validate_model(model: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             issues.extend(AggregationTimeDimensionRule._validate_semantic_model(semantic_model))
 
         return issues
