@@ -17,9 +17,9 @@ class NonEmptyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[Se
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the model has semantic models")
-    def _check_model_has_semantic_models(model: PydanticSemanticManifest) -> List[ValidationIssue]:
+    def _check_model_has_semantic_models(semantic_manifest: PydanticSemanticManifest) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
-        if not model.semantic_models:
+        if not semantic_manifest.semantic_models:
             issues.append(
                 ValidationError(
                     message="No semantic models present in the model.",
@@ -29,18 +29,18 @@ class NonEmptyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[Se
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the model has metrics")
-    def _check_model_has_metrics(model: PydanticSemanticManifest) -> List[ValidationIssue]:
+    def _check_model_has_metrics(semantic_manifest: PydanticSemanticManifest) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         # If we are going to generate measure proxy metrics that is sufficient as well
         create_measure_proxy_metrics = False
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
                 if measure.create_metric is True:
                     create_measure_proxy_metrics = True
                     break
 
-        if not model.metrics and not create_measure_proxy_metrics:
+        if not semantic_manifest.metrics and not create_measure_proxy_metrics:
             issues.append(
                 ValidationError(
                     message="No metrics present in the model.",
@@ -52,6 +52,6 @@ class NonEmptyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[Se
     @validate_safely("running model validation rule ensuring metrics and semantic models are defined")
     def validate_manifest(semantic_manifest: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
-        issues += NonEmptyRule._check_model_has_semantic_models(model=semantic_manifest)
-        issues += NonEmptyRule._check_model_has_metrics(model=semantic_manifest)
+        issues += NonEmptyRule._check_model_has_semantic_models(semantic_manifest=semantic_manifest)
+        issues += NonEmptyRule._check_model_has_metrics(semantic_manifest=semantic_manifest)
         return issues

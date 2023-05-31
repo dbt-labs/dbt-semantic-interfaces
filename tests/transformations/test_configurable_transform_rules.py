@@ -1,7 +1,7 @@
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.model_transformer import (
+from dbt_semantic_interfaces.transformations.semantic_manifest_transformer import (
     PydanticSemanticManifestTransformer,
 )
 from dbt_semantic_interfaces.transformations.transform_rule import (
@@ -16,10 +16,10 @@ class SliceNamesRule(SemanticManifestTransformRule):
     """
 
     @staticmethod
-    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        for semantic_model in model.semantic_models:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
+        for semantic_model in semantic_manifest.semantic_models:
             semantic_model.name = semantic_model.name[:3]
-        return model
+        return semantic_manifest
 
 
 def test_can_configure_model_transform_rules(  # noqa: D

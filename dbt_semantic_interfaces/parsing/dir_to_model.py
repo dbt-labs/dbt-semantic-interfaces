@@ -13,9 +13,6 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
-from dbt_semantic_interfaces.model_transformer import (
-    PydanticSemanticManifestTransformer,
-)
 from dbt_semantic_interfaces.parsing.objects import Version, YamlConfigFile
 from dbt_semantic_interfaces.parsing.schemas import (
     metric_validator,
@@ -25,6 +22,9 @@ from dbt_semantic_interfaces.parsing.yaml_loader import (
     PARSING_CONTEXT_KEY,
     ParsingContext,
     YamlConfigLoader,
+)
+from dbt_semantic_interfaces.transformations.semantic_manifest_transformer import (
+    PydanticSemanticManifestTransformer,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,

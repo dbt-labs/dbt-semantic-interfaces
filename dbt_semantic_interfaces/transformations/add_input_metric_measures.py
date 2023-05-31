@@ -24,14 +24,20 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
         return self
 
     @staticmethod
-    def _get_measures_for_metric(model: PydanticSemanticManifest, metric_name: str) -> Set[PydanticMetricInputMeasure]:
+    def _get_measures_for_metric(
+        semantic_manifest: PydanticSemanticManifest, metric_name: str
+    ) -> Set[PydanticMetricInputMeasure]:
         """Returns a unique set of input measures for a given metric."""
         measures = set()
-        matched_metric = next(iter((metric for metric in model.metrics if metric.name == metric_name)), None)
+        matched_metric = next(
+            iter((metric for metric in semantic_manifest.metrics if metric.name == metric_name)), None
+        )
         if matched_metric:
             if matched_metric.type == MetricType.DERIVED:
                 for input_metric in matched_metric.input_metrics:
-                    measures.update(AddInputMetricMeasuresRule._get_measures_for_metric(model, input_metric.name))
+                    measures.update(
+                        AddInputMetricMeasuresRule._get_measures_for_metric(semantic_manifest, input_metric.name)
+                    )
             else:
                 measures.update(set(matched_metric.input_measures))
         else:
@@ -39,12 +45,12 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
         return measures
 
     @staticmethod
-    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        for metric in model.metrics:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
+        for metric in semantic_manifest.metrics:
             if metric.type == MetricType.DERIVED:
-                measures = AddInputMetricMeasuresRule._get_measures_for_metric(model, metric.name)
+                measures = AddInputMetricMeasuresRule._get_measures_for_metric(semantic_manifest, metric.name)
                 assert (
                     metric.type_params.measures is None
                 ), "Derived metric should have no measures predefined in the config"
                 metric.type_params.measures = list(measures)
-        return model
+        return semantic_manifest

@@ -22,12 +22,12 @@ class LowerCaseNamesRule(ProtocolHint[SemanticManifestTransformRule[PydanticSema
         return self
 
     @staticmethod
-    def transform_model(model: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        LowerCaseNamesRule._lowercase_top_level_objects(model)
-        for semantic_model in model.semantic_models:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
+        LowerCaseNamesRule._lowercase_top_level_objects(semantic_manifest)
+        for semantic_model in semantic_manifest.semantic_models:
             LowerCaseNamesRule._lowercase_semantic_model_elements(semantic_model)
 
-        return model
+        return semantic_manifest
 
     @staticmethod
     def _lowercase_semantic_model_elements(semantic_model: PydanticSemanticModel) -> None:

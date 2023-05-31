@@ -6,8 +6,10 @@ import pytest
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.model_validator import SemanticManifestValidator
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
+from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
+    SemanticManifestValidator,
+)
 from dbt_semantic_interfaces.validations.unique_valid_name import (
     MetricFlowReservedKeywords,
     UniqueAndValidNameRule,

@@ -30,7 +30,7 @@ class ElementConsistencyRule(SemanticManifestValidationRule[SemanticManifestT], 
     @validate_safely(whats_being_done="running model validation ensuring model wide element consistency")
     def validate_manifest(semantic_manifest: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
-        element_name_to_types = ElementConsistencyRule._get_element_name_to_types(model=semantic_manifest)
+        element_name_to_types = ElementConsistencyRule._get_element_name_to_types(semantic_manifest=semantic_manifest)
         invalid_elements = {
             name: type_mapping for name, type_mapping in element_name_to_types.items() if len(type_mapping) > 1
         }
@@ -54,13 +54,13 @@ class ElementConsistencyRule(SemanticManifestValidationRule[SemanticManifestT], 
 
     @staticmethod
     def _get_element_name_to_types(
-        model: PydanticSemanticManifest,
+        semantic_manifest: PydanticSemanticManifest,
     ) -> DefaultDict[str, DefaultDict[SemanticModelElementType, List[SemanticModelContext]]]:
         """Create a mapping of element names in the semantic manifest to types with a list of associated contexts."""
         element_types: DefaultDict[
             str, DefaultDict[SemanticModelElementType, List[SemanticModelContext]]
         ] = defaultdict(lambda: defaultdict(list))
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             semantic_model_context = SemanticModelContext(
                 file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
                 semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
