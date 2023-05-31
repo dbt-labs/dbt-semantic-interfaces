@@ -164,11 +164,11 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
 
     @staticmethod
     @validate_safely(whats_being_done="checking model top level element names are sufficiently unique")
-    def _validate_top_level_objects(model: SemanticManifest) -> List[ValidationIssue]:
+    def _validate_top_level_objects(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
         """Checks names of objects that are not nested."""
         object_info_tuples = []
-        if model.semantic_models:
-            for semantic_model in model.semantic_models:
+        if semantic_manifest.semantic_models:
+            for semantic_model in semantic_manifest.semantic_models:
                 object_info_tuples.append(
                     (
                         semantic_model.name,
@@ -196,9 +196,9 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
             else:
                 name_to_type[name] = type_
 
-        if model.metrics:
+        if semantic_manifest.metrics:
             metric_names = set()
-            for metric in model.metrics:
+            for metric in semantic_manifest.metrics:
                 if metric.name in metric_names:
                     issues.append(
                         ValidationError(
@@ -222,7 +222,7 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     @validate_safely(whats_being_done="running model validation ensuring elements have adequately unique names")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
-        issues += UniqueAndValidNameRule._validate_top_level_objects(model=semantic_manifest)
+        issues += UniqueAndValidNameRule._validate_top_level_objects(semantic_manifest=semantic_manifest)
 
         for semantic_model in semantic_manifest.semantic_models:
             issues += UniqueAndValidNameRule._validate_semantic_model_elements(semantic_model=semantic_model)

@@ -54,7 +54,7 @@ def test_metric_missing_measure() -> None:
         match=f"Measure {measure_name} referenced in metric {metric_name} is not defined in the model!",
     ):
         SemanticManifestValidator[PydanticSemanticManifest]([MetricMeasuresRule()]).checked_validations(
-            model=model.model
+            semantic_manifest=model.model
         )
 
 

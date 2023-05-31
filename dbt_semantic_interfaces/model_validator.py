@@ -113,9 +113,9 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
 
         return SemanticManifestValidationResults.merge(results)
 
-    def checked_validations(self, model: SemanticManifestT) -> None:
+    def checked_validations(self, semantic_manifest: SemanticManifestT) -> None:
         """Similar to validate(), but throws an exception if validation fails."""
-        model_copy = copy.deepcopy(model)
+        model_copy = copy.deepcopy(semantic_manifest)
         model_issues = self.validate_model(model_copy)
         if model_issues.has_blocking_issues:
             raise SemanticManifestValidationException(issues=tuple(model_issues.all_issues))

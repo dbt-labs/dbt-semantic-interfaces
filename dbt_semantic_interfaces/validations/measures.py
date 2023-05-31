@@ -135,7 +135,7 @@ class MeasureConstraintAliasesRule(SemanticManifestValidationRule[SemanticManife
         """
         issues: List[ValidationIssue] = []
 
-        measure_names = _get_measure_names_from_model(semantic_manifest)
+        measure_names = _get_measure_names_from_semantic_manifest(semantic_manifest)
         measure_alias_to_metrics: DefaultDict[str, List[str]] = defaultdict(list)
         for metric in semantic_manifest.metrics:
             metric_context = MetricContext(
@@ -212,7 +212,7 @@ class MetricMeasuresRule(SemanticManifestValidationRule[SemanticManifestT], Gene
     @validate_safely(whats_being_done="running model validation ensuring metric measures exist")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
-        valid_measure_names = _get_measure_names_from_model(semantic_manifest)
+        valid_measure_names = _get_measure_names_from_semantic_manifest(semantic_manifest)
 
         for metric in semantic_manifest.metrics or []:
             issues += MetricMeasuresRule._validate_metric_measure_references(
@@ -518,10 +518,10 @@ class PercentileAggregationRule(SemanticManifestValidationRule[SemanticManifestT
         return issues
 
 
-def _get_measure_names_from_model(model: SemanticManifest) -> Set[str]:
+def _get_measure_names_from_semantic_manifest(semantic_manifest: SemanticManifest) -> Set[str]:
     """Return every distinct measure name specified in the model."""
     measure_names = set()
-    for semantic_model in model.semantic_models:
+    for semantic_model in semantic_manifest.semantic_models:
         for measure in semantic_model.measures:
             measure_names.add(measure.reference.element_name)
 

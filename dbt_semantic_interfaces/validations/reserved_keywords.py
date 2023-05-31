@@ -125,12 +125,12 @@ class ReservedKeywordsRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
     @classmethod
     @validate_safely(whats_being_done="checking that semantic_model node_relations are not sql reserved keywords")
-    def _validate_semantic_models(cls, model: SemanticManifest) -> List[ValidationIssue]:
+    def _validate_semantic_models(cls, semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
         """Checks names of objects that are not nested."""
         issues: List[ValidationIssue] = []
         set_keywords = set(RESERVED_KEYWORDS)
 
-        for semantic_model in model.semantic_models:
+        for semantic_model in semantic_manifest.semantic_models:
             set_sql_table_path_parts = set(
                 [part.upper() for part in semantic_model.node_relation.relation_name.split(".")]
             )
@@ -157,4 +157,4 @@ class ReservedKeywordsRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         "contain reserved keywords"
     )
     def validate_manifest(cls, semantic_manifest: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
-        return cls._validate_semantic_models(model=semantic_manifest)
+        return cls._validate_semantic_models(semantic_manifest=semantic_manifest)

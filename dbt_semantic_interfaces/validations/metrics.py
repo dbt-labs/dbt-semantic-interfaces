@@ -100,11 +100,11 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the input metrics exist")
-    def _validate_input_metrics_exist(model: SemanticManifest) -> List[ValidationIssue]:
+    def _validate_input_metrics_exist(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
-        all_metrics = {m.name for m in model.metrics}
-        for metric in model.metrics:
+        all_metrics = {m.name for m in semantic_manifest.metrics}
+        for metric in semantic_manifest.metrics:
             if metric.type == MetricType.DERIVED:
                 for input_metric in metric.input_metrics:
                     if input_metric.name not in all_metrics:
@@ -147,7 +147,7 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        issues += DerivedMetricRule._validate_input_metrics_exist(model=semantic_manifest)
+        issues += DerivedMetricRule._validate_input_metrics_exist(semantic_manifest=semantic_manifest)
         for metric in semantic_manifest.metrics or []:
             issues += DerivedMetricRule._validate_alias_collision(metric=metric)
             issues += DerivedMetricRule._validate_time_offset_params(metric=metric)
