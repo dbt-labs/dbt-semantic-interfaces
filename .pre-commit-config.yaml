@@ -32,6 +32,6 @@ repos:
     rev: v1.3.0
     hooks:
     - id: mypy
-      args: [--ignore-missing-imports,--show-error-codes]
+      args: [--show-error-codes]
       verbose: true
       language: system

@@ -8,6 +8,7 @@ from dbt_semantic_interfaces.implementations.elements.measure import PydanticMea
 from dbt_semantic_interfaces.implementations.metric import (
     MetricType,
     PydanticMetric,
+    PydanticMetricInputMeasure,
     PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
@@ -70,7 +71,7 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name=measure_name,
                         type=MetricType.MEASURE_PROXY,
-                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
                     )
                 ],
             )
@@ -118,7 +119,7 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name=measure_name,
                         type=MetricType.MEASURE_PROXY,
-                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
                     )
                 ],
             )
@@ -173,7 +174,9 @@ def test_multiple_primary_time_dimensions() -> None:  # noqa:D
                     PydanticMetric(
                         name=measure_reference.element_name,
                         type=MetricType.MEASURE_PROXY,
-                        type_params=PydanticMetricTypeParams(measures=[measure_reference.element_name]),
+                        type_params=PydanticMetricTypeParams(
+                            measures=[PydanticMetricInputMeasure(name=measure_reference.element_name)]
+                        ),
                     )
                 ],
             )

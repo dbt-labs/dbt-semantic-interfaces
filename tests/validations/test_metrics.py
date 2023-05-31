@@ -9,6 +9,8 @@ from dbt_semantic_interfaces.implementations.elements.measure import PydanticMea
 from dbt_semantic_interfaces.implementations.metric import (
     MetricType,
     PydanticMetricInput,
+    PydanticMetricInputMeasure,
+    PydanticMetricTimeWindow,
     PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
@@ -73,7 +75,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                 metric_with_guaranteed_meta(
                     name="metric_with_no_time_dim",
                     type=MetricType.MEASURE_PROXY,
-                    type_params=PydanticMetricTypeParams(measures=[measure_name]),
+                    type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
                 )
             ],
         )
@@ -103,7 +105,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name="metric_with_no_time_dim",
                         type=MetricType.MEASURE_PROXY,
-                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
                     )
                 ],
             )
@@ -144,7 +146,7 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name="foo",
                         type=MetricType.MEASURE_PROXY,
-                        type_params=PydanticMetricTypeParams(measures=[measure_name]),
+                        type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
                     )
                 ],
             )
@@ -218,12 +220,12 @@ def test_derived_metric() -> None:  # noqa: D
                 metric_with_guaranteed_meta(
                     name="random_metric",
                     type=MetricType.MEASURE_PROXY,
-                    type_params=PydanticMetricTypeParams(measures=[measure_name]),
+                    type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
                 ),
                 metric_with_guaranteed_meta(
                     name="random_metric2",
                     type=MetricType.MEASURE_PROXY,
-                    type_params=PydanticMetricTypeParams(measures=[measure_name]),
+                    type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
                 ),
                 metric_with_guaranteed_meta(
                     name="alias_collision",
@@ -249,8 +251,12 @@ def test_derived_metric() -> None:  # noqa: D
                     type_params=PydanticMetricTypeParams(
                         expr="random_metric / random_metric3",
                         metrics=[
-                            PydanticMetricInput(name="random_metric", offset_window="3 weeks"),
-                            PydanticMetricInput(name="random_metric", offset_to_grain="month", alias="random_metric3"),
+                            PydanticMetricInput(
+                                name="random_metric", offset_window=PydanticMetricTimeWindow.parse("3 weeks")
+                            ),
+                            PydanticMetricInput(
+                                name="random_metric", offset_to_grain=TimeGranularity.MONTH, alias="random_metric3"
+                            ),
                         ],
                     ),
                 ),
@@ -260,7 +266,11 @@ def test_derived_metric() -> None:  # noqa: D
                     type_params=PydanticMetricTypeParams(
                         expr="random_metric * 2",
                         metrics=[
-                            PydanticMetricInput(name="random_metric", offset_window="3 weeks", offset_to_grain="month")
+                            PydanticMetricInput(
+                                name="random_metric",
+                                offset_window=PydanticMetricTimeWindow.parse("3 weeks"),
+                                offset_to_grain=TimeGranularity.MONTH,
+                            )
                         ],
                     ),
                 ),
