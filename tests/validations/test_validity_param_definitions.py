@@ -53,7 +53,7 @@ def test_validity_window_configuration() -> None:
     validity_window_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), validity_window_file])
 
-    model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_model(model.model)
+    model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(model.model)
 
     assert not model_issues.has_blocking_issues, (
         f"Found blocking issues validating model with validity window properly configured: "

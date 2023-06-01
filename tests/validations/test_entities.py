@@ -47,7 +47,7 @@ def test_semantic_model_cant_have_more_than_one_primary_entity(
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
         [OnePrimaryEntityPerSemanticModelRule()]
-    ).validate_model(model)
+    ).validate_semantic_manifest(model)
 
     future_issue = (
         f"Semantic models can have only one primary entity. The semantic model"

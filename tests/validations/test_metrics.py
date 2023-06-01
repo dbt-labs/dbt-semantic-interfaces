@@ -192,7 +192,7 @@ def test_generated_metrics_only() -> None:  # noqa:D
 def test_derived_metric() -> None:  # noqa: D
     measure_name = "foo"
     model_validator = SemanticManifestValidator[PydanticSemanticManifest]([DerivedMetricRule()])
-    model_issues = model_validator.validate_model(
+    validation_results = model_validator.validate_semantic_manifest(
         PydanticSemanticManifest(
             semantic_models=[
                 semantic_model_with_guaranteed_meta(
@@ -276,7 +276,7 @@ def test_derived_metric() -> None:  # noqa: D
             ],
         )
     )
-    build_issues = model_issues.errors
+    build_issues = validation_results.errors
     assert len(build_issues) == 3
     expected_substr1 = "is already being used. Please choose another alias"
     expected_substr2 = "does not exist as a configured metric in the model"

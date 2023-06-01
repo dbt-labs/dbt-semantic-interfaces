@@ -52,7 +52,9 @@ class PydanticSemanticManifestTransformer(ProtocolHint[SemanticManifestTransform
     @staticmethod
     def transform(  # noqa: D
         model: PydanticSemanticManifest,
-        ordered_rule_sequences: Optional[Sequence[Sequence[SemanticManifestTransformRule]]] = None,
+        ordered_rule_sequences: Optional[
+            Sequence[Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]]
+        ] = None,
     ) -> PydanticSemanticManifest:
         if ordered_rule_sequences is None:
             ordered_rule_sequences = PydanticSemanticManifestTransformRuleSet().all_rules
