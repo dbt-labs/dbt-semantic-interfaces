@@ -9,7 +9,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.parsing.dir_to_model import (
-    parse_yaml_files_to_validation_ready_model,
+    parse_yaml_files_to_validation_ready_semantic_manifest,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.test_utils import (
@@ -47,7 +47,7 @@ def test_semantic_model_cant_have_more_than_one_primary_entity(
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
         [OnePrimaryEntityPerSemanticModelRule()]
-    ).validate_model(model)
+    ).validate_semantic_manifest(model)
 
     future_issue = (
         f"Semantic models can have only one primary entity. The semantic model"
@@ -96,11 +96,11 @@ def test_multiple_natural_entities() -> None:
         """
     )
     natural_entity_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), natural_entity_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([base_semantic_manifest_file(), natural_entity_file])
 
     with pytest.raises(SemanticManifestValidationException, match="can have at most one natural entity"):
         SemanticManifestValidator[PydanticSemanticManifest]([NaturalEntityConfigurationRule()]).checked_validations(
-            model.model
+            model.semantic_manifest
         )
 
 
@@ -122,11 +122,11 @@ def test_natural_entity_used_in_wrong_context() -> None:
         """
     )
     natural_entity_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([base_semantic_manifest_file(), natural_entity_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([base_semantic_manifest_file(), natural_entity_file])
 
     with pytest.raises(
         SemanticManifestValidationException, match="use of `natural` entities is currently supported only in"
     ):
         SemanticManifestValidator[PydanticSemanticManifest]([NaturalEntityConfigurationRule()]).checked_validations(
-            model.model
+            model.semantic_manifest
         )

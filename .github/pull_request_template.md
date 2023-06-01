@@ -1,4 +1,4 @@
-resolves #
+Resolves #
 
 <!---
   Include the number of the issue addressed by this PR above if applicable.

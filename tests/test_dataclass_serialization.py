@@ -73,6 +73,14 @@ class DataclassWithDataclassDefault(SerializableDataclass):  # noqa: D
     field9: SimpleDataclass = SimpleDataclass(field0=-10)
 
 
+@dataclass(frozen=True)
+class DataclassWithPrimitiveTypes(SerializableDataclass):  # noqa: D
+    field0: int
+    field1: float
+    field2: bool
+    field3: str
+
+
 def test_simple_dataclass(  # noqa: D
     dataclass_serializer: DataclassSerializer, dataclass_deserializer: DataClassDeserializer
 ) -> None:
@@ -209,3 +217,22 @@ def test_dataclass_deserialization_with_dataclass_default(dataclass_deserializer
     assert deserialized_object == DataclassWithDataclassDefault(field9=SimpleDataclass(field0=-10))
     # Verify default
     assert deserialized_object.field9.field0 == -10
+
+
+def test_all_primitive_types(
+    dataclass_serializer: DataclassSerializer, dataclass_deserializer: DataClassDeserializer
+) -> None:
+    """Tests a dataclass with all supported primitive types."""
+    obj = DataclassWithPrimitiveTypes(
+        field0=1,
+        field1=2.0,
+        field2=True,
+        field3="foo",
+    )
+    logger.error(f"dataclass_serializer is {dataclass_serializer}")
+    serialized_object = dataclass_serializer.pydantic_serialize(obj)
+
+    deserialized_object = dataclass_deserializer.pydantic_deserialize(
+        DataclassWithPrimitiveTypes, serialized_obj=serialized_object
+    )
+    assert obj == deserialized_object

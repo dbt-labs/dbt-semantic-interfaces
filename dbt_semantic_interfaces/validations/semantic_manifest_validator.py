@@ -98,8 +98,8 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         self._rules = rules
         self._executor = ProcessPoolExecutor(max_workers=max_workers)
 
-    def validate_model(self, semantic_manifest: SemanticManifestT) -> SemanticManifestValidationResults:
-        """Validate a model according to configured rules."""
+    def validate_semantic_manifest(self, semantic_manifest: SemanticManifestT) -> SemanticManifestValidationResults:
+        """Validate a manifest according to configured rules."""
         results: List[SemanticManifestValidationResults] = []
 
         futures = [
@@ -116,6 +116,6 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
     def checked_validations(self, semantic_manifest: SemanticManifestT) -> None:
         """Similar to validate(), but throws an exception if validation fails."""
         model_copy = copy.deepcopy(semantic_manifest)
-        model_issues = self.validate_model(model_copy)
+        model_issues = self.validate_semantic_manifest(model_copy)
         if model_issues.has_blocking_issues:
             raise SemanticManifestValidationException(issues=tuple(model_issues.all_issues))

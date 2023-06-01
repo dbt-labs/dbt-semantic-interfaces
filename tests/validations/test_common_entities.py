@@ -24,7 +24,7 @@ def test_lonely_entity_raises_issue(  # noqa: D
     semantic_model_with_entities, _ = find_semantic_model_with(model, func)
     semantic_model_with_entities.entities[0].name = lonely_entity_name
     model_validator = SemanticManifestValidator[PydanticSemanticManifest]([CommonEntitysRule()])
-    model_issues = model_validator.validate_model(model)
+    model_issues = model_validator.validate_semantic_manifest(model)
 
     found_warning = False
     warning = (
