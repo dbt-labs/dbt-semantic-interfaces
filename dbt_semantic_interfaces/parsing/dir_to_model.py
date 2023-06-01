@@ -43,8 +43,8 @@ DOCUMENT_TYPES = [METRIC_TYPE, SEMANTIC_MODEL_TYPE]
 
 
 @dataclass(frozen=True)
-class ModelBuildResult:  # noqa: D
-    model: PydanticSemanticManifest
+class SemanticManifestBuildResult:  # noqa: D
+    semantic_manifest: PydanticSemanticManifest
     # Issues found in the model.
     issues: SemanticManifestValidationResults = SemanticManifestValidationResults()
 
@@ -89,19 +89,19 @@ def collect_yaml_config_file_paths(directory: str) -> List[str]:
     return config_file_paths
 
 
-def parse_directory_of_yaml_files_to_model(
+def parse_directory_of_yaml_files_to_semantic_manifest(
     directory: str,
     template_mapping: Optional[Dict[str, str]] = None,
     apply_transformations: Optional[bool] = True,
     raise_issues_as_exceptions: bool = True,
-) -> ModelBuildResult:
+) -> SemanticManifestBuildResult:
     """Parse files in the given directory to a SemanticManifest.
 
     Strings in the file following the Python string template format are replaced
     according to the template_mapping dict.
     """
     file_paths = collect_yaml_config_file_paths(directory=directory)
-    return parse_yaml_file_paths_to_model(
+    return parse_yaml_file_paths_to_semantic_manifest(
         file_paths=file_paths,
         template_mapping=template_mapping,
         apply_transformations=apply_transformations,
@@ -109,12 +109,12 @@ def parse_directory_of_yaml_files_to_model(
     )
 
 
-def parse_yaml_file_paths_to_model(
+def parse_yaml_file_paths_to_semantic_manifest(
     file_paths: List[str],
     template_mapping: Optional[Dict[str, str]] = None,
     apply_transformations: Optional[bool] = True,
     raise_issues_as_exceptions: bool = True,
-) -> ModelBuildResult:
+) -> SemanticManifestBuildResult:
     """Parse files the given list of file paths to a SemanticManifest.
 
     Strings in the files following the Python string template format are replaced
@@ -131,8 +131,8 @@ def parse_yaml_file_paths_to_model(
                 )
         except UnicodeDecodeError as e:
             # We could alternatively return this as a validation issue, but this
-            # exception is hit *before* building the model. Currently the
-            # ModelBuildResult guarantees a SemanticManifest. We could make
+            # exception is hit *before* building the semantic manifest. Currently, the
+            # SemanticManifestBuildResult guarantees a SemanticManifest. We could make
             # SemanticManifest optional on ModelBuildResult, but this has
             # undesirable consequences.
             raise Exception(
@@ -142,18 +142,18 @@ def parse_yaml_file_paths_to_model(
                 " try manually typing up the problem file instead of copy and pasting"
             ) from e
 
-    return parse_yaml_files_to_validation_ready_model(
+    return parse_yaml_files_to_validation_ready_semantic_manifest(
         yaml_config_files=yaml_config_files,
         apply_transformations=apply_transformations,
         raise_issues_as_exceptions=raise_issues_as_exceptions,
     )
 
 
-def parse_yaml_files_to_validation_ready_model(
+def parse_yaml_files_to_validation_ready_semantic_manifest(
     yaml_config_files: List[YamlConfigFile],
     apply_transformations: Optional[bool] = True,
     raise_issues_as_exceptions: bool = True,
-) -> ModelBuildResult:
+) -> SemanticManifestBuildResult:
     """Parse and transform the given set of in-memory YamlConfigFiles to a UserConfigured model.
 
     This model result is, by default, validation-ready, although different callsites (mainly in testing)
@@ -161,8 +161,8 @@ def parse_yaml_files_to_validation_ready_model(
 
     TODO: Restructure this module and provide an improved API for managing these different input types
     """
-    build_result = parse_yaml_files_to_model(yaml_config_files)
-    model = build_result.model
+    build_result = parse_yaml_files_to_semantic_manifest(yaml_config_files)
+    model = build_result.semantic_manifest
     assert model
 
     build_issues = build_result.issues
@@ -176,14 +176,14 @@ def parse_yaml_files_to_validation_ready_model(
     if raise_issues_as_exceptions and build_issues.has_blocking_issues:
         raise SemanticManifestValidationException(build_issues.all_issues)
 
-    return ModelBuildResult(model=model, issues=build_issues)
+    return SemanticManifestBuildResult(semantic_manifest=model, issues=build_issues)
 
 
-def parse_yaml_files_to_model(
+def parse_yaml_files_to_semantic_manifest(
     files: List[YamlConfigFile],
     semantic_model_class: Type[PydanticSemanticModel] = PydanticSemanticModel,
     metric_class: Type[PydanticMetric] = PydanticMetric,
-) -> ModelBuildResult:
+) -> SemanticManifestBuildResult:
     """Builds SemanticManifest from list of config files (as strings).
 
     Persistent storage connection may be passed to write parsed objects=
@@ -218,8 +218,8 @@ def parse_yaml_files_to_model(
 
         issues += file_issues
 
-    return ModelBuildResult(
-        model=PydanticSemanticManifest(
+    return SemanticManifestBuildResult(
+        semantic_manifest=PydanticSemanticManifest(
             semantic_models=semantic_models,
             metrics=metrics,
         ),

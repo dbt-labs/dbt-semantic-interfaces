@@ -7,7 +7,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.parsing.dir_to_model import (
-    parse_yaml_files_to_validation_ready_model,
+    parse_yaml_files_to_validation_ready_semantic_manifest,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.transformations.pydantic_rule_set import (
@@ -49,14 +49,14 @@ def test_metric_missing_measure() -> None:
         """
     )
     metric_missing_measure_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([metric_missing_measure_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([metric_missing_measure_file])
 
     with pytest.raises(
         SemanticManifestValidationException,
         match=f"Measure {measure_name} referenced in metric {metric_name} is not defined in the model!",
     ):
         SemanticManifestValidator[PydanticSemanticManifest]([MetricMeasuresRule()]).checked_validations(
-            semantic_manifest=model.model
+            semantic_manifest=model.semantic_manifest
         )
 
 
@@ -86,8 +86,10 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
         """
     )
     base_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents_1)
-    model = parse_yaml_files_to_validation_ready_model([base_file])
-    model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(model.model)
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([base_file])
+    model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(
+        model.semantic_manifest
+    )
     duplicate_measure_message = "Found measure with name .* in multiple semantic models with names"
     found_issue = False
 
@@ -123,10 +125,10 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
         """
     )
     dup_measure_file = YamlConfigFile(filepath="inline_for_test_2", contents=yaml_contents_2)
-    dup_model = parse_yaml_files_to_validation_ready_model([base_file, dup_measure_file])
+    dup_model = parse_yaml_files_to_validation_ready_semantic_manifest([base_file, dup_measure_file])
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
         [SemanticModelMeasuresUniqueRule()]
-    ).validate_semantic_manifest(dup_model.model)
+    ).validate_semantic_manifest(dup_model.semantic_manifest)
 
     if model_issues is not None:
         for issue in model_issues.all_issues:
@@ -175,11 +177,11 @@ def test_measure_alias_is_set_when_required() -> None:
         """
     )
     missing_alias_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([missing_alias_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([missing_alias_file])
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
         [MeasureConstraintAliasesRule()]
-    ).validate_semantic_manifest(model.model)
+    ).validate_semantic_manifest(model.semantic_manifest)
 
     assert len(model_issues.errors) == 1
     expected_error_substring = f"depends on multiple different constrained versions of measure {measure_name}"
@@ -226,11 +228,11 @@ def test_invalid_measure_alias_name() -> None:
         """
     )
     invalid_alias_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([invalid_alias_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([invalid_alias_file])
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
         [MeasureConstraintAliasesRule()]
-    ).validate_semantic_manifest(model.model)
+    ).validate_semantic_manifest(model.semantic_manifest)
 
     assert len(model_issues.errors) == 1
     expected_error_substring = f"Invalid name `{invalid_alias}` - names should only consist of"
@@ -278,11 +280,11 @@ def test_measure_alias_measure_name_conflict() -> None:
         """
     )
     invalid_alias_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([invalid_alias_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([invalid_alias_file])
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
         [MeasureConstraintAliasesRule()]
-    ).validate_semantic_manifest(model.model)
+    ).validate_semantic_manifest(model.semantic_manifest)
 
     assert len(model_issues.errors) == 1
     expected_error_substring = (
@@ -342,11 +344,11 @@ def test_reused_measure_alias() -> None:
         """
     )
     invalid_alias_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([invalid_alias_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([invalid_alias_file])
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
         [MeasureConstraintAliasesRule()]
-    ).validate_semantic_manifest(model.model)
+    ).validate_semantic_manifest(model.semantic_manifest)
 
     assert len(model_issues.errors) == 1
     expected_error_substring = (
@@ -402,11 +404,11 @@ def test_reused_measure_alias_within_metric() -> None:
         """
     )
     invalid_alias_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([invalid_alias_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([invalid_alias_file])
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
         [MeasureConstraintAliasesRule()]
-    ).validate_semantic_manifest(model.model)
+    ).validate_semantic_manifest(model.semantic_manifest)
 
     assert len(model_issues.errors) == 1
     expected_error_substring = (
@@ -467,11 +469,11 @@ def test_invalid_non_additive_dimension_properties() -> None:
         """
     )
     invalid_dim_file = YamlConfigFile(filepath="inline_for_test_2", contents=yaml_contents)
-    model_build_result = parse_yaml_files_to_validation_ready_model(
+    model_build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
         [invalid_dim_file], apply_transformations=False, raise_issues_as_exceptions=False
     )
     transformed_model = PydanticSemanticManifestTransformer.transform(
-        model=model_build_result.model,
+        model=model_build_result.semantic_manifest,
         ordered_rule_sequences=(PydanticSemanticManifestTransformRuleSet().primary_rules,),
     )
 
@@ -527,9 +529,11 @@ def test_count_measure_missing_expr() -> None:
         """
     )
     missing_expr_file = YamlConfigFile(filepath="inline_for_test_2", contents=yaml_contents)
-    model_build_result = parse_yaml_files_to_validation_ready_model([missing_expr_file], apply_transformations=False)
+    model_build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [missing_expr_file], apply_transformations=False
+    )
     transformed_model = PydanticSemanticManifestTransformer.transform(
-        model=model_build_result.model,
+        model=model_build_result.semantic_manifest,
         ordered_rule_sequences=(PydanticSemanticManifestTransformRuleSet().primary_rules,),
     )
 
@@ -579,9 +583,11 @@ def test_count_measure_with_distinct_expr() -> None:
         """
     )
     distinct_count_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model_build_result = parse_yaml_files_to_validation_ready_model([distinct_count_file], apply_transformations=False)
+    model_build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [distinct_count_file], apply_transformations=False
+    )
     transformed_model = PydanticSemanticManifestTransformer.transform(
-        model=model_build_result.model,
+        model=model_build_result.semantic_manifest,
         ordered_rule_sequences=(PydanticSemanticManifestTransformRuleSet().primary_rules,),
     )
 
@@ -634,9 +640,11 @@ def test_percentile_measure_missing_agg_params() -> None:
         """
     )
     missing_agg_params_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([missing_agg_params_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([missing_agg_params_file])
 
-    model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(model.model)
+    model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(
+        model.semantic_manifest
+    )
     expected_error_substring_1 = (
         "Measure 'bad_measure_1' uses a PERCENTILE aggregation, which requires agg_params.percentile to be provided."
     )
@@ -694,9 +702,11 @@ def test_percentile_measure_bad_percentile_values() -> None:
         """
     )
     bad_percentile_values_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_model([bad_percentile_values_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([bad_percentile_values_file])
 
-    model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(model.model)
+    model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(
+        model.semantic_manifest
+    )
     expected_error_substring_1 = (
         "Percentile aggregation parameter for measure 'bad_measure_1' is '1.0', but "
         + "must be between 0 and 1 (non-inclusive). For example, to indicate the 65th percentile value, set "
