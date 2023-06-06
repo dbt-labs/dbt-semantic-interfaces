@@ -25,6 +25,7 @@ from pydantic import BaseModel, Extra
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
+from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     MetricModelReference,
     SemanticModelElementReference,
@@ -403,3 +404,14 @@ class SemanticManifestValidationException(Exception):
     def __init__(self, issues: Tuple[ValidationIssue, ...]) -> None:  # noqa: D
         issues_str = "\n".join([x.as_readable_str(verbose=True) for x in issues])
         super().__init__(f"Error validating model. Issues:\n{issues_str}")
+
+
+class SemanticModelValidationHelpers:
+    """Class containing all the helpers related to semantic model validations."""
+
+    @classmethod
+    def time_dimension_in_model(cls, time_dimension_name: str, semantic_model: SemanticModel) -> bool:  # noqa: D
+        for dimension in semantic_model.dimensions:
+            if dimension.type == DimensionType.TIME and dimension.name == time_dimension_name:
+                return True
+        return False

@@ -9,6 +9,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     SemanticManifestValidationRule,
     SemanticModelContext,
+    SemanticModelValidationHelpers,
     ValidationError,
     ValidationIssue,
     validate_safely,
@@ -176,5 +177,45 @@ class SemanticModelValidityWindowRule(SemanticManifestValidationRule[SemanticMan
                 ),
             )
             issues.append(error)
+
+        return issues
+
+
+class SemanticModelDefaultsRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """Checks defaults in semantic models."""
+
+    @staticmethod
+    @validate_safely(whats_being_done="running model validation ensuring the defaults are valid")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+
+        for semantic_model in semantic_manifest.semantic_models:
+            issues.extend(SemanticModelDefaultsRule._validate_default_agg_time_dimension(semantic_model=semantic_model))
+        return issues
+
+    @staticmethod
+    @validate_safely(whats_being_done="checking validity of the semantic model's default agg_time_dimension")
+    def _validate_default_agg_time_dimension(semantic_model: SemanticModel) -> List[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        if semantic_model.defaults is None:
+            return []
+
+        default_agg_time_dimension = semantic_model.defaults.agg_time_dimension
+        assert default_agg_time_dimension is not None, "should not be None"
+
+        if not SemanticModelValidationHelpers.time_dimension_in_model(
+            time_dimension_name=default_agg_time_dimension, semantic_model=semantic_model
+        ):
+            issues.append(
+                ValidationError(
+                    context=SemanticModelContext(
+                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                        semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
+                    ),
+                    message=f"Default aggregation time dimension was specified as '{default_agg_time_dimension}' which "
+                    f"doesn't exist as a time dimension in semantic model named '{semantic_model.name}'.",
+                )
+            )
 
         return issues

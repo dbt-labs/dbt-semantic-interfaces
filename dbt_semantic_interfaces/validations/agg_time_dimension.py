@@ -2,16 +2,13 @@ from typing import Generic, List, Sequence
 
 from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
-from dbt_semantic_interfaces.references import (
-    SemanticModelElementReference,
-    TimeDimensionReference,
-)
-from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
+from dbt_semantic_interfaces.references import SemanticModelElementReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     SemanticManifestValidationRule,
     SemanticModelElementContext,
     SemanticModelElementType,
+    SemanticModelValidationHelpers,
     ValidationError,
     ValidationIssue,
     validate_safely,
@@ -31,15 +28,6 @@ class AggregationTimeDimensionRule(SemanticManifestValidationRule[SemanticManife
         return issues
 
     @staticmethod
-    def _time_dimension_in_model(
-        time_dimension_reference: TimeDimensionReference, semantic_model: SemanticModel
-    ) -> bool:
-        for dimension in semantic_model.dimensions:
-            if dimension.type == DimensionType.TIME and dimension.name == time_dimension_reference.element_name:
-                return True
-        return False
-
-    @staticmethod
     @validate_safely(whats_being_done="checking aggregation time dimension for a semantic model")
     def _validate_semantic_model(semantic_model: SemanticModel) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
@@ -53,8 +41,8 @@ class AggregationTimeDimensionRule(SemanticManifestValidationRule[SemanticManife
                 element_type=SemanticModelElementType.MEASURE,
             )
             agg_time_dimension_reference = measure.checked_agg_time_dimension
-            if not AggregationTimeDimensionRule._time_dimension_in_model(
-                time_dimension_reference=agg_time_dimension_reference, semantic_model=semantic_model
+            if not SemanticModelValidationHelpers.time_dimension_in_model(
+                time_dimension_name=agg_time_dimension_reference.element_name, semantic_model=semantic_model
             ):
                 issues.append(
                     ValidationError(
