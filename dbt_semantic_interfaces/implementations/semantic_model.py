@@ -71,7 +71,7 @@ class PydanticSemanticModelDefaults(HashableBaseModel, ProtocolHint[SemanticMode
     def _implements_protocol(self) -> SemanticModelDefaults:  # noqa: D
         return self
 
-    agg_time_dimension: str
+    agg_time_dimension: Optional[str]
 
 
 class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[SemanticModel]):
