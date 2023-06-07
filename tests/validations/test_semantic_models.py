@@ -1,12 +1,27 @@
+import textwrap
+
 import pytest
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimension,
     PydanticDimensionTypeParams,
 )
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
+from dbt_semantic_interfaces.parsing.dir_to_model import (
+    parse_yaml_files_to_validation_ready_semantic_manifest,
+)
+from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.test_utils import semantic_model_with_guaranteed_meta
 from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
+    SemanticManifestValidator,
+)
+from dbt_semantic_interfaces.validations.semantic_models import (
+    SemanticModelDefaultsRule,
+)
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
@@ -26,4 +41,32 @@ def test_semantic_model_invalid_sql() -> None:  # noqa:D
                     ),
                 )
             ],
+        )
+
+
+def test_semantic_model_defaults_invalid() -> None:  # noqa: D
+    yaml_contents = textwrap.dedent(
+        """\
+        semantic_model:
+          name: semantic_model_name
+          node_relation:
+            schema_name: some_schema
+            alias: some_alias
+          defaults:
+            agg_time_dimension: doesnotexist
+          dimensions:
+            - name: ds
+              type: time
+              type_params:
+                time_granularity: day
+        """
+    )
+    invalid_defaults_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
+    model = parse_yaml_files_to_validation_ready_semantic_manifest([invalid_defaults_file])
+
+    with pytest.raises(
+        SemanticManifestValidationException, match="'doesnotexist' which doesn't exist as a time dimension"
+    ):
+        SemanticManifestValidator[PydanticSemanticManifest]([SemanticModelDefaultsRule()]).checked_validations(
+            model.semantic_manifest
         )

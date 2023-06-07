@@ -31,6 +31,7 @@ from dbt_semantic_interfaces.validations.metrics import (
 from dbt_semantic_interfaces.validations.non_empty import NonEmptyRule
 from dbt_semantic_interfaces.validations.reserved_keywords import ReservedKeywordsRule
 from dbt_semantic_interfaces.validations.semantic_models import (
+    SemanticModelDefaultsRule,
     SemanticModelTimeDimensionWarningsRule,
     SemanticModelValidityWindowRule,
 )
@@ -78,6 +79,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         AggregationTimeDimensionRule[SemanticManifestT](),
         ReservedKeywordsRule[SemanticManifestT](),
         MeasuresNonAdditiveDimensionRule[SemanticManifestT](),
+        SemanticModelDefaultsRule[SemanticManifestT](),
     )
 
     def __init__(
