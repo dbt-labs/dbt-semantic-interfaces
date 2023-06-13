@@ -1,10 +1,10 @@
 from typing import Generic, List
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import (
+from dbt_semantic_interfaces.protocols import (
     SemanticManifest,
     SemanticManifestT,
+    SemanticModel,
 )
-from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelElementReference
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,

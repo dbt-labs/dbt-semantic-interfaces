@@ -2,10 +2,9 @@ import logging
 from datetime import date
 from typing import Generic, List, MutableSet, Sequence
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
-from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
+from dbt_semantic_interfaces.protocols import SemanticManifestT, SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelReference
-from dbt_semantic_interfaces.type_enums.entity_type import EntityType
+from dbt_semantic_interfaces.type_enums import EntityType
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     SemanticManifestValidationRule,

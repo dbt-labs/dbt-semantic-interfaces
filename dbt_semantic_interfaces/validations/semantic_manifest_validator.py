@@ -3,10 +3,7 @@ import logging
 from concurrent.futures import ProcessPoolExecutor, as_completed
 from typing import Generic, List, Sequence
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import (
-    SemanticManifest,
-    SemanticManifestT,
-)
+from dbt_semantic_interfaces.protocols import SemanticManifest, SemanticManifestT
 from dbt_semantic_interfaces.validations.agg_time_dimension import (
     AggregationTimeDimensionRule,
 )

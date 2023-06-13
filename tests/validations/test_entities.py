@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.test_utils import (
     base_semantic_manifest_file,
     find_semantic_model_with,
 )
-from dbt_semantic_interfaces.type_enums.entity_type import EntityType
+from dbt_semantic_interfaces.type_enums import EntityType
 from dbt_semantic_interfaces.validations.entities import (
     NaturalEntityConfigurationRule,
     OnePrimaryEntityPerSemanticModelRule,

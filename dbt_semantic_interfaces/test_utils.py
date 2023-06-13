@@ -16,7 +16,6 @@ from dbt_semantic_interfaces.implementations.metadata import (
     PydanticMetadata,
 )
 from dbt_semantic_interfaces.implementations.metric import (
-    MetricType,
     PydanticMetric,
     PydanticMetricTypeParams,
 )
@@ -28,6 +27,7 @@ from dbt_semantic_interfaces.implementations.semantic_model import (
     PydanticSemanticModel,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
+from dbt_semantic_interfaces.type_enums import MetricType
 
 logger = logging.getLogger(__name__)
 

@@ -14,11 +14,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
-from dbt_semantic_interfaces.type_enums.metric_type import MetricType
-from dbt_semantic_interfaces.type_enums.time_granularity import (
-    TimeGranularity,
-    string_to_time_granularity,
-)
+from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
 
 
 class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
@@ -109,7 +105,7 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
 
         return PydanticMetricTimeWindow(
             count=int(count),
-            granularity=string_to_time_granularity(granularity),
+            granularity=TimeGranularity(granularity),
         )
 
 

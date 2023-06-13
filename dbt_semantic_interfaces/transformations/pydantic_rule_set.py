@@ -6,7 +6,7 @@ from typing_extensions import override
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
+from dbt_semantic_interfaces.protocols import ProtocolHint
 from dbt_semantic_interfaces.transformations.add_input_metric_measures import (
     AddInputMetricMeasuresRule,
 )

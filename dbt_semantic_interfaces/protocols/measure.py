@@ -4,7 +4,7 @@ from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.references import MeasureReference, TimeDimensionReference
-from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
+from dbt_semantic_interfaces.type_enums import AggregationType
 
 
 class NonAdditiveDimensionParameters(Protocol):

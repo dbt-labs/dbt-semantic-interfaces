@@ -3,14 +3,13 @@ from typing import DefaultDict, Dict, Generic, List, Sequence, Set
 
 from more_itertools import bucket
 
-from dbt_semantic_interfaces.protocols.metric import Metric
-from dbt_semantic_interfaces.protocols.semantic_manifest import (
+from dbt_semantic_interfaces.protocols import (
+    Metric,
     SemanticManifest,
     SemanticManifestT,
 )
 from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
-from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
-from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
+from dbt_semantic_interfaces.type_enums import AggregationType, DimensionType
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,

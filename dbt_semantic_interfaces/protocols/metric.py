@@ -6,8 +6,7 @@ from typing import Optional, Protocol, Sequence
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilter
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
-from dbt_semantic_interfaces.type_enums.metric_type import MetricType
-from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
 
 
 class MetricInputMeasure(Protocol):

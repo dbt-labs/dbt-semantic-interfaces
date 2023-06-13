@@ -4,7 +4,7 @@ from abc import abstractmethod
 from typing import Optional, Protocol
 
 from dbt_semantic_interfaces.references import EntityReference
-from dbt_semantic_interfaces.type_enums.entity_type import EntityType
+from dbt_semantic_interfaces.type_enums import EntityType
 
 
 class Entity(Protocol):

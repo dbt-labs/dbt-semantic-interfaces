@@ -8,7 +8,7 @@ from dbt_semantic_interfaces.implementations.base import (
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import EntityReference
-from dbt_semantic_interfaces.type_enums.entity_type import EntityType
+from dbt_semantic_interfaces.type_enums import EntityType
 
 
 class PydanticEntity(HashableBaseModel, ModelWithMetadataParsing):
