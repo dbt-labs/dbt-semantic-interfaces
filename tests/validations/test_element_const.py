@@ -9,7 +9,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
-from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
+from dbt_semantic_interfaces.type_enums import DimensionType
 from dbt_semantic_interfaces.validations.element_const import ElementConsistencyRule
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
     SemanticManifestValidator,

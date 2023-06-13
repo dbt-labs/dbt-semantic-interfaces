@@ -34,11 +34,13 @@ from dbt_semantic_interfaces.protocols.semantic_manifest import (
 from dbt_semantic_interfaces.protocols.semantic_model import (
     SemanticModel as SemanticModelProtocol,
 )
-from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
-from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
-from dbt_semantic_interfaces.type_enums.entity_type import EntityType
-from dbt_semantic_interfaces.type_enums.metric_type import MetricType
-from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.type_enums import (
+    AggregationType,
+    DimensionType,
+    EntityType,
+    MetricType,
+    TimeGranularity,
+)
 
 
 @runtime_checkable

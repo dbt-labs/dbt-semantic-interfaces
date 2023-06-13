@@ -25,10 +25,12 @@ from dbt_semantic_interfaces.test_utils import (
     metric_with_guaranteed_meta,
     semantic_model_with_guaranteed_meta,
 )
-from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
-from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
-from dbt_semantic_interfaces.type_enums.entity_type import EntityType
-from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.type_enums import (
+    AggregationType,
+    DimensionType,
+    EntityType,
+    TimeGranularity,
+)
 from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
     SemanticManifestValidator,

@@ -31,7 +31,7 @@ from dbt_semantic_interfaces.references import (
     SemanticModelElementReference,
     SemanticModelReference,
 )
-from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
+from dbt_semantic_interfaces.type_enums import DimensionType
 
 VALIDATE_SAFELY_ERROR_STR_TMPLT = ". Issue occurred in method `{method_name}` called with {arguments_str}"
 ValidationContextJSON = Dict[str, Union[str, int, None]]

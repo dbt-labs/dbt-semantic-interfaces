@@ -8,8 +8,7 @@ from dbt_semantic_interfaces.references import (
     DimensionReference,
     TimeDimensionReference,
 )
-from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
-from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.type_enums import DimensionType, TimeGranularity
 
 
 class DimensionValidityParams(Protocol):

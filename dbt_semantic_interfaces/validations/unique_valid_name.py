@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.references import (
     SemanticModelElementReference,
     SemanticModelReference,
 )
-from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
+from dbt_semantic_interfaces.type_enums import TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     MetricContext,

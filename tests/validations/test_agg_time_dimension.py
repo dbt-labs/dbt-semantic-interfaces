@@ -6,7 +6,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
-from dbt_semantic_interfaces.type_enums.dimension_type import DimensionType
+from dbt_semantic_interfaces.type_enums import DimensionType
 from dbt_semantic_interfaces.validations.agg_time_dimension import (
     AggregationTimeDimensionRule,
 )
