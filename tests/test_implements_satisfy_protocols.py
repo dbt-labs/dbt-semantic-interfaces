@@ -23,17 +23,15 @@ from dbt_semantic_interfaces.implementations.semantic_model import (
     NodeRelation,
     PydanticSemanticModel,
 )
-from dbt_semantic_interfaces.protocols.dimension import Dimension as DimensionProtocol
-from dbt_semantic_interfaces.protocols.entity import Entity as EntityProtocol
-from dbt_semantic_interfaces.protocols.measure import Measure as MeasureProtocol
-from dbt_semantic_interfaces.protocols.metadata import Metadata as MetadataProtocol
-from dbt_semantic_interfaces.protocols.metric import Metric as MetricProtocol
-from dbt_semantic_interfaces.protocols.semantic_manifest import (
+from dbt_semantic_interfaces.protocols import Dimension as DimensionProtocol
+from dbt_semantic_interfaces.protocols import Entity as EntityProtocol
+from dbt_semantic_interfaces.protocols import Measure as MeasureProtocol
+from dbt_semantic_interfaces.protocols import Metadata as MetadataProtocol
+from dbt_semantic_interfaces.protocols import Metric as MetricProtocol
+from dbt_semantic_interfaces.protocols import (
     SemanticManifest as SemanticManifestProtocol,
 )
-from dbt_semantic_interfaces.protocols.semantic_model import (
-    SemanticModel as SemanticModelProtocol,
-)
+from dbt_semantic_interfaces.protocols import SemanticModel as SemanticModelProtocol
 from dbt_semantic_interfaces.type_enums import (
     AggregationType,
     DimensionType,

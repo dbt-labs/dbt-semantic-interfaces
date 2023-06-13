@@ -3,8 +3,9 @@ from typing import Generic, List, Sequence
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.metric import PydanticMetricTimeWindow
-from dbt_semantic_interfaces.protocols.metric import Metric, MetricType
-from dbt_semantic_interfaces.protocols.semantic_manifest import (
+from dbt_semantic_interfaces.protocols import (
+    Metric,
+    MetricType,
     SemanticManifest,
     SemanticManifestT,
 )

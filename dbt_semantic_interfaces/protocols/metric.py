@@ -3,8 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
-from dbt_semantic_interfaces.protocols.metadata import Metadata
-from dbt_semantic_interfaces.protocols.where_filter import WhereFilter
+from dbt_semantic_interfaces.protocols import Metadata, WhereFilter
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
 

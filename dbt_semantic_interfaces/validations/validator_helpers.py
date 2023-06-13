@@ -23,9 +23,7 @@ import click
 from pydantic import BaseModel, Extra
 
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
-from dbt_semantic_interfaces.protocols.metadata import Metadata
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
-from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
+from dbt_semantic_interfaces.protocols import Metadata, SemanticManifestT, SemanticModel
 from dbt_semantic_interfaces.references import (
     MetricModelReference,
     SemanticModelElementReference,

@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Protocol, TypeVar
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
+from dbt_semantic_interfaces.protocols import SemanticManifestT
 
 
 class SemanticManifestTransformRule(Protocol[SemanticManifestT]):

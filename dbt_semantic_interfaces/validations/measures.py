@@ -3,8 +3,8 @@ from typing import DefaultDict, Dict, Generic, List, Sequence, Set
 
 from more_itertools import bucket
 
-from dbt_semantic_interfaces.protocols.metric import Metric
-from dbt_semantic_interfaces.protocols.semantic_manifest import (
+from dbt_semantic_interfaces.protocols import (
+    Metric,
     SemanticManifest,
     SemanticManifestT,
 )

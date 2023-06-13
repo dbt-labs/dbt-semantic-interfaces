@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional, Protocol
 
-from dbt_semantic_interfaces.protocols.metadata import Metadata
+from dbt_semantic_interfaces.protocols import Metadata
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     TimeDimensionReference,

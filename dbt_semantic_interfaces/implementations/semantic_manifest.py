@@ -7,8 +7,7 @@ from typing_extensions import override
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
 from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
-from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifest
+from dbt_semantic_interfaces.protocols import ProtocolHint, SemanticManifest
 
 
 class PydanticSemanticManifest(HashableBaseModel, ProtocolHint[SemanticManifest]):

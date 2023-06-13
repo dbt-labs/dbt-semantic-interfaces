@@ -1,8 +1,6 @@
 from typing import Dict, Generic, List, Sequence, Set
 
-from dbt_semantic_interfaces.protocols.entity import Entity
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
-from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
+from dbt_semantic_interfaces.protocols import Entity, SemanticManifestT, SemanticModel
 from dbt_semantic_interfaces.references import (
     EntityReference,
     SemanticModelElementReference,

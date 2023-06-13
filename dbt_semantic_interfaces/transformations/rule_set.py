@@ -2,7 +2,7 @@ import logging
 from abc import abstractmethod
 from typing import Protocol, Sequence
 
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
+from dbt_semantic_interfaces.protocols import SemanticManifestT
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )

@@ -8,8 +8,7 @@ from typing_extensions import override
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
-from dbt_semantic_interfaces.protocols.semantic_manifest import SemanticManifestT
+from dbt_semantic_interfaces.protocols import ProtocolHint, SemanticManifestT
 from dbt_semantic_interfaces.transformations.pydantic_rule_set import (
     PydanticSemanticManifestTransformRuleSet,
 )

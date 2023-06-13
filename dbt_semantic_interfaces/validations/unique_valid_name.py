@@ -5,11 +5,11 @@ import re
 from typing import Dict, Generic, List, Optional, Sequence, Tuple
 
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
-from dbt_semantic_interfaces.protocols.semantic_manifest import (
+from dbt_semantic_interfaces.protocols import (
     SemanticManifest,
     SemanticManifestT,
+    SemanticModel,
 )
-from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     ElementReference,
     MetricModelReference,
