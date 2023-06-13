@@ -7,7 +7,6 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
-    MetricType,
     PydanticMetricInput,
     PydanticMetricInputMeasure,
     PydanticMetricTimeWindow,
@@ -29,6 +28,7 @@ from dbt_semantic_interfaces.type_enums import (
     AggregationType,
     DimensionType,
     EntityType,
+    MetricType,
     TimeGranularity,
 )
 from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule

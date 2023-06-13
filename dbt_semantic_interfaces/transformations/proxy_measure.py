@@ -4,7 +4,6 @@ from typing_extensions import override
 
 from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.metric import (
-    MetricType,
     PydanticMetric,
     PydanticMetricInputMeasure,
     PydanticMetricTypeParams,
@@ -16,6 +15,7 @@ from dbt_semantic_interfaces.protocols import ProtocolHint
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
+from dbt_semantic_interfaces.type_enums import MetricType
 
 logger = logging.getLogger(__name__)
 

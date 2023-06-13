@@ -4,7 +4,6 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
 )
 from dbt_semantic_interfaces.implementations.metric import (
-    MetricType,
     PydanticMetricInput,
     PydanticMetricInputMeasure,
     PydanticMetricTimeWindow,
@@ -13,7 +12,7 @@ from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_semantic_manifest,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
-from dbt_semantic_interfaces.type_enums import TimeGranularity
+from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )

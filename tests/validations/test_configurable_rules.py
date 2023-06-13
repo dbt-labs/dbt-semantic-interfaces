@@ -3,7 +3,6 @@ import copy
 import pytest
 
 from dbt_semantic_interfaces.implementations.metric import (
-    MetricType,
     PydanticMetricInput,
     PydanticMetricTypeParams,
 )
@@ -11,6 +10,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.test_utils import metric_with_guaranteed_meta
+from dbt_semantic_interfaces.type_enums import MetricType
 from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
     SemanticManifestValidator,
