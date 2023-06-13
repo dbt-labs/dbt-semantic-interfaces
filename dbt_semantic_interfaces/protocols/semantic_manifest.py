@@ -1,7 +1,8 @@
 from abc import abstractmethod
 from typing import Protocol, Sequence, TypeVar
 
-from dbt_semantic_interfaces.protocols import Metric, SemanticModel
+from dbt_semantic_interfaces.protocols.metric import Metric
+from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 
 
 class SemanticManifest(Protocol):
