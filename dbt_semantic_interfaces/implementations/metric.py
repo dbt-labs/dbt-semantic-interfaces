@@ -136,16 +136,6 @@ class PydanticMetricTypeParams(HashableBaseModel):
     grain_to_date: Optional[TimeGranularity]
     metrics: Optional[List[PydanticMetricInput]]
 
-    @property
-    def numerator_measure_reference(self) -> Optional[MeasureReference]:
-        """Return the measure reference, if any, associated with the metric input measure defined as the numerator."""
-        return self.numerator.measure_reference if self.numerator else None
-
-    @property
-    def denominator_measure_reference(self) -> Optional[MeasureReference]:
-        """Return the measure reference, if any, associated with the metric input measure defined as the denominator."""
-        return self.denominator.measure_reference if self.denominator else None
-
 
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a metric."""

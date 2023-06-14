@@ -136,18 +136,6 @@ class MetricTypeParams(Protocol):
     def metrics(self) -> Optional[Sequence[MetricInput]]:  # noqa: D
         pass
 
-    @property
-    @abstractmethod
-    def numerator_measure_reference(self) -> Optional[MeasureReference]:
-        """Return the measure reference, if any, associated with the metric input measure defined as the numerator."""
-        ...
-
-    @property
-    @abstractmethod
-    def denominator_measure_reference(self) -> Optional[MeasureReference]:
-        """Return the measure reference, if any, associated with the metric input measure defined as the denominator."""
-        ...
-
 
 class Metric(Protocol):
     """Describes a metric."""
