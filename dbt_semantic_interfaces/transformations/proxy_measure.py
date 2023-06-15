@@ -58,7 +58,7 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                             name=measure.name,
                             type=MetricType.SIMPLE,
                             type_params=PydanticMetricTypeParams(
-                                measures=[PydanticMetricInputMeasure(name=measure.name)],
+                                measure=PydanticMetricInputMeasure(name=measure.name),
                                 expr=measure.name,
                             ),
                         )

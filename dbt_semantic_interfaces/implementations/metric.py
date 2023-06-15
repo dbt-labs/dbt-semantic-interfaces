@@ -1,7 +1,10 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import List, Optional, Sequence
 
+from pydantic import Field
+
+from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
@@ -123,18 +126,24 @@ class PydanticMetricInput(HashableBaseModel):
         """Property accessor to get the MetricReference associated with this metric input."""
         return MetricReference(element_name=self.name)
 
+    @property
+    def post_aggregation_reference(self) -> MetricReference:
+        """Property accessor to get the MetricReference with the aliased name, if appropriate."""
+        return MetricReference(element_name=self.alias or self.name)
+
 
 class PydanticMetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
     measure: Optional[PydanticMetricInputMeasure]
-    measures: Optional[List[PydanticMetricInputMeasure]]
-    numerator: Optional[PydanticMetricInputMeasure]
-    denominator: Optional[PydanticMetricInputMeasure]
+    numerator: Optional[PydanticMetricInput]
+    denominator: Optional[PydanticMetricInput]
     expr: Optional[str]
     window: Optional[PydanticMetricTimeWindow]
     grain_to_date: Optional[TimeGranularity]
     metrics: Optional[List[PydanticMetricInput]]
+
+    input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
 
 
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
@@ -148,18 +157,9 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     metadata: Optional[PydanticMetadata]
 
     @property
-    def input_measures(self) -> List[PydanticMetricInputMeasure]:
+    def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:
         """Return the complete list of input measure configurations for this metric."""
-        tp = self.type_params
-        res = tp.measures or []
-        if tp.measure:
-            res.append(tp.measure)
-        if tp.numerator:
-            res.append(tp.numerator)
-        if tp.denominator:
-            res.append(tp.denominator)
-
-        return res
+        return self.type_params.input_measures
 
     @property
     def measure_references(self) -> List[MeasureReference]:
@@ -167,6 +167,17 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
         return [x.measure_reference for x in self.input_measures]
 
     @property
-    def input_metrics(self) -> List[PydanticMetricInput]:
+    def input_metrics(self) -> Sequence[PydanticMetricInput]:
         """Return the associated input metrics for this metric."""
-        return self.type_params.metrics or []
+        if self.type is MetricType.SIMPLE or self.type is MetricType.CUMULATIVE:
+            return ()
+        elif self.type is MetricType.DERIVED:
+            assert self.type_params.metrics is not None, f"{MetricType.DERIVED} should have type_params.metrics set"
+            return self.type_params.metrics
+        elif self.type is MetricType.RATIO:
+            assert (
+                self.type_params.numerator is not None and self.type_params.denominator is not None
+            ), f"{self} is metric type {MetricType.RATIO}, so neither the numerator and denominator should not be None"
+            return (self.type_params.numerator, self.type_params.denominator)
+        else:
+            assert_values_exhausted(self.type)
