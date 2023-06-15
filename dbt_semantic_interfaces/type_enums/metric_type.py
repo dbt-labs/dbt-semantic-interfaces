@@ -6,6 +6,5 @@ class MetricType(ExtendedEnum):
 
     SIMPLE = "simple"
     RATIO = "ratio"
-    EXPR = "expr"
     CUMULATIVE = "cumulative"
     DERIVED = "derived"
