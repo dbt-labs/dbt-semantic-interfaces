@@ -73,8 +73,8 @@ def test_metric_metadata_parsing() -> None:
           name: metadata_test
           type: simple
           type_params:
-            measures:
-              - metadata_test_measure
+            measure:
+              name: metadata_test_measure
         """
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
@@ -91,8 +91,8 @@ def test_metric_metadata_parsing() -> None:
         name: metadata_test
         type: simple
         type_params:
-          measures:
-          - metadata_test_measure
+          measure:
+            name: metadata_test_measure
         """
     )
     assert metric.metadata.file_slice.content == expected_metadata_content
@@ -363,8 +363,8 @@ def test_invalid_cumulative_metric_window_format_parsing_error() -> None:
           name: invalid_cumulative_format_test
           type: cumulative
           type_params:
-            measures:
-              - cumulative_measure
+            measure:
+              name: cumulative_measure
             window: "7 days long"
         """
     )
@@ -383,8 +383,8 @@ def test_invalid_cumulative_metric_window_granularity_parsing_error() -> None:
           name: invalid_cumulative_granularity_test
           type: cumulative
           type_params:
-            measures:
-              - cumulative_measure
+            measure:
+              name: cumulative_measure
             window: "7 moons"
         """
     )
@@ -403,8 +403,8 @@ def test_invalid_cumulative_metric_window_count_parsing_error() -> None:
           name: invalid_cumulative_count_test
           type: cumulative
           type_params:
-            measures:
-              - cumulative_measure
+            measure:
+              name: cumulative_measure
             window: "six days"
         """
     )

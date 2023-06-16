@@ -72,10 +72,6 @@ metric_type_params_schema = {
         "numerator": {"$ref": "metric_input_measure_schema"},
         "denominator": {"$ref": "metric_input_measure_schema"},
         "measure": {"$ref": "metric_input_measure_schema"},
-        "measures": {
-            "type": "array",
-            "items": {"$ref": "metric_input_measure_schema"},
-        },
         "expr": {"type": ["string", "boolean"]},
         "window": {"type": "string"},
         "grain_to_date": {"type": "string"},
