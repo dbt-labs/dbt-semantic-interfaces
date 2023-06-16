@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Change ratio metrics to be configured with input metrics instead of measures.
+time: 2023-06-15T15:33:01.417121-07:00
+custom:
+  Author: plypaul
+  Issue: "67"

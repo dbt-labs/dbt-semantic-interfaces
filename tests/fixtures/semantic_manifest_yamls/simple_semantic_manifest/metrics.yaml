@@ -4,56 +4,56 @@ metric:
   description: "bookings metric"
   type: simple
   type_params:
-    measures:
-      - bookings
+    measure:
+      name: bookings
 ---
 metric:
   name: "average_booking_value"
   description: "average booking value metric"
   type: simple
   type_params:
-    measures:
-      - average_booking_value
+    measure:
+      name: average_booking_value
 ---
 metric:
   name: "instant_bookings"
   description: "instant bookings"
   type: simple
   type_params:
-    measures:
-      - instant_bookings
+    measure:
+      name: instant_bookings
 ---
 metric:
   name: "booking_value"
   description: "booking value"
   type: simple
   type_params:
-    measures:
-      - booking_value
+    measure:
+      name: booking_value
 ---
 metric:
   name: "max_booking_value"
   description: "max booking value"
   type: simple
   type_params:
-    measures:
-      - max_booking_value
+    measure:
+      name: max_booking_value
 ---
 metric:
   name: "min_booking_value"
   description: "min booking value"
   type: simple
   type_params:
-    measures:
-      - min_booking_value
+    measure:
+      name: min_booking_value
 ---
 metric:
   name: "instant_booking_value"
   description: "booking value of instant bookings"
   type: simple
   type_params:
-    measures:
-      - booking_value
+    measure:
+      name: booking_value
   filter: "{{ dimension('is_instant') }}"
 ---
 metric:
@@ -61,8 +61,8 @@ metric:
   description: "average booking value of instant bookings"
   type: simple
   type_params:
-    measures:
-      - average_booking_value
+    measure:
+      name: average_booking_value
   filter:  "{{ dimension('is_instant') }}"
 ---
 metric:
@@ -70,8 +70,8 @@ metric:
   description: "booking value of instant bookings"
   type: simple
   type_params:
-    measures:
-      - booking_value
+    measure:
+      name: booking_value
   filter: "{{ entity('listing') }} IS NOT NULL"
 ---
 metric:
@@ -79,40 +79,40 @@ metric:
   description: "bookers"
   type: simple
   type_params:
-    measures:
-      - bookers
+    measure:
+      name: bookers
 ---
 metric:
   name: "booking_payments"
   description: "Booking payments."
   type: simple
   type_params:
-    measures:
-      - booking_payments
+    measure:
+      name: booking_payments
 ---
 metric:
   name: "views"
   description: "views"
   type: simple
   type_params:
-    measures:
-      - views
+    measure:
+      name: views
 ---
 metric:
   name: "listings"
   description: "listings"
   type: simple
   type_params:
-    measures:
-      - listings
+    measure:
+      name: listings
 ---
 metric:
   name: "lux_listings"
   description: "lux_listings"
   type: simple
   type_params:
-    measures:
-      - listings
+    measure:
+      name: listings
   filter: "{{ dimension('is_lux_latest') }}"
 ---
 metric:
@@ -120,40 +120,40 @@ metric:
   description: "smallest listing"
   type: simple
   type_params:
-    measures:
-      - smallest_listing
+    measure:
+      name: smallest_listing
 ---
 metric:
   name: "largest_listing"
   description: "largest listing"
   type: simple
   type_params:
-    measures:
-      - largest_listing
+    measure:
+      name: largest_listing
 ---
 metric:
   name: "identity_verifications"
   description: "identity_verifications"
   type: simple
   type_params:
-    measures:
-      - identity_verifications
+    measure:
+      name: identity_verifications
 ---
 metric:
   name: "revenue"
   description: "revenue"
   type: simple
   type_params:
-    measures:
-      - txn_revenue
+    measure:
+      name: txn_revenue
 ---
 metric:
   name: "trailing_2_months_revenue"
   description: "trailing_2_months_revenue"
   type: cumulative
   type_params:
-    measures:
-      - txn_revenue
+    measure:
+      name: txn_revenue
     window: 2 month
 ---
 metric:
@@ -161,16 +161,16 @@ metric:
   description: "revenue_all_time"
   type: cumulative
   type_params:
-    measures:
-      - txn_revenue
+    measure:
+      name: txn_revenue
 ---
 metric:
   name: "every_two_days_bookers" # because the bookings test data only spans 3 days
   description: "every_two_days_bookers"
   type: cumulative
   type_params:
-    measures:
-      - bookers
+    measure:
+      name: bookers
     window: 2 days
 ---
 metric:
@@ -178,8 +178,8 @@ metric:
   description: "revenue mtd"
   type: cumulative
   type_params:
-    measures:
-      - txn_revenue
+    measure:
+      name: txn_revenue
     grain_to_date: month
 ---
 metric:
@@ -216,48 +216,56 @@ metric:
   description: bookings divided by bookers - single semantic model ratio metric test
   type: ratio
   type_params:
-    numerator: bookings
-    denominator: bookers
+    numerator:
+      name: bookings
+    denominator:
+      name: bookers
 ---
 metric:
   name: bookings_per_view
   description: Bookings divided by views - ratio metric test
   type: ratio
   type_params:
-    numerator: bookings
-    denominator: views
+    numerator:
+      name: bookings
+    denominator:
+      name: views
 ---
 metric:
   name: bookings_per_listing
   description: Bookings divided by listings - ratio with primary identifier test
   type: ratio
   type_params:
-    numerator: bookings
-    denominator: listings
+    numerator:
+      name: bookings
+    denominator:
+      name: listings
 ---
 metric:
   name: bookings_per_dollar
   description: Number of bookings per dollar of value
   type: ratio
   type_params:
-    numerator: bookings
-    denominator: booking_value
+    numerator:
+      name: bookings
+    denominator:
+      name: booking_value
 ---
 metric:
   name: "total_account_balance_first_day"
   description: "total_account_balance_first_day"
   type: simple
   type_params:
-    measures:
-      - total_account_balance_first_day
+    measure:
+      name: total_account_balance_first_day
 ---
 metric:
   name: "current_account_balance_by_user"
   description: "current_account_balance_by_user"
   type: simple
   type_params:
-    measures:
-      - current_account_balance_by_user
+    measure:
+      name: current_account_balance_by_user
 ---
 metric:
   name: instant_booking_fraction_of_max_value
@@ -347,8 +355,8 @@ metric:
   description: "bookings made through a referral"
   type: simple
   type_params:
-    measures:
-      - referred_bookings
+    measure:
+      name: referred_bookings
 ---
 metric:
   name: "non_referred_bookings_pct"
@@ -433,40 +441,40 @@ metric:
   description: "median booking value"
   type: simple
   type_params:
-    measures:
-      - median_booking_value
+    measure:
+      name: median_booking_value
 ---
 metric:
   name: "booking_value_p99"
   description: "p99 booking value"
   type: simple
   type_params:
-    measures:
-      - booking_value_p99
+    measure:
+      name: booking_value_p99
 ---
 metric:
   name: "discrete_booking_value_p99"
   description: "discrete p99 booking value"
   type: simple
   type_params:
-    measures:
-      - discrete_booking_value_p99
+    measure:
+      name: discrete_booking_value_p99
 ---
 metric:
   name: "approximate_continuous_booking_value_p99"
   description: "approximate continuous p99 booking value"
   type: simple
   type_params:
-    measures:
-      - approximate_continuous_booking_value_p99
+    measure:
+      name: approximate_continuous_booking_value_p99
 ---
 metric:
   name: "approximate_discrete_booking_value_p99"
   description: "approximate discrete p99 booking value"
   type: simple
   type_params:
-    measures:
-      - approximate_discrete_booking_value_p99
+    measure:
+      name: approximate_discrete_booking_value_p99
 ---
 metric:
   name: "bookings_growth_2_weeks"

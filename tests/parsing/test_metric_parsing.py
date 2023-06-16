@@ -38,7 +38,6 @@ def test_legacy_measure_metric_parsing() -> None:
     assert metric.name == "legacy_test"
     assert metric.type is MetricType.SIMPLE
     assert metric.type_params.measure == PydanticMetricInputMeasure(name="legacy_measure")
-    assert metric.type_params.measures is None
 
 
 def test_legacy_metric_input_measure_object_parsing() -> None:
@@ -74,8 +73,8 @@ def test_metric_metadata_parsing() -> None:
           name: metadata_test
           type: simple
           type_params:
-            measures:
-              - metadata_test_measure
+            measure:
+              name: metadata_test_measure
         """
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
@@ -92,8 +91,8 @@ def test_metric_metadata_parsing() -> None:
         name: metadata_test
         type: simple
         type_params:
-          measures:
-          - metadata_test_measure
+          measure:
+            name: metadata_test_measure
         """
     )
     assert metric.metadata.file_slice.content == expected_metadata_content
@@ -107,8 +106,10 @@ def test_ratio_metric_parsing() -> None:
           name: ratio_test
           type: ratio
           type_params:
-            numerator: numerator_measure
-            denominator: denominator_measure
+            numerator:
+              name: numerator_metric
+            denominator:
+              name: denominator_metric
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -119,9 +120,8 @@ def test_ratio_metric_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "ratio_test"
     assert metric.type is MetricType.RATIO
-    assert metric.type_params.numerator == PydanticMetricInputMeasure(name="numerator_measure")
-    assert metric.type_params.denominator == PydanticMetricInputMeasure(name="denominator_measure")
-    assert metric.type_params.measures is None
+    assert metric.type_params.numerator == PydanticMetricInput(name="numerator_metric")
+    assert metric.type_params.denominator == PydanticMetricInput(name="denominator_metric")
 
 
 def test_ratio_metric_input_measure_object_parsing() -> None:
@@ -133,10 +133,10 @@ def test_ratio_metric_input_measure_object_parsing() -> None:
           type: ratio
           type_params:
             numerator:
-              name: numerator_measure_from_object
+              name: numerator_metric_from_object
               filter: "some_number > 5"
             denominator:
-              name: denominator_measure_from_object
+              name: denominator_metric_from_object
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -145,13 +145,13 @@ def test_ratio_metric_input_measure_object_parsing() -> None:
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
-    assert metric.type_params.numerator == PydanticMetricInputMeasure(
-        name="numerator_measure_from_object",
+    assert metric.type_params.numerator == PydanticMetricInput(
+        name="numerator_metric_from_object",
         filter=PydanticWhereFilter(
             where_sql_template="some_number > 5",
         ),
     )
-    assert metric.type_params.denominator == PydanticMetricInputMeasure(name="denominator_measure_from_object")
+    assert metric.type_params.denominator == PydanticMetricInput(name="denominator_metric_from_object")
 
 
 def test_cumulative_window_metric_parsing() -> None:
@@ -162,8 +162,8 @@ def test_cumulative_window_metric_parsing() -> None:
           name: cumulative_test
           type: cumulative
           type_params:
-            measures:
-              - cumulative_measure
+            measure:
+              name: cumulative_measure
             window: "7 days"
         """
     )
@@ -175,7 +175,7 @@ def test_cumulative_window_metric_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "cumulative_test"
     assert metric.type is MetricType.CUMULATIVE
-    assert metric.type_params.measures == [PydanticMetricInputMeasure(name="cumulative_measure")]
+    assert metric.type_params.measure == PydanticMetricInputMeasure(name="cumulative_measure")
     assert metric.type_params.window == PydanticMetricTimeWindow(count=7, granularity=TimeGranularity.DAY)
 
 
@@ -187,8 +187,8 @@ def test_grain_to_date_metric_parsing() -> None:
           name: grain_to_date_test
           type: cumulative
           type_params:
-            measures:
-              - cumulative_measure
+            measure:
+              name: cumulative_measure
             grain_to_date: "week"
         """
     )
@@ -200,7 +200,7 @@ def test_grain_to_date_metric_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "grain_to_date_test"
     assert metric.type is MetricType.CUMULATIVE
-    assert metric.type_params.measures == [PydanticMetricInputMeasure(name="cumulative_measure")]
+    assert metric.type_params.measure == PydanticMetricInputMeasure(name="cumulative_measure")
     assert metric.type_params.window is None
     assert metric.type_params.grain_to_date is TimeGranularity.WEEK
 
@@ -281,8 +281,8 @@ def test_constraint_metric_parsing() -> None:
           name: constraint_test
           type: simple
           type_params:
-            measures:
-              - input_measure
+            measure:
+              name: input_measure
           filter: "{{ dimension('some_dimension') }} IN ('value1', 'value2')"
         """
     )
@@ -342,8 +342,8 @@ def test_invalid_metric_type_parsing_error() -> None:
           name: invalid_type_test
           type: this is not a valid type
           type_params:
-            measures:
-              - input_measure
+            measure:
+              name: input_measure
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -363,8 +363,8 @@ def test_invalid_cumulative_metric_window_format_parsing_error() -> None:
           name: invalid_cumulative_format_test
           type: cumulative
           type_params:
-            measures:
-              - cumulative_measure
+            measure:
+              name: cumulative_measure
             window: "7 days long"
         """
     )
@@ -383,8 +383,8 @@ def test_invalid_cumulative_metric_window_granularity_parsing_error() -> None:
           name: invalid_cumulative_granularity_test
           type: cumulative
           type_params:
-            measures:
-              - cumulative_measure
+            measure:
+              name: cumulative_measure
             window: "7 moons"
         """
     )
@@ -403,8 +403,8 @@ def test_invalid_cumulative_metric_window_count_parsing_error() -> None:
           name: invalid_cumulative_count_test
           type: cumulative
           type_params:
-            measures:
-              - cumulative_measure
+            measure:
+              name: cumulative_measure
             window: "six days"
         """
     )

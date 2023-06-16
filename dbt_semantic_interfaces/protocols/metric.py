@@ -92,6 +92,12 @@ class MetricInput(Protocol):
         """Property accessor to get the MetricReference associated with this metric input."""
         ...
 
+    @property
+    @abstractmethod
+    def post_aggregation_reference(self) -> MetricReference:
+        """Property accessor to get the MetricReference with the aliased name, if appropriate."""
+        pass
+
 
 class MetricTypeParams(Protocol):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
@@ -103,17 +109,18 @@ class MetricTypeParams(Protocol):
 
     @property
     @abstractmethod
-    def measures(self) -> Optional[Sequence[MetricInputMeasure]]:  # noqa: D
+    def input_measures(self) -> Sequence[MetricInputMeasure]:
+        """Return measures needed to compute this metric (including measures needed by parent metrics)."""
         pass
 
     @property
     @abstractmethod
-    def numerator(self) -> Optional[MetricInputMeasure]:  # noqa: D
+    def numerator(self) -> Optional[MetricInput]:  # noqa: D
         pass
 
     @property
     @abstractmethod
-    def denominator(self) -> Optional[MetricInputMeasure]:  # noqa: D
+    def denominator(self) -> Optional[MetricInput]:  # noqa: D
         pass
 
     @property
@@ -135,18 +142,6 @@ class MetricTypeParams(Protocol):
     @abstractmethod
     def metrics(self) -> Optional[Sequence[MetricInput]]:  # noqa: D
         pass
-
-    @property
-    @abstractmethod
-    def numerator_measure_reference(self) -> Optional[MeasureReference]:
-        """Return the measure reference, if any, associated with the metric input measure defined as the numerator."""
-        ...
-
-    @property
-    @abstractmethod
-    def denominator_measure_reference(self) -> Optional[MeasureReference]:
-        """Return the measure reference, if any, associated with the metric input measure defined as the denominator."""
-        ...
 
 
 class Metric(Protocol):

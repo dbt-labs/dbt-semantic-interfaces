@@ -61,7 +61,7 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name=measure_name,
                         type=MetricType.SIMPLE,
-                        type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
+                        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
                     )
                 ],
             )
@@ -108,7 +108,7 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name=measure_name,
                         type=MetricType.SIMPLE,
-                        type_params=PydanticMetricTypeParams(measures=[PydanticMetricInputMeasure(name=measure_name)]),
+                        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
                     )
                 ],
             )
