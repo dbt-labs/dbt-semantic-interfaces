@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Replace EXPR metric type with DERIVED metric type.
+time: 2023-06-15T15:29:05.14149-07:00
+custom:
+  Author: plypaul
+  Issue: "54"

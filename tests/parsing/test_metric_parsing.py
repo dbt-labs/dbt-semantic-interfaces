@@ -154,64 +154,6 @@ def test_ratio_metric_input_measure_object_parsing() -> None:
     assert metric.type_params.denominator == PydanticMetricInputMeasure(name="denominator_measure_from_object")
 
 
-def test_expr_metric_parsing() -> None:
-    """Test for parsing a metric specification with an expr and a list of measures."""
-    yaml_contents = textwrap.dedent(
-        """\
-        metric:
-          name: expr_test
-          type: expr
-          type_params:
-            measures:
-              - measure_one
-              - measure_two
-        """
-    )
-    file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
-
-    assert len(build_result.semantic_manifest.metrics) == 1
-    metric = build_result.semantic_manifest.metrics[0]
-    assert metric.name == "expr_test"
-    assert metric.type is MetricType.EXPR
-    assert metric.type_params.measures == [
-        PydanticMetricInputMeasure(name="measure_one"),
-        PydanticMetricInputMeasure(name="measure_two"),
-    ]
-
-
-def test_expr_metric_input_measure_object_parsing() -> None:
-    """Test for parsing a metric specification with object inputs for the list of measures."""
-    yaml_contents = textwrap.dedent(
-        """\
-        metric:
-          name: expr_test
-          type: expr
-          type_params:
-            measures:
-              - name: measure_one_from_object
-                filter: some_bool
-              - name: measure_two_from_object
-        """
-    )
-    file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
-
-    assert len(build_result.semantic_manifest.metrics) == 1
-    metric = build_result.semantic_manifest.metrics[0]
-    assert metric.name == "expr_test"
-    assert metric.type is MetricType.EXPR
-    assert metric.type_params.measures == [
-        PydanticMetricInputMeasure(
-            name="measure_one_from_object",
-            filter=PydanticWhereFilter(where_sql_template="some_bool"),
-        ),
-        PydanticMetricInputMeasure(name="measure_two_from_object"),
-    ]
-
-
 def test_cumulative_window_metric_parsing() -> None:
     """Test for parsing a metric specification with a cumulative window."""
     yaml_contents = textwrap.dedent(
