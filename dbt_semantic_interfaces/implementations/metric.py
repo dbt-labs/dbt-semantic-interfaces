@@ -2,7 +2,8 @@ from __future__ import annotations
 
 from typing import List, Optional, Sequence
 
-from pydantic import Field
+from pydantic import Field, PrivateAttr
+from typing_extensions import override
 
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.errors import ParsingException
@@ -16,6 +17,8 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
+from dbt_semantic_interfaces.protocols import Metric, ProtocolHint
+from dbt_semantic_interfaces.protocols.metric import DerivedMetricParameters
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
 
@@ -146,8 +149,42 @@ class PydanticMetricTypeParams(HashableBaseModel):
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
 
 
-class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
+class PydanticSimpleMetricParameters(HashableBaseModel):
+    """Pydantic implementation of SimpleMetricParameters."""
+
+    measure: PydanticMetricInputMeasure
+
+
+class PydanticRatioMetricParameters(HashableBaseModel):
+    """Pydantic implementation of RatioMetricParameters."""
+
+    numerator: PydanticMetricInput
+    denominator: PydanticMetricInput
+
+
+class PydanticCumulativeMetricParameters(HashableBaseModel):
+    """Pydantic implementation of CumulativeMetricParameters."""
+
+    measure: PydanticMetricInputMeasure
+    window: Optional[PydanticMetricTimeWindow]
+    grain_to_date: Optional[TimeGranularity]
+
+
+class PydanticDerivedMetricParameters(HashableBaseModel, ProtocolHint[DerivedMetricParameters]):
+    """Pydantic implementation of DerivedMetricParameters."""
+
+    def _implements_protocol(self) -> DerivedMetricParameters:
+        return self
+
+    expr: str
+    metrics: List[PydanticMetricInput]
+
+
+class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[Metric]):
     """Describes a metric."""
+
+    def _implements_protocol(self) -> Metric:
+        return self
 
     name: str
     description: Optional[str]
@@ -155,6 +192,67 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     type_params: PydanticMetricTypeParams
     filter: Optional[PydanticWhereFilter]
     metadata: Optional[PydanticMetadata]
+
+    _simple_metric_parameters: Optional[PydanticSimpleMetricParameters] = PrivateAttr(default_factory=lambda: None)
+    _ratio_metric_parameters: Optional[PydanticRatioMetricParameters] = PrivateAttr(default_factory=lambda: None)
+    _cumulative_metric_parameters: Optional[PydanticCumulativeMetricParameters] = PrivateAttr(
+        default_factory=lambda: None
+    )
+    _derived_metric_parameters: Optional[PydanticDerivedMetricParameters] = PrivateAttr(default_factory=lambda: None)
+
+    @property
+    @override
+    def simple_metric_parameters(self) -> Optional[PydanticSimpleMetricParameters]:
+        if self.type is not MetricType.SIMPLE:
+            return None
+        if self._simple_metric_parameters is None:
+            assert self.type_params.measure is not None
+            self._simple_metric_parameters = PydanticSimpleMetricParameters(measure=self.type_params.measure)
+        return self._simple_metric_parameters
+
+    @property
+    @override
+    def ratio_metric_parameters(self) -> Optional[PydanticRatioMetricParameters]:
+        assert self.type is MetricType.RATIO
+        if self._ratio_metric_parameters is None:
+            assert self.type_params.numerator is not None
+            assert self.type_params.denominator is not None
+            self._ratio_metric_parameters = PydanticRatioMetricParameters(
+                numerator=self.type_params.numerator,
+                denominator=self.type_params.denominator,
+            )
+        return self._ratio_metric_parameters
+
+    @property
+    @override
+    def cumulative_metric_parameters(self) -> Optional[PydanticCumulativeMetricParameters]:
+        """If this describes a cumulative metric, then return the associated parameters (exception otherwise)."""
+        if self.type is not MetricType.CUMULATIVE:
+            return None
+        if self._cumulative_metric_parameters is None:
+            assert self.type_params.measure is not None
+            self._cumulative_metric_parameters = PydanticCumulativeMetricParameters(
+                measure=self.type_params.measure,
+                window=self.type_params.window,
+                grain_to_date=self.type_params.grain_to_date,
+            )
+
+        return self._cumulative_metric_parameters
+
+    @property
+    @override
+    def derived_metric_parameters(self) -> Optional[PydanticDerivedMetricParameters]:
+        """If this describes a derived metric, then return the associated parameters (exception otherwise)."""
+        if self.type is not MetricType.DERIVED:
+            return None
+        if self._derived_metric_parameters is None:
+            assert self.type_params.expr is not None
+            assert self.type_params.metrics is not None
+            self._derived_metric_parameters = PydanticDerivedMetricParameters(
+                expr=self.type_params.expr,
+                metrics=self.type_params.metrics,
+            )
+        return self._derived_metric_parameters
 
     @property
     def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:
@@ -175,9 +273,11 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
             assert self.type_params.metrics is not None, f"{MetricType.DERIVED} should have type_params.metrics set"
             return self.type_params.metrics
         elif self.type is MetricType.RATIO:
-            assert (
-                self.type_params.numerator is not None and self.type_params.denominator is not None
-            ), f"{self} is metric type {MetricType.RATIO}, so neither the numerator and denominator should not be None"
-            return (self.type_params.numerator, self.type_params.denominator)
+            ratio_metric_parameters = self.ratio_metric_parameters
+            assert ratio_metric_parameters is not None
+            return (
+                ratio_metric_parameters.numerator,
+                ratio_metric_parameters.denominator,
+            )
         else:
             assert_values_exhausted(self.type)
