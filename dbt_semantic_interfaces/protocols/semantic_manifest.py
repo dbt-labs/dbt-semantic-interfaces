@@ -2,6 +2,7 @@ from abc import abstractmethod
 from typing import Protocol, Sequence, TypeVar
 
 from dbt_semantic_interfaces.protocols.metric import Metric
+from dbt_semantic_interfaces.protocols.project_configuration import ProjectConfiguration
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 
 
@@ -20,7 +21,7 @@ class SemanticManifest(Protocol):
 
     @property
     @abstractmethod
-    def interfaces_version(self) -> str:  # noqa: D
+    def project_configurations(self) -> Sequence[ProjectConfiguration]:  # noqa: D
         pass
 
 
