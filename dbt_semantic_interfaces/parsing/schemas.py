@@ -6,7 +6,7 @@ TRANSFORM_OBJECT_NAME_PATTERN = "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$"
 
 
 # Enums
-metric_types_enum_values = ["SIMPLE", "RATIO", "EXPR", "CUMULATIVE", "DERIVED"]
+metric_types_enum_values = ["SIMPLE", "RATIO", "CUMULATIVE", "DERIVED"]
 metric_types_enum_values += [x.lower() for x in metric_types_enum_values]
 
 entity_type_enum_values = ["PRIMARY", "UNIQUE", "FOREIGN", "NATURAL"]
@@ -288,29 +288,11 @@ semantic_model_schema = {
     "required": ["name"],
 }
 
-derived_group_by_element_schema = {
-    "$id": "derived_group_by_element_schema",
-    "type": "object",
-    "properties": {
-        "name": {
-            "type": "string",
-            "pattern": TRANSFORM_OBJECT_NAME_PATTERN,
-        },
-        "expr": {"type": ["string", "boolean"]},
-        "expr_elements": {
-            "type": "array",
-            "items": {"type": "string"},
-        },
-    },
-    "additionalProperties": False,
-    "required": ["name", "expr"],
-}
 
 schema_store = {
     # Top level schemas
     metric_schema["$id"]: metric_schema,
     semantic_model_schema["$id"]: semantic_model_schema,
-    derived_group_by_element_schema["$id"]: derived_group_by_element_schema,
     project_configuration_schema["$id"]: project_configuration_schema,
     # Sub-object schemas
     metric_input_measure_schema["$id"]: metric_input_measure_schema,
@@ -331,6 +313,5 @@ schema_store = {
 
 resolver = RefResolver.from_schema(schema=metric_schema, store=schema_store)
 semantic_model_validator = SchemaValidator(semantic_model_schema, resolver=resolver)
-derived_group_by_element_validator = SchemaValidator(derived_group_by_element_schema, resolver=resolver)
 metric_validator = SchemaValidator(metric_schema, resolver=resolver)
 project_configuration_validator = SchemaValidator(project_configuration_schema, resolver=resolver)
