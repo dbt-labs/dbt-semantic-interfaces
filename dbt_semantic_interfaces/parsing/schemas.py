@@ -201,7 +201,7 @@ dimension_schema = {
 
 # Top level object schemas
 metric_schema = {
-    "$id": "metric",
+    "$id": "metric_schema",
     "type": "object",
     "properties": {
         "name": {
@@ -270,7 +270,7 @@ project_configuration_schema = {
 
 
 semantic_model_schema = {
-    "$id": "semantic_model",
+    "$id": "semantic_model_schema",
     "type": "object",
     "properties": {
         "name": {
