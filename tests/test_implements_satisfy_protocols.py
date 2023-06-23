@@ -39,6 +39,7 @@ from dbt_semantic_interfaces.type_enums import (
     MetricType,
     TimeGranularity,
 )
+from tests.example_project_configuration import EXAMPLE_PROJECT_CONFIGURATIONS
 
 
 @runtime_checkable
@@ -67,6 +68,7 @@ def test_semantic_manifest_protocol() -> None:  # noqa: D
     semantic_manifest = PydanticSemanticManifest(
         semantic_models=[semantic_model],
         metrics=[metric],
+        project_configurations=EXAMPLE_PROJECT_CONFIGURATIONS,
     )
     assert isinstance(semantic_manifest, RuntimeCheckableSemanticManifest)
 

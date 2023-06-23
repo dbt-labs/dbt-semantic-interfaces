@@ -29,6 +29,7 @@ from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
+from tests.example_project_configuration import EXAMPLE_PROJECT_CONFIGURATIONS
 
 
 def test_incompatible_dimension_type() -> None:  # noqa:D
@@ -64,6 +65,7 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                         type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
                     )
                 ],
+                project_configurations=EXAMPLE_PROJECT_CONFIGURATIONS,
             )
         )
 
@@ -111,5 +113,6 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                         type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
                     )
                 ],
+                project_configurations=EXAMPLE_PROJECT_CONFIGURATIONS,
             )
         )
