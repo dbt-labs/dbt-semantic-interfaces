@@ -17,33 +17,6 @@
             },
             "type": "object"
         },
-        "derived_group_by_element_schema": {
-            "$id": "derived_group_by_element_schema",
-            "additionalProperties": false,
-            "properties": {
-                "expr": {
-                    "type": [
-                        "string",
-                        "boolean"
-                    ]
-                },
-                "expr_elements": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
-                "name": {
-                    "pattern": "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$",
-                    "type": "string"
-                }
-            },
-            "required": [
-                "name",
-                "expr"
-            ],
-            "type": "object"
-        },
         "dimension_schema": {
             "$id": "dimension_schema",
             "additionalProperties": false,
@@ -236,45 +209,6 @@
             ],
             "type": "object"
         },
-        "metric": {
-            "$id": "metric",
-            "additionalProperties": false,
-            "properties": {
-                "description": {
-                    "type": "string"
-                },
-                "filter": {
-                    "type": "string"
-                },
-                "name": {
-                    "pattern": "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$",
-                    "type": "string"
-                },
-                "type": {
-                    "enum": [
-                        "SIMPLE",
-                        "RATIO",
-                        "EXPR",
-                        "CUMULATIVE",
-                        "DERIVED",
-                        "simple",
-                        "ratio",
-                        "expr",
-                        "cumulative",
-                        "derived"
-                    ]
-                },
-                "type_params": {
-                    "$ref": "#/definitions/metric_type_params"
-                }
-            },
-            "required": [
-                "name",
-                "type",
-                "type_params"
-            ],
-            "type": "object"
-        },
         "metric_input_measure_schema": {
             "$id": "metric_input_measure_schema",
             "oneOf": [
@@ -318,6 +252,43 @@
                     "type": "string"
                 }
             },
+            "type": "object"
+        },
+        "metric_schema": {
+            "$id": "metric_schema",
+            "additionalProperties": false,
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "filter": {
+                    "type": "string"
+                },
+                "name": {
+                    "pattern": "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$",
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "SIMPLE",
+                        "RATIO",
+                        "CUMULATIVE",
+                        "DERIVED",
+                        "simple",
+                        "ratio",
+                        "cumulative",
+                        "derived"
+                    ]
+                },
+                "type_params": {
+                    "$ref": "#/definitions/metric_type_params"
+                }
+            },
+            "required": [
+                "name",
+                "type",
+                "type_params"
+            ],
             "type": "object"
         },
         "metric_type_params": {
@@ -404,13 +375,13 @@
             ],
             "type": "object"
         },
-        "project_configuration": {
-            "$id": "project_configuration",
+        "project_configuration_schema": {
+            "$id": "project_configuration_schema",
             "additionalProperties": false,
             "properties": {
                 "time_spine_table_configurations": {
                     "items": {
-                        "$ref": "#/definitions/time_spine_table_configuration"
+                        "$ref": "#/definitions/time_spine_table_configuration_schema"
                     },
                     "type": "array"
                 }
@@ -420,8 +391,19 @@
             ],
             "type": "object"
         },
-        "semantic_model": {
-            "$id": "semantic_model",
+        "semantic_model_defaults_schema": {
+            "$id": "semantic_model_defaults_schema",
+            "additionalProperties": false,
+            "properties": {
+                "agg_time_dimension": {
+                    "type": "string"
+                }
+            },
+            "required": [],
+            "type": "object"
+        },
+        "semantic_model_schema": {
+            "$id": "semantic_model_schema",
             "additionalProperties": false,
             "properties": {
                 "defaults": {
@@ -461,19 +443,8 @@
             ],
             "type": "object"
         },
-        "semantic_model_defaults_schema": {
-            "$id": "semantic_model_defaults_schema",
-            "additionalProperties": false,
-            "properties": {
-                "agg_time_dimension": {
-                    "type": "string"
-                }
-            },
-            "required": [],
-            "type": "object"
-        },
-        "time_spine_table_configuration": {
-            "$id": "time_spine_table_configuration",
+        "time_spine_table_configuration_schema": {
+            "$id": "time_spine_table_configuration_schema",
             "additionalProperties": false,
             "properties": {
                 "column_name": {
@@ -519,17 +490,14 @@
         }
     },
     "properties": {
-        "derived_identifier": {
-            "$ref": "#/definitions/derived_group_by_element_schema"
-        },
         "metric": {
-            "$ref": "#/definitions/metric"
+            "$ref": "#/definitions/metric_schema"
         },
         "project_configuration": {
-            "$ref": "#/definitions/project_configuration"
+            "$ref": "#/definitions/project_configuration_schema"
         },
         "semantic_model": {
-            "$ref": "#/definitions/semantic_model"
+            "$ref": "#/definitions/semantic_model_schema"
         }
     },
     "title": "MetricFlow file schema",
