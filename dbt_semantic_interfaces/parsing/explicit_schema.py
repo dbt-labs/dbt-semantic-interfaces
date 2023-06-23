@@ -6,10 +6,9 @@ from typing import Dict, List, Union
 from dbt_semantic_interfaces.parsing import schemas
 
 TOP_LEVEL_SCHEMAS = {
-    "metric": "metric",
-    "semantic_model": "semantic_model",
-    "derived_group_by_element_schema": "derived_identifier",
-    "project_configuration": "project_configuration",
+    "project_configuration_schema": "project_configuration",
+    "metric_schema": "metric",
+    "semantic_model_schema": "semantic_model",
 }
 
 BASE_SCHEMA = {

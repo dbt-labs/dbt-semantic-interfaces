@@ -243,7 +243,7 @@ semantic_model_defaults_schema = {
 
 
 time_spine_table_configuration_schema = {
-    "$id": "time_spine_table_configuration",
+    "$id": "time_spine_table_configuration_schema",
     "type": "object",
     "properties": {
         "location": {"type": "string"},
@@ -256,7 +256,7 @@ time_spine_table_configuration_schema = {
 
 
 project_configuration_schema = {
-    "$id": "project_configuration",
+    "$id": "project_configuration_schema",
     "type": "object",
     "properties": {
         "time_spine_table_configurations": {
