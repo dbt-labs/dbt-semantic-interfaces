@@ -9,6 +9,9 @@ from jsonschema import exceptions
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.metric import PydanticMetric
+from dbt_semantic_interfaces.implementations.project_configuration import (
+    PydanticProjectConfiguration,
+)
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
@@ -16,6 +19,7 @@ from dbt_semantic_interfaces.implementations.semantic_model import PydanticSeman
 from dbt_semantic_interfaces.parsing.objects import Version, YamlConfigFile
 from dbt_semantic_interfaces.parsing.schemas import (
     metric_validator,
+    project_configuration_validator,
     semantic_model_validator,
 )
 from dbt_semantic_interfaces.parsing.yaml_loader import (
@@ -39,7 +43,9 @@ logger = logging.getLogger(__name__)
 VERSION_KEY = "mf_config_schema"
 METRIC_TYPE = "metric"
 SEMANTIC_MODEL_TYPE = "semantic_model"
-DOCUMENT_TYPES = [METRIC_TYPE, SEMANTIC_MODEL_TYPE]
+PROJECT_CONFIGURATION_TYPE = "project_configuration"
+
+DOCUMENT_TYPES = [METRIC_TYPE, SEMANTIC_MODEL_TYPE, PROJECT_CONFIGURATION_TYPE]
 
 
 @dataclass(frozen=True)
@@ -58,7 +64,7 @@ class FileParsingResult:
         issues: Issues found when trying to parse the file
     """
 
-    elements: List[Union[PydanticSemanticModel, PydanticMetric]]
+    elements: List[Union[PydanticSemanticModel, PydanticMetric, PydanticProjectConfiguration]]
     issues: List[ValidationIssue]
 
 
@@ -183,6 +189,7 @@ def parse_yaml_files_to_semantic_manifest(
     files: List[YamlConfigFile],
     semantic_model_class: Type[PydanticSemanticModel] = PydanticSemanticModel,
     metric_class: Type[PydanticMetric] = PydanticMetric,
+    project_configuration_class: Type[PydanticProjectConfiguration] = PydanticProjectConfiguration,
 ) -> SemanticManifestBuildResult:
     """Builds SemanticManifest from list of config files (as strings).
 
@@ -193,7 +200,8 @@ def parse_yaml_files_to_semantic_manifest(
     """
     semantic_models = []
     metrics = []
-    valid_object_classes = [semantic_model_class.__name__, metric_class.__name__]
+    project_configurations = []
+    valid_object_classes = [semantic_model_class.__name__, metric_class.__name__, project_configuration_class.__name__]
     issues: List[ValidationIssue] = []
 
     for config_file in files:
@@ -208,6 +216,8 @@ def parse_yaml_files_to_semantic_manifest(
                 semantic_models.append(obj)
             elif isinstance(obj, metric_class):
                 metrics.append(obj)
+            elif isinstance(obj, project_configuration_class):
+                project_configurations.append(obj)
             else:
                 file_issues.append(
                     ValidationError(
@@ -222,6 +232,7 @@ def parse_yaml_files_to_semantic_manifest(
         semantic_manifest=PydanticSemanticManifest(
             semantic_models=semantic_models,
             metrics=metrics,
+            project_configurations=project_configurations,
         ),
         issues=SemanticManifestValidationResults.from_issues_sequence(issues),
     )
@@ -231,9 +242,10 @@ def parse_config_yaml(
     config_yaml: YamlConfigFile,
     semantic_model_class: Type[PydanticSemanticModel] = PydanticSemanticModel,
     metric_class: Type[PydanticMetric] = PydanticMetric,
+    project_configuration_class: Type[PydanticProjectConfiguration] = PydanticProjectConfiguration,
 ) -> FileParsingResult:
     """Parses transform config file passed as string - Returns list of model objects."""
-    results: List[Union[PydanticSemanticModel, PydanticMetric]] = []
+    results: List[Union[PydanticSemanticModel, PydanticMetric, PydanticProjectConfiguration]] = []
     ctx: Optional[ParsingContext] = None
     issues: List[ValidationIssue] = []
     try:
@@ -299,6 +311,9 @@ def parse_config_yaml(
                 elif document_type == SEMANTIC_MODEL_TYPE:
                     semantic_model_validator.validate(config_document[document_type])
                     results.append(semantic_model_class.parse_obj(object_cfg))
+                elif document_type == PROJECT_CONFIGURATION_TYPE:
+                    project_configuration_validator.validate(config_document[document_type])
+                    results.append(project_configuration_class.parse_obj(object_cfg))
                 else:
                     issues.append(
                         ValidationError(

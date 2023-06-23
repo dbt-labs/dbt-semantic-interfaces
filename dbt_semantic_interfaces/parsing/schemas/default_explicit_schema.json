@@ -404,6 +404,22 @@
             ],
             "type": "object"
         },
+        "project_configuration": {
+            "$id": "project_configuration",
+            "additionalProperties": false,
+            "properties": {
+                "time_spine_table_configurations": {
+                    "items": {
+                        "$ref": "#/definitions/time_spine_table_configuration"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "time_spine_table_configurations"
+            ],
+            "type": "object"
+        },
         "semantic_model": {
             "$id": "semantic_model",
             "additionalProperties": false,
@@ -456,6 +472,38 @@
             "required": [],
             "type": "object"
         },
+        "time_spine_table_configuration": {
+            "$id": "time_spine_table_configuration",
+            "additionalProperties": false,
+            "properties": {
+                "column_name": {
+                    "type": "string"
+                },
+                "grain": {
+                    "enum": [
+                        "DAY",
+                        "WEEK",
+                        "MONTH",
+                        "QUARTER",
+                        "YEAR",
+                        "day",
+                        "week",
+                        "month",
+                        "quarter",
+                        "year"
+                    ]
+                },
+                "location": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "location",
+                "column_name",
+                "grain"
+            ],
+            "type": "object"
+        },
         "validity_params_schema": {
             "$id": "validity_params_schema",
             "additionalProperties": false,
@@ -476,6 +524,9 @@
         },
         "metric": {
             "$ref": "#/definitions/metric"
+        },
+        "project_configuration": {
+            "$ref": "#/definitions/project_configuration"
         },
         "semantic_model": {
             "$ref": "#/definitions/semantic_model"

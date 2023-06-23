@@ -242,6 +242,33 @@ semantic_model_defaults_schema = {
 }
 
 
+time_spine_table_configuration_schema = {
+    "$id": "time_spine_table_configuration",
+    "type": "object",
+    "properties": {
+        "location": {"type": "string"},
+        "column_name": {"type": "string"},
+        "grain": {"enum": time_granularity_values},
+    },
+    "additionalProperties": False,
+    "required": ["location", "column_name", "grain"],
+}
+
+
+project_configuration_schema = {
+    "$id": "project_configuration",
+    "type": "object",
+    "properties": {
+        "time_spine_table_configurations": {
+            "type": "array",
+            "items": {"$ref": "time_spine_table_configuration"},
+        },
+    },
+    "additionalProperties": False,
+    "required": ["time_spine_table_configurations"],
+}
+
+
 semantic_model_schema = {
     "$id": "semantic_model",
     "type": "object",
@@ -284,6 +311,7 @@ schema_store = {
     metric_schema["$id"]: metric_schema,
     semantic_model_schema["$id"]: semantic_model_schema,
     derived_group_by_element_schema["$id"]: derived_group_by_element_schema,
+    project_configuration_schema["$id"]: project_configuration_schema,
     # Sub-object schemas
     metric_input_measure_schema["$id"]: metric_input_measure_schema,
     metric_type_params_schema["$id"]: metric_type_params_schema,
@@ -297,6 +325,7 @@ schema_store = {
     metric_input_schema["$id"]: metric_input_schema,
     node_relation_schema["$id"]: node_relation_schema,
     semantic_model_defaults_schema["$id"]: semantic_model_defaults_schema,
+    time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
 }
 
 
@@ -304,3 +333,4 @@ resolver = RefResolver.from_schema(schema=metric_schema, store=schema_store)
 semantic_model_validator = SchemaValidator(semantic_model_schema, resolver=resolver)
 derived_group_by_element_validator = SchemaValidator(derived_group_by_element_schema, resolver=resolver)
 metric_validator = SchemaValidator(metric_schema, resolver=resolver)
+project_configuration_validator = SchemaValidator(project_configuration_schema, resolver=resolver)

@@ -9,6 +9,7 @@ TOP_LEVEL_SCHEMAS = {
     "metric": "metric",
     "semantic_model": "semantic_model",
     "derived_group_by_element_schema": "derived_identifier",
+    "project_configuration": "project_configuration",
 }
 
 BASE_SCHEMA = {
