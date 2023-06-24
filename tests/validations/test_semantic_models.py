@@ -24,6 +24,9 @@ from dbt_semantic_interfaces.validations.semantic_models import (
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
+from tests.example_project_configuration import (
+    EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
+)
 
 
 @pytest.mark.skip("TODO: Will convert to validation rule")
@@ -61,7 +64,9 @@ def test_semantic_model_defaults_invalid() -> None:  # noqa: D
         """
     )
     invalid_defaults_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_semantic_manifest([invalid_defaults_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, invalid_defaults_file]
+    )
 
     with pytest.raises(
         SemanticManifestValidationException, match="'doesnotexist' which doesn't exist as a time dimension"

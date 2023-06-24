@@ -10,6 +10,9 @@ from dbt_semantic_interfaces.type_enums import (
     EntityType,
     TimeGranularity,
 )
+from tests.example_project_configuration import (
+    EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
+)
 
 
 def test_semantic_model_metadata_parsing() -> None:
@@ -25,7 +28,7 @@ def test_semantic_model_metadata_parsing() -> None:
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -56,7 +59,7 @@ def test_semantic_model_node_relation_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -81,7 +84,7 @@ def test_semantic_model_entity_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -110,7 +113,7 @@ def test_semantic_model_entity_metadata_parsing() -> None:
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -146,7 +149,7 @@ def test_semantic_model_measure_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -175,7 +178,7 @@ def test_semantic_model_measure_metadata_parsing() -> None:
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -211,7 +214,7 @@ def test_semantic_model_create_metric_measure_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -237,7 +240,7 @@ def test_semantic_model_categorical_dimension_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -265,7 +268,7 @@ def test_semantic_model_partition_dimension_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -292,7 +295,7 @@ def test_semantic_model_time_dimension_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -321,7 +324,7 @@ def test_semantic_model_primary_time_dimension_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -348,7 +351,7 @@ def test_semantic_model_dimension_metadata_parsing() -> None:
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
@@ -393,7 +396,7 @@ def test_semantic_model_dimension_validity_params_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]

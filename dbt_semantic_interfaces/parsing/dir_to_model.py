@@ -228,11 +228,14 @@ def parse_yaml_files_to_semantic_manifest(
 
         issues += file_issues
 
+    if len(project_configurations) != 1:
+        raise ParsingException(f"Did not find exactly one project configuration. Got: {project_configurations}")
+
     return SemanticManifestBuildResult(
         semantic_manifest=PydanticSemanticManifest(
             semantic_models=semantic_models,
             metrics=metrics,
-            project_configurations=project_configurations,
+            project_configuration=project_configurations[0],
         ),
         issues=SemanticManifestValidationResults.from_issues_sequence(issues),
     )

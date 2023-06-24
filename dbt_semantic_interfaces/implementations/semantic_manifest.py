@@ -20,4 +20,4 @@ class PydanticSemanticManifest(HashableBaseModel, ProtocolHint[SemanticManifest]
 
     semantic_models: List[PydanticSemanticModel]
     metrics: List[PydanticMetric]
-    project_configurations: List[PydanticProjectConfiguration]
+    project_configuration: PydanticProjectConfiguration

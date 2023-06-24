@@ -21,7 +21,7 @@ class SemanticManifest(Protocol):
 
     @property
     @abstractmethod
-    def project_configurations(self) -> Sequence[ProjectConfiguration]:  # noqa: D
+    def project_configuration(self) -> ProjectConfiguration:  # noqa: D
         pass
 
 
