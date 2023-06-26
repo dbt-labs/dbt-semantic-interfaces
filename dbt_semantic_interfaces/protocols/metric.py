@@ -225,26 +225,26 @@ class Metric(Protocol):
 
     @property
     @abstractmethod
-    def simple_metric_parameters(self) -> Optional[SimpleMetricParameters]:
-        """If this describes a simple metric, return the relevant parameters (None otherwise)."""
+    def simple_metric_parameters(self) -> SimpleMetricParameters:
+        """If this describes a simple metric, return the relevant parameters (exception otherwise)."""
         pass
 
     @property
     @abstractmethod
-    def ratio_metric_parameters(self) -> Optional[RatioMetricParameters]:
-        """If this describes a ratio metric, then return the associated parameters (None otherwise)."""
+    def ratio_metric_parameters(self) -> RatioMetricParameters:
+        """If this describes a ratio metric, then return the associated parameters (exception otherwise)."""
         pass
 
     @property
     @abstractmethod
-    def cumulative_metric_parameters(self) -> Optional[CumulativeMetricParameters]:
-        """If this describes a cumulative metric, then return the associated parameters (None otherwise)."""
+    def cumulative_metric_parameters(self) -> CumulativeMetricParameters:
+        """If this describes a cumulative metric, then return the associated parameters (exception otherwise)."""
         pass
 
     @property
     @abstractmethod
-    def derived_metric_parameters(self) -> Optional[DerivedMetricParameters]:
-        """If this describes a derived metric, then return the associated parameters (None otherwise)."""
+    def derived_metric_parameters(self) -> DerivedMetricParameters:
+        """If this describes a derived metric, then return the associated parameters (exception otherwise)."""
         pass
 
     @property

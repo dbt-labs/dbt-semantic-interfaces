@@ -202,9 +202,9 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
 
     @property
     @override
-    def simple_metric_parameters(self) -> Optional[PydanticSimpleMetricParameters]:
+    def simple_metric_parameters(self) -> PydanticSimpleMetricParameters:
         if self.type is not MetricType.SIMPLE:
-            return None
+            raise RuntimeError(f"The type of this metric is {self.type}, not {MetricType.SIMPLE}")
         if self._simple_metric_parameters is None:
             assert self.type_params.measure is not None
             self._simple_metric_parameters = PydanticSimpleMetricParameters(measure=self.type_params.measure)
@@ -212,8 +212,9 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
 
     @property
     @override
-    def ratio_metric_parameters(self) -> Optional[PydanticRatioMetricParameters]:
-        assert self.type is MetricType.RATIO
+    def ratio_metric_parameters(self) -> PydanticRatioMetricParameters:
+        if self.type is not MetricType.RATIO:
+            raise RuntimeError(f"The type of this metric is {self.type}, not {MetricType.RATIO}")
         if self._ratio_metric_parameters is None:
             assert self.type_params.numerator is not None
             assert self.type_params.denominator is not None
@@ -225,10 +226,10 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
 
     @property
     @override
-    def cumulative_metric_parameters(self) -> Optional[PydanticCumulativeMetricParameters]:
+    def cumulative_metric_parameters(self) -> PydanticCumulativeMetricParameters:
         """If this describes a cumulative metric, then return the associated parameters (exception otherwise)."""
         if self.type is not MetricType.CUMULATIVE:
-            return None
+            raise RuntimeError(f"The type of this metric is {self.type}, not {MetricType.CUMULATIVE}")
         if self._cumulative_metric_parameters is None:
             assert self.type_params.measure is not None
             self._cumulative_metric_parameters = PydanticCumulativeMetricParameters(
@@ -241,10 +242,10 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
 
     @property
     @override
-    def derived_metric_parameters(self) -> Optional[PydanticDerivedMetricParameters]:
+    def derived_metric_parameters(self) -> PydanticDerivedMetricParameters:
         """If this describes a derived metric, then return the associated parameters (exception otherwise)."""
         if self.type is not MetricType.DERIVED:
-            return None
+            raise RuntimeError(f"The type of this metric is {self.type}, not {MetricType.DERIVED}")
         if self._derived_metric_parameters is None:
             assert self.type_params.expr is not None
             assert self.type_params.metrics is not None
