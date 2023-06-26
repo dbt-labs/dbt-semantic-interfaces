@@ -188,7 +188,6 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     name: str
     description: Optional[str]
     type: MetricType
-    type_params: PydanticMetricTypeParams
     filter: Optional[PydanticWhereFilter]
     metadata: Optional[PydanticMetadata]
 

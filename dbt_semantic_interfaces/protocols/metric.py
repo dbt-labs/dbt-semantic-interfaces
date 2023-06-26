@@ -220,11 +220,6 @@ class Metric(Protocol):
 
     @property
     @abstractmethod
-    def type_params(self) -> MetricTypeParams:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
     def simple_metric_parameters(self) -> SimpleMetricParameters:
         """If this describes a simple metric, return the relevant parameters (exception otherwise)."""
         pass
