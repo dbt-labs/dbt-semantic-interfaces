@@ -26,7 +26,7 @@ jobs:
           python-version: "3.9"
 
       - name: Generate JSON Schema
-        run: hatch run dev-env:python dbt_semantic_interfaces/parsing/explicit_schema.py
+        run: hatch run dev-env:python dbt_semantic_interfaces/parsing/generate_json_schema_file.py
 
       - name: Schema Consistency Check
         run: |

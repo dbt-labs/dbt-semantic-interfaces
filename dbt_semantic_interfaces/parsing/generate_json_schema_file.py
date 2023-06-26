@@ -6,10 +6,9 @@ from typing import Dict, List, Union
 from dbt_semantic_interfaces.parsing import schemas
 
 TOP_LEVEL_SCHEMAS = {
-    "metric": "metric",
-    "semantic_model": "semantic_model",
-    "derived_group_by_element_schema": "derived_identifier",
-    "project_configuration": "project_configuration",
+    "project_configuration_schema": "project_configuration",
+    "metric_schema": "metric",
+    "semantic_model_schema": "semantic_model",
 }
 
 BASE_SCHEMA = {
@@ -78,6 +77,6 @@ def write_json_schema(json_schema: Dict, output_dir: str, file_name: str) -> Non
 if __name__ == "__main__":
     write_json_schema(
         json_schema=generate_explict_json_schema(schemas.schema_store),
-        output_dir=str(Path(__file__).parent / "schemas"),
+        output_dir=str(Path(__file__).parent / "generated_json_schemas"),
         file_name="default_explicit_schema.json",
     )
