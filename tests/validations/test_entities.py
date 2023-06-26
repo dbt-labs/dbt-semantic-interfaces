@@ -27,6 +27,9 @@ from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
+from tests.example_project_configuration import (
+    EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
+)
 
 
 def test_semantic_model_cant_have_more_than_one_primary_entity(
@@ -96,7 +99,9 @@ def test_multiple_natural_entities() -> None:
         """
     )
     natural_entity_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_semantic_manifest([base_semantic_manifest_file(), natural_entity_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, base_semantic_manifest_file(), natural_entity_file]
+    )
 
     with pytest.raises(SemanticManifestValidationException, match="can have at most one natural entity"):
         SemanticManifestValidator[PydanticSemanticManifest]([NaturalEntityConfigurationRule()]).checked_validations(
@@ -122,7 +127,9 @@ def test_natural_entity_used_in_wrong_context() -> None:
         """
     )
     natural_entity_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_semantic_manifest([base_semantic_manifest_file(), natural_entity_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, base_semantic_manifest_file(), natural_entity_file]
+    )
 
     with pytest.raises(
         SemanticManifestValidationException, match="use of `natural` entities is currently supported only in"

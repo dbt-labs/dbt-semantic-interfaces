@@ -38,6 +38,7 @@ from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
+from tests.example_project_configuration import EXAMPLE_PROJECT_CONFIGURATION
 
 
 def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
@@ -81,6 +82,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                     type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
                 )
             ],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
 
@@ -111,6 +113,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
                         type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
                     )
                 ],
+                project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
             )
         )
 
@@ -152,6 +155,7 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
                         type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
                     )
                 ],
+                project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
             )
         )
 
@@ -187,6 +191,7 @@ def test_generated_metrics_only() -> None:  # noqa:D
         PydanticSemanticManifest(
             semantic_models=[semantic_model],
             metrics=[],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
 
@@ -276,6 +281,7 @@ def test_derived_metric() -> None:  # noqa: D
                     ),
                 ),
             ],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
     build_issues = validation_results.errors

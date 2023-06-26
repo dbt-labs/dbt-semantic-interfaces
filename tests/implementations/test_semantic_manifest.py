@@ -3,6 +3,10 @@ from importlib_metadata import version
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.implementations.semantic_version import (
+    PydanticSemanticVersion,
+)
+from tests.example_project_configuration import EXAMPLE_PROJECT_CONFIGURATION
 
 
 def test_interfaces_version_matches() -> None:
@@ -10,8 +14,11 @@ def test_interfaces_version_matches() -> None:
     semantic_manifest = PydanticSemanticManifest(
         semantic_models=[],
         metrics=[],
+        project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
     )
 
     # get the actual installed version
     installed_version = version("dbt_semantic_interfaces")
-    assert semantic_manifest.interfaces_version == installed_version
+    assert semantic_manifest.project_configuration.dsi_package_version == PydanticSemanticVersion.create_from_string(
+        installed_version
+    )

@@ -28,6 +28,9 @@ from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
+from tests.example_project_configuration import (
+    EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
+)
 
 
 def test_metric_missing_measure() -> None:
@@ -48,7 +51,9 @@ def test_metric_missing_measure() -> None:
         """
     )
     metric_missing_measure_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_semantic_manifest([metric_missing_measure_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, metric_missing_measure_file]
+    )
 
     with pytest.raises(
         SemanticManifestValidationException,
@@ -85,7 +90,9 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
         """
     )
     base_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents_1)
-    model = parse_yaml_files_to_validation_ready_semantic_manifest([base_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, base_file]
+    )
     model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(
         model.semantic_manifest
     )
@@ -124,7 +131,13 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
         """
     )
     dup_measure_file = YamlConfigFile(filepath="inline_for_test_2", contents=yaml_contents_2)
-    dup_model = parse_yaml_files_to_validation_ready_semantic_manifest([base_file, dup_measure_file])
+    dup_model = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [
+            EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
+            base_file,
+            dup_measure_file,
+        ]
+    )
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
         [SemanticModelMeasuresUniqueRule()]
     ).validate_semantic_manifest(dup_model.semantic_manifest)
@@ -187,7 +200,9 @@ def test_invalid_non_additive_dimension_properties() -> None:
     )
     invalid_dim_file = YamlConfigFile(filepath="inline_for_test_2", contents=yaml_contents)
     model_build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
-        [invalid_dim_file], apply_transformations=False, raise_issues_as_exceptions=False
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, invalid_dim_file],
+        apply_transformations=False,
+        raise_issues_as_exceptions=False,
     )
     transformed_model = PydanticSemanticManifestTransformer.transform(
         model=model_build_result.semantic_manifest,
@@ -247,7 +262,7 @@ def test_count_measure_missing_expr() -> None:
     )
     missing_expr_file = YamlConfigFile(filepath="inline_for_test_2", contents=yaml_contents)
     model_build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
-        [missing_expr_file], apply_transformations=False
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, missing_expr_file], apply_transformations=False
     )
     transformed_model = PydanticSemanticManifestTransformer.transform(
         model=model_build_result.semantic_manifest,
@@ -301,7 +316,7 @@ def test_count_measure_with_distinct_expr() -> None:
     )
     distinct_count_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model_build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
-        [distinct_count_file], apply_transformations=False
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, distinct_count_file], apply_transformations=False
     )
     transformed_model = PydanticSemanticManifestTransformer.transform(
         model=model_build_result.semantic_manifest,
@@ -357,7 +372,12 @@ def test_percentile_measure_missing_agg_params() -> None:
         """
     )
     missing_agg_params_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_semantic_manifest([missing_agg_params_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [
+            EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
+            missing_agg_params_file,
+        ]
+    )
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(
         model.semantic_manifest
@@ -419,7 +439,12 @@ def test_percentile_measure_bad_percentile_values() -> None:
         """
     )
     bad_percentile_values_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-    model = parse_yaml_files_to_validation_ready_semantic_manifest([bad_percentile_values_file])
+    model = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [
+            EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
+            bad_percentile_values_file,
+        ]
+    )
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(
         model.semantic_manifest

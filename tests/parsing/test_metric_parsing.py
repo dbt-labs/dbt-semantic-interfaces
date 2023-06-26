@@ -16,6 +16,9 @@ from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
+from tests.example_project_configuration import (
+    EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
+)
 
 
 def test_legacy_measure_metric_parsing() -> None:
@@ -31,7 +34,7 @@ def test_legacy_measure_metric_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -55,7 +58,7 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -79,7 +82,7 @@ def test_metric_metadata_parsing() -> None:
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -114,7 +117,7 @@ def test_ratio_metric_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -141,7 +144,7 @@ def test_ratio_metric_input_measure_object_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -169,7 +172,7 @@ def test_cumulative_window_metric_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -194,7 +197,7 @@ def test_grain_to_date_metric_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -223,7 +226,7 @@ def test_derived_metric_offset_window_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.issues.all_issues) == 0
     assert len(build_result.semantic_manifest.metrics) == 1
@@ -257,7 +260,7 @@ def test_derive_metric_offset_to_grain_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.issues.all_issues) == 0
     assert len(build_result.semantic_manifest.metrics) == 1
@@ -288,7 +291,7 @@ def test_constraint_metric_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -317,7 +320,7 @@ def test_derived_metric_input_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -348,7 +351,7 @@ def test_invalid_metric_type_parsing_error() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
     assert build_result.issues.has_blocking_issues
     assert "'this is not a valid type' is not one of" in str(
         SemanticManifestValidationException(build_result.issues.all_issues)
@@ -370,7 +373,7 @@ def test_invalid_cumulative_metric_window_format_parsing_error() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
     assert build_result.issues.has_blocking_issues
     assert "Invalid window" in str(SemanticManifestValidationException(build_result.issues.all_issues))
 
@@ -390,7 +393,7 @@ def test_invalid_cumulative_metric_window_granularity_parsing_error() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
     assert build_result.issues.has_blocking_issues
     assert "Invalid time granularity" in str(SemanticManifestValidationException(build_result.issues.all_issues))
 
@@ -410,6 +413,6 @@ def test_invalid_cumulative_metric_window_count_parsing_error() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file])
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
     assert build_result.issues.has_blocking_issues
     assert "Invalid count" in str(SemanticManifestValidationException(build_result.issues.all_issues))

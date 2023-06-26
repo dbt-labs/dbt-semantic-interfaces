@@ -1,0 +1,6 @@
+---
+project_configuration:
+  time_spine_table_configurations:
+    - location: example_schema.example_table
+      column_name: ds
+      grain: day
