@@ -206,7 +206,6 @@ def parse_yaml_files_to_semantic_manifest(
     issues: List[ValidationIssue] = []
 
     for config_file in files:
-        logger.error(f"Parsing: {config_file}")
         parsing_result = parse_config_yaml(  # parse config file
             config_file,
             semantic_model_class=semantic_model_class,
