@@ -145,7 +145,6 @@ class PydanticMetricTypeParams(HashableBaseModel):
     window: Optional[PydanticMetricTimeWindow]
     grain_to_date: Optional[TimeGranularity]
     metrics: Optional[List[PydanticMetricInput]]
-
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
 
 
@@ -193,6 +192,18 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     filter: Optional[PydanticWhereFilter]
     metadata: Optional[PydanticMetadata]
 
+    # Fields from previous type_parameters
+    measure: Optional[PydanticMetricInputMeasure]
+    numerator: Optional[PydanticMetricInput]
+    denominator: Optional[PydanticMetricInput]
+    expr: Optional[str]
+    window: Optional[PydanticMetricTimeWindow]
+    grain_to_date: Optional[TimeGranularity]
+    metrics: Optional[List[PydanticMetricInput]]
+
+    """Return the complete list of input measure configurations for this metric."""
+    input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
+
     _simple_metric_parameters: Optional[PydanticSimpleMetricParameters] = PrivateAttr(default_factory=lambda: None)
     _ratio_metric_parameters: Optional[PydanticRatioMetricParameters] = PrivateAttr(default_factory=lambda: None)
     _cumulative_metric_parameters: Optional[PydanticCumulativeMetricParameters] = PrivateAttr(
@@ -206,8 +217,8 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         if self.type is not MetricType.SIMPLE:
             raise RuntimeError(f"The type of this metric is {self.type}, not {MetricType.SIMPLE}")
         if self._simple_metric_parameters is None:
-            assert self.type_params.measure is not None
-            self._simple_metric_parameters = PydanticSimpleMetricParameters(measure=self.type_params.measure)
+            assert self.measure is not None
+            self._simple_metric_parameters = PydanticSimpleMetricParameters(measure=self.measure)
         return self._simple_metric_parameters
 
     @property
@@ -216,11 +227,11 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         if self.type is not MetricType.RATIO:
             raise RuntimeError(f"The type of this metric is {self.type}, not {MetricType.RATIO}")
         if self._ratio_metric_parameters is None:
-            assert self.type_params.numerator is not None
-            assert self.type_params.denominator is not None
+            assert self.numerator is not None
+            assert self.denominator is not None
             self._ratio_metric_parameters = PydanticRatioMetricParameters(
-                numerator=self.type_params.numerator,
-                denominator=self.type_params.denominator,
+                numerator=self.numerator,
+                denominator=self.denominator,
             )
         return self._ratio_metric_parameters
 
@@ -231,11 +242,11 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         if self.type is not MetricType.CUMULATIVE:
             raise RuntimeError(f"The type of this metric is {self.type}, not {MetricType.CUMULATIVE}")
         if self._cumulative_metric_parameters is None:
-            assert self.type_params.measure is not None
+            assert self.measure is not None
             self._cumulative_metric_parameters = PydanticCumulativeMetricParameters(
-                measure=self.type_params.measure,
-                window=self.type_params.window,
-                grain_to_date=self.type_params.grain_to_date,
+                measure=self.measure,
+                window=self.window,
+                grain_to_date=self.grain_to_date,
             )
 
         return self._cumulative_metric_parameters
@@ -247,18 +258,13 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         if self.type is not MetricType.DERIVED:
             raise RuntimeError(f"The type of this metric is {self.type}, not {MetricType.DERIVED}")
         if self._derived_metric_parameters is None:
-            assert self.type_params.expr is not None
-            assert self.type_params.metrics is not None
+            assert self.expr is not None
+            assert self.metrics is not None
             self._derived_metric_parameters = PydanticDerivedMetricParameters(
-                expr=self.type_params.expr,
-                metrics=self.type_params.metrics,
+                expr=self.expr,
+                metrics=self.metrics,
             )
         return self._derived_metric_parameters
-
-    @property
-    def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:
-        """Return the complete list of input measure configurations for this metric."""
-        return self.type_params.input_measures
 
     @property
     def measure_references(self) -> List[MeasureReference]:
@@ -271,8 +277,8 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         if self.type is MetricType.SIMPLE or self.type is MetricType.CUMULATIVE:
             return ()
         elif self.type is MetricType.DERIVED:
-            assert self.type_params.metrics is not None, f"{MetricType.DERIVED} should have type_params.metrics set"
-            return self.type_params.metrics
+            assert self.metrics is not None, f"{MetricType.DERIVED} should have type_params.metrics set"
+            return self.metrics
         elif self.type is MetricType.RATIO:
             ratio_metric_parameters = self.ratio_metric_parameters
             assert ratio_metric_parameters is not None

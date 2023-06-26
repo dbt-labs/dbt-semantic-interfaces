@@ -40,7 +40,7 @@ def test_legacy_measure_metric_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "legacy_test"
     assert metric.type is MetricType.SIMPLE
-    assert metric.type_params.measure == PydanticMetricInputMeasure(name="legacy_measure")
+    assert metric.simple_metric_parameters.measure == PydanticMetricInputMeasure(name="legacy_measure")
 
 
 def test_legacy_metric_input_measure_object_parsing() -> None:
@@ -62,7 +62,7 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
-    assert metric.type_params.measure == PydanticMetricInputMeasure(
+    assert metric.simple_metric_parameters.measure == PydanticMetricInputMeasure(
         name="legacy_measure_from_object",
         filter=PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}"""),
     )
@@ -123,8 +123,8 @@ def test_ratio_metric_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "ratio_test"
     assert metric.type is MetricType.RATIO
-    assert metric.type_params.numerator == PydanticMetricInput(name="numerator_metric")
-    assert metric.type_params.denominator == PydanticMetricInput(name="denominator_metric")
+    assert metric.ratio_metric_parameters.numerator == PydanticMetricInput(name="numerator_metric")
+    assert metric.ratio_metric_parameters.denominator == PydanticMetricInput(name="denominator_metric")
 
 
 def test_ratio_metric_input_measure_object_parsing() -> None:
@@ -148,13 +148,13 @@ def test_ratio_metric_input_measure_object_parsing() -> None:
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
-    assert metric.type_params.numerator == PydanticMetricInput(
+    assert metric.ratio_metric_parameters.numerator == PydanticMetricInput(
         name="numerator_metric_from_object",
         filter=PydanticWhereFilter(
             where_sql_template="some_number > 5",
         ),
     )
-    assert metric.type_params.denominator == PydanticMetricInput(name="denominator_metric_from_object")
+    assert metric.ratio_metric_parameters.denominator == PydanticMetricInput(name="denominator_metric_from_object")
 
 
 def test_cumulative_window_metric_parsing() -> None:
@@ -178,8 +178,10 @@ def test_cumulative_window_metric_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "cumulative_test"
     assert metric.type is MetricType.CUMULATIVE
-    assert metric.type_params.measure == PydanticMetricInputMeasure(name="cumulative_measure")
-    assert metric.type_params.window == PydanticMetricTimeWindow(count=7, granularity=TimeGranularity.DAY)
+    assert metric.cumulative_metric_parameters.measure == PydanticMetricInputMeasure(name="cumulative_measure")
+    assert metric.cumulative_metric_parameters.window == PydanticMetricTimeWindow(
+        count=7, granularity=TimeGranularity.DAY
+    )
 
 
 def test_grain_to_date_metric_parsing() -> None:
@@ -203,9 +205,9 @@ def test_grain_to_date_metric_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "grain_to_date_test"
     assert metric.type is MetricType.CUMULATIVE
-    assert metric.type_params.measure == PydanticMetricInputMeasure(name="cumulative_measure")
-    assert metric.type_params.window is None
-    assert metric.type_params.grain_to_date is TimeGranularity.WEEK
+    assert metric.cumulative_metric_parameters.measure == PydanticMetricInputMeasure(name="cumulative_measure")
+    assert metric.cumulative_metric_parameters.window is None
+    assert metric.cumulative_metric_parameters.grain_to_date is TimeGranularity.WEEK
 
 
 def test_derived_metric_offset_window_parsing() -> None:
@@ -233,13 +235,13 @@ def test_derived_metric_offset_window_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "derived_offset_test"
     assert metric.type is MetricType.DERIVED
-    assert metric.type_params.metrics and len(metric.type_params.metrics) == 2
-    metric1, metric2 = metric.type_params.metrics
+    assert metric.derived_metric_parameters.metrics and len(metric.derived_metric_parameters.metrics) == 2
+    metric1, metric2 = metric.derived_metric_parameters.metrics
     assert metric1.offset_window is None
     assert metric2.offset_window == PydanticMetricTimeWindow(count=14, granularity=TimeGranularity.DAY)
     assert metric1.alias is None
     assert metric2.alias == "bookings_2_weeks_ago"
-    assert metric.type_params.expr == "bookings / bookings_2_weeks_ago"
+    assert metric.derived_metric_parameters.expr == "bookings / bookings_2_weeks_ago"
 
 
 def test_derive_metric_offset_to_grain_parsing() -> None:
@@ -267,13 +269,13 @@ def test_derive_metric_offset_to_grain_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "derived_offset_to_grain_test"
     assert metric.type is MetricType.DERIVED
-    assert metric.type_params.metrics and len(metric.type_params.metrics) == 2
-    metric1, metric2 = metric.type_params.metrics
+    assert metric.derived_metric_parameters.metrics and len(metric.derived_metric_parameters.metrics) == 2
+    metric1, metric2 = metric.derived_metric_parameters.metrics
     assert metric1.offset_to_grain is None
     assert metric2.offset_to_grain == TimeGranularity.MONTH
     assert metric1.alias is None
     assert metric2.alias == "bookings_at_start_of_month"
-    assert metric.type_params.expr == "bookings / bookings_at_start_of_month"
+    assert metric.derived_metric_parameters.expr == "bookings / bookings_at_start_of_month"
 
 
 def test_constraint_metric_parsing() -> None:
@@ -326,11 +328,10 @@ def test_derived_metric_input_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "derived_metric_test"
     assert metric.type is MetricType.DERIVED
-    assert metric.type_params
-    assert metric.type_params.metrics
-    assert len(metric.type_params.metrics) == 2
-    assert metric.type_params.metrics[0] == PydanticMetricInput(name="input_metric")
-    assert metric.type_params.metrics[1] == PydanticMetricInput(
+    assert metric.derived_metric_parameters.metrics
+    assert len(metric.derived_metric_parameters.metrics) == 2
+    assert metric.derived_metric_parameters.metrics[0] == PydanticMetricInput(name="input_metric")
+    assert metric.derived_metric_parameters.metrics[1] == PydanticMetricInput(
         name="input_metric",
         alias="constrained_input_metric",
         filter=PydanticWhereFilter(where_sql_template="input_metric < 10"),
