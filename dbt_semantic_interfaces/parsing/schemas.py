@@ -261,7 +261,7 @@ project_configuration_schema = {
     "properties": {
         "time_spine_table_configurations": {
             "type": "array",
-            "items": {"$ref": "time_spine_table_configuration"},
+            "items": {"$ref": "time_spine_table_configuration_schema"},
         },
     },
     "additionalProperties": False,

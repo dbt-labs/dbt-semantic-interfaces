@@ -27,6 +27,7 @@ from dbt_semantic_interfaces.parsing.yaml_loader import (
     ParsingContext,
     YamlConfigLoader,
 )
+from dbt_semantic_interfaces.pretty_print import pformat_big_objects
 from dbt_semantic_interfaces.transformations.semantic_manifest_transformer import (
     PydanticSemanticManifestTransformer,
 )
@@ -205,10 +206,12 @@ def parse_yaml_files_to_semantic_manifest(
     issues: List[ValidationIssue] = []
 
     for config_file in files:
+        logger.error(f"Parsing: {config_file}")
         parsing_result = parse_config_yaml(  # parse config file
             config_file,
             semantic_model_class=semantic_model_class,
             metric_class=metric_class,
+            project_configuration_class=project_configuration_class,
         )
         file_issues = parsing_result.issues
         for obj in parsing_result.elements:
@@ -229,7 +232,10 @@ def parse_yaml_files_to_semantic_manifest(
         issues += file_issues
 
     if len(project_configurations) != 1:
-        raise ParsingException(f"Did not find exactly one project configuration. Got: {project_configurations}")
+        raise ParsingException(
+            f"Did not find exactly one project configuration. Debugging context is:\n\n"
+            f"{pformat_big_objects(project_configurations=project_configurations, issues=issues)}"
+        )
 
     return SemanticManifestBuildResult(
         semantic_manifest=PydanticSemanticManifest(
