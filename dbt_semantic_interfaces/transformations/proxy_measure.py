@@ -6,7 +6,6 @@ from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
     PydanticMetricInputMeasure,
-    PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
@@ -57,10 +56,7 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                         PydanticMetric(
                             name=measure.name,
                             type=MetricType.SIMPLE,
-                            type_params=PydanticMetricTypeParams(
-                                measure=PydanticMetricInputMeasure(name=measure.name),
-                                expr=measure.name,
-                            ),
+                            measure=PydanticMetricInputMeasure(name=measure.name),
                         )
                     )
 
