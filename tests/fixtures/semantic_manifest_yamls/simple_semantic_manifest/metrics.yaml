@@ -135,7 +135,7 @@ metric:
   type: cumulative
   measure:
     name: txn_revenue
-    window: 2 month
+  window: 2 month
 ---
 metric:
   name: "revenue_all_time"
@@ -150,7 +150,7 @@ metric:
   type: cumulative
   measure:
     name: bookers
-    window: 2 days
+  window: 2 days
 ---
 metric:
   name: "revenue_mtd"
@@ -158,7 +158,7 @@ metric:
   type: cumulative
   measure:
     name: txn_revenue
-    grain_to_date: month
+  grain_to_date: month
 ---
 metric:
   name: booking_fees
@@ -449,7 +449,7 @@ metric:
   metrics:
     - name: bookings
     - name: bookings
-      offset_to_grain: month month
+      offset_to_grain: month
       alias: bookings_at_start_of_month
 ---
 metric:
@@ -461,7 +461,7 @@ metric:
   expr: month_start_bookings - bookings_1_month_ago
   metrics:
     - name: bookings
-      offset_to_grain: month month
+      offset_to_grain: month
       alias: month_start_bookings
     - name: bookings
       offset_window: 1 month

@@ -5,10 +5,7 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimensionTypeParams,
 )
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
-from dbt_semantic_interfaces.implementations.metric import (
-    PydanticMetricInputMeasure,
-    PydanticMetricTypeParams,
-)
+from dbt_semantic_interfaces.implementations.metric import PydanticMetricInputMeasure
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
@@ -62,7 +59,7 @@ def test_incompatible_dimension_type() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name=measure_name,
                         type=MetricType.SIMPLE,
-                        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
+                        measure=PydanticMetricInputMeasure(name=measure_name),
                     )
                 ],
                 project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
@@ -110,7 +107,7 @@ def test_incompatible_dimension_is_partition() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name=measure_name,
                         type=MetricType.SIMPLE,
-                        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
+                        measure=PydanticMetricInputMeasure(name=measure_name),
                     )
                 ],
                 project_configuration=EXAMPLE_PROJECT_CONFIGURATION,

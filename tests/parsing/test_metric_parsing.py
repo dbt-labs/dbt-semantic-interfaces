@@ -344,7 +344,7 @@ def test_invalid_metric_type_parsing_error() -> None:
 
     build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
     assert build_result.issues.has_blocking_issues
-    assert "'this is not a valid type' is not one of" in str(
+    assert "YAML document did not conform to metric spec" in str(
         SemanticManifestValidationException(build_result.issues.all_issues)
     )
 

@@ -10,7 +10,6 @@ from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetricInput,
     PydanticMetricInputMeasure,
     PydanticMetricTimeWindow,
-    PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
@@ -79,7 +78,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                 metric_with_guaranteed_meta(
                     name="metric_with_no_time_dim",
                     type=MetricType.SIMPLE,
-                    type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
+                    measure=PydanticMetricInputMeasure(name=measure_name),
                 )
             ],
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
@@ -110,7 +109,7 @@ def test_metric_no_time_dim() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name="metric_with_no_time_dim",
                         type=MetricType.SIMPLE,
-                        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
+                        measure=PydanticMetricInputMeasure(name=measure_name),
                     )
                 ],
                 project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
@@ -152,7 +151,7 @@ def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
                     metric_with_guaranteed_meta(
                         name="foo",
                         type=MetricType.SIMPLE,
-                        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
+                        measure=PydanticMetricInputMeasure(name=measure_name),
                     )
                 ],
                 project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
@@ -226,59 +225,52 @@ def test_derived_metric() -> None:  # noqa: D
                 metric_with_guaranteed_meta(
                     name="random_metric",
                     type=MetricType.SIMPLE,
-                    type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
+                    measure=PydanticMetricInputMeasure(name=measure_name),
                 ),
                 metric_with_guaranteed_meta(
                     name="random_metric2",
                     type=MetricType.SIMPLE,
-                    type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
+                    measure=PydanticMetricInputMeasure(name=measure_name),
                 ),
                 metric_with_guaranteed_meta(
                     name="alias_collision",
                     type=MetricType.DERIVED,
-                    type_params=PydanticMetricTypeParams(
-                        expr="random_metric2 * 2",
-                        metrics=[
-                            PydanticMetricInput(name="random_metric", alias="random_metric2"),
-                            PydanticMetricInput(name="random_metric2"),
-                        ],
-                    ),
+                    expr="random_metric2 * 2",
+                    metrics=[
+                        PydanticMetricInput(name="random_metric", alias="random_metric2"),
+                        PydanticMetricInput(name="random_metric2"),
+                    ],
                 ),
                 metric_with_guaranteed_meta(
                     name="doesntexist",
                     type=MetricType.DERIVED,
-                    type_params=PydanticMetricTypeParams(
-                        expr="notexist * 2", metrics=[PydanticMetricInput(name="notexist")]
-                    ),
+                    expr="notexist * 2",
+                    metrics=[PydanticMetricInput(name="notexist")],
                 ),
                 metric_with_guaranteed_meta(
                     name="has_valid_time_window_params",
                     type=MetricType.DERIVED,
-                    type_params=PydanticMetricTypeParams(
-                        expr="random_metric / random_metric3",
-                        metrics=[
-                            PydanticMetricInput(
-                                name="random_metric", offset_window=PydanticMetricTimeWindow.parse("3 weeks")
-                            ),
-                            PydanticMetricInput(
-                                name="random_metric", offset_to_grain=TimeGranularity.MONTH, alias="random_metric3"
-                            ),
-                        ],
-                    ),
+                    expr="random_metric / random_metric3",
+                    metrics=[
+                        PydanticMetricInput(
+                            name="random_metric", offset_window=PydanticMetricTimeWindow.parse("3 weeks")
+                        ),
+                        PydanticMetricInput(
+                            name="random_metric", offset_to_grain=TimeGranularity.MONTH, alias="random_metric3"
+                        ),
+                    ],
                 ),
                 metric_with_guaranteed_meta(
                     name="has_both_time_offset_params_on_same_input_metric",
                     type=MetricType.DERIVED,
-                    type_params=PydanticMetricTypeParams(
-                        expr="random_metric * 2",
-                        metrics=[
-                            PydanticMetricInput(
-                                name="random_metric",
-                                offset_window=PydanticMetricTimeWindow.parse("3 weeks"),
-                                offset_to_grain=TimeGranularity.MONTH,
-                            )
-                        ],
-                    ),
+                    expr="random_metric * 2",
+                    metrics=[
+                        PydanticMetricInput(
+                            name="random_metric",
+                            offset_window=PydanticMetricTimeWindow.parse("3 weeks"),
+                            offset_to_grain=TimeGranularity.MONTH,
+                        )
+                    ],
                 ),
             ],
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
