@@ -69,11 +69,6 @@ class Measure(Protocol):
 
     @property
     @abstractmethod
-    def create_metric(self) -> Optional[bool]:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
     def expr(self) -> Optional[str]:  # noqa: D
         pass
 

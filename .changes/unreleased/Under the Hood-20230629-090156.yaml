@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Remove `create_metric` from measure protocol
+time: 2023-06-29T09:01:56.627715-07:00
+custom:
+  Author: QMalcolm
+  Issue: "99"
