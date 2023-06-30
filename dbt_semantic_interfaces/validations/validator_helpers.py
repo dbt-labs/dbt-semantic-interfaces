@@ -407,8 +407,8 @@ class SemanticManifestValidationException(Exception):
 class SemanticModelValidationHelpers:
     """Class containing all the helpers related to semantic model validations."""
 
-    @classmethod
-    def time_dimension_in_model(cls, time_dimension_name: str, semantic_model: SemanticModel) -> bool:  # noqa: D
+    @staticmethod
+    def time_dimension_in_model(time_dimension_name: str, semantic_model: SemanticModel) -> bool:  # noqa: D
         for dimension in semantic_model.dimensions:
             if dimension.type == DimensionType.TIME and dimension.name == time_dimension_name:
                 return True
