@@ -197,11 +197,10 @@ class SemanticModelDefaultsRule(SemanticManifestValidationRule[SemanticManifestT
     def _validate_default_agg_time_dimension(semantic_model: SemanticModel) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
-        if semantic_model.defaults is None:
+        if semantic_model.defaults is None or semantic_model.defaults.agg_time_dimension is None:
             return []
 
         default_agg_time_dimension = semantic_model.defaults.agg_time_dimension
-        assert default_agg_time_dimension is not None, "should not be None"
 
         if not SemanticModelValidationHelpers.time_dimension_in_model(
             time_dimension_name=default_agg_time_dimension, semantic_model=semantic_model
