@@ -14,7 +14,6 @@ from dbt_semantic_interfaces.implementations.metadata import (
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
     PydanticMetricInputMeasure,
-    PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
@@ -63,7 +62,7 @@ def test_semantic_manifest_protocol() -> None:  # noqa: D
     metric = PydanticMetric(
         name="test_metric",
         type=MetricType.SIMPLE,
-        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
+        measure=PydanticMetricInputMeasure(name="test_measure"),
     )
     semantic_manifest = PydanticSemanticManifest(
         semantic_models=[semantic_model],
@@ -101,13 +100,18 @@ class RuntimeCheckableMetric(MetricProtocol, Protocol):
     pass
 
 
+def check_metric_protocol(metric: MetricProtocol) -> None:
+    """If the given metric does not satisfy the protocol, then this will fail the type check."""
+    pass
+
+
 def test_metric_protocol() -> None:  # noqa: D
     test_metric = PydanticMetric(
         name="test_metric",
         type=MetricType.SIMPLE,
-        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
+        measure=PydanticMetricInputMeasure(name="test_measure"),
     )
-    assert isinstance(test_metric, RuntimeCheckableMetric)
+    check_metric_protocol(test_metric)
 
 
 @runtime_checkable

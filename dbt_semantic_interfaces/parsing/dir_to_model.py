@@ -176,8 +176,10 @@ def parse_yaml_files_to_validation_ready_semantic_manifest(
     try:
         if apply_transformations:
             model = PydanticSemanticManifestTransformer.transform(model)
-    except Exception as e:
-        transformation_issue_results = SemanticManifestValidationResults(errors=(ValidationError(message=str(e)),))
+    except Exception:
+        transformation_issue_results = SemanticManifestValidationResults(
+            errors=(ValidationError(message=traceback.format_exc()),)
+        )
         build_issues = SemanticManifestValidationResults.merge([build_issues, transformation_issue_results])
 
     if raise_issues_as_exceptions and build_issues.has_blocking_issues:

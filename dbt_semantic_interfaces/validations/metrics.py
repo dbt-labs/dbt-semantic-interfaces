@@ -30,7 +30,9 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         issues: List[ValidationIssue] = []
 
         if metric.type == MetricType.CUMULATIVE:
-            if metric.type_params.window and metric.type_params.grain_to_date:
+            cumulative_metric_parameters = metric.cumulative_metric_parameters
+            assert cumulative_metric_parameters is not None
+            if cumulative_metric_parameters.window and cumulative_metric_parameters.grain_to_date:
                 issues.append(
                     ValidationError(
                         context=MetricContext(
@@ -41,9 +43,10 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                     )
                 )
 
-            if metric.type_params.window:
+            window = cumulative_metric_parameters.window
+            if window is not None:
                 try:
-                    window_str = f"{metric.type_params.window.count} {metric.type_params.window.granularity.value}"
+                    window_str = f"{window.count} {window.granularity.value}"
                     # TODO: Should not call an implementation class.
                     PydanticMetricTimeWindow.parse(window_str)
                 except ParsingException as e:

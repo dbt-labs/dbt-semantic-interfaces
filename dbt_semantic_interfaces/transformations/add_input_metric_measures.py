@@ -32,11 +32,14 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
             iter((metric for metric in semantic_manifest.metrics if metric.name == metric_name)), None
         )
         if matched_metric:
-            if matched_metric.type is MetricType.SIMPLE or matched_metric.type is MetricType.CUMULATIVE:
-                assert (
-                    matched_metric.type_params.measure is not None
-                ), f"{matched_metric} should have a measure defined, but it does not."
-                measures.add(matched_metric.type_params.measure)
+            if matched_metric.type is MetricType.SIMPLE:
+                simple_metric_parameters = matched_metric.simple_metric_parameters
+                assert simple_metric_parameters is not None
+                measures.add(simple_metric_parameters.measure)
+            elif matched_metric.type is MetricType.CUMULATIVE:
+                cumulative_metric_parameters = matched_metric.cumulative_metric_parameters
+                assert cumulative_metric_parameters is not None
+                measures.add(cumulative_metric_parameters.measure)
             elif matched_metric.type is MetricType.DERIVED or matched_metric.type is MetricType.RATIO:
                 for input_metric in matched_metric.input_metrics:
                     measures.update(
@@ -52,7 +55,7 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
         for metric in semantic_manifest.metrics:
             measures = AddInputMetricMeasuresRule._get_measures_for_metric(semantic_manifest, metric.name)
-            assert len(metric.type_params.input_measures) == 0, f"{metric} should not have measures predefined"
-            metric.type_params.input_measures = list(measures)
+            assert len(metric.input_measures) == 0, f"{metric} should not have measures predefined"
+            metric.input_measures = list(measures)
 
         return semantic_manifest

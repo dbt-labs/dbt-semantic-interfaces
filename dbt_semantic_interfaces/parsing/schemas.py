@@ -6,8 +6,24 @@ TRANSFORM_OBJECT_NAME_PATTERN = "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$"
 
 
 # Enums
-metric_types_enum_values = ["SIMPLE", "RATIO", "CUMULATIVE", "DERIVED"]
-metric_types_enum_values += [x.lower() for x in metric_types_enum_values]
+simple_metric_type_enum_values = ["SIMPLE"]
+simple_metric_type_enum_values += [enum_value.lower() for enum_value in simple_metric_type_enum_values]
+
+ratio_metric_type_enum_values = ["RATIO"]
+ratio_metric_type_enum_values += [enum_value.lower() for enum_value in ratio_metric_type_enum_values]
+
+cumulative_metric_type_enum_values = ["CUMULATIVE"]
+cumulative_metric_type_enum_values += [enum_value.lower() for enum_value in cumulative_metric_type_enum_values]
+
+derived_metric_type_enum_values = ["DERIVED"]
+derived_metric_type_enum_values += [enum_value.lower() for enum_value in derived_metric_type_enum_values]
+
+metric_types_enum_values = (
+    simple_metric_type_enum_values
+    + ratio_metric_type_enum_values
+    + cumulative_metric_type_enum_values
+    + derived_metric_type_enum_values
+)
 
 entity_type_enum_values = ["PRIMARY", "UNIQUE", "FOREIGN", "NATURAL"]
 entity_type_enum_values += [x.lower() for x in entity_type_enum_values]
@@ -47,7 +63,6 @@ metric_input_measure_schema = {
                 "filter": {"type": "string"},
                 "alias": {"type": "string"},
             },
-            "additionalProperties": False,
         },
     ],
 }
@@ -62,7 +77,6 @@ metric_input_schema = {
         "offset_window": {"type": "string"},
         "offset_to_grain": {"type": "string"},
     },
-    "additionalProperties": False,
 }
 
 metric_type_params_schema = {
@@ -203,19 +217,66 @@ dimension_schema = {
 metric_schema = {
     "$id": "metric_schema",
     "type": "object",
+    "oneOf": [
+        # Simple metric.
+        {
+            "type": "object",
+            "properties": {
+                "measure": {"$ref": "metric_input_measure_schema"},
+                "type": {"enum": simple_metric_type_enum_values},
+            },
+            "required": ["measure"],
+        },
+        # Ratio metric.
+        {
+            "type": "object",
+            "properties": {
+                "numerator": {"$ref": "metric_input_measure_schema"},
+                "denominator": {"$ref": "metric_input_measure_schema"},
+                "type": {"enum": ratio_metric_type_enum_values},
+            },
+            "required": ["numerator", "denominator"],
+        },
+        # Cumulative metric.
+        {
+            "type": "object",
+            "properties": {
+                "measure": {"$ref": "metric_input_measure_schema"},
+                "type": {"enum": cumulative_metric_type_enum_values},
+                "window": {"type": "string"},
+                "grain_to_date": {"type": "string"},
+            },
+            "required": ["measure"],
+        },
+        # Derived metric.
+        {
+            "type": "object",
+            "properties": {
+                "expr": {"type": ["string", "boolean"]},
+                "metrics": {
+                    "type": "array",
+                    "items": {"$ref": "metric_input_schema"},
+                },
+                "type": {"enum": derived_metric_type_enum_values},
+            },
+            "required": ["expr", "metrics"],
+        },
+    ],
     "properties": {
         "name": {
             "type": "string",
             "pattern": TRANSFORM_OBJECT_NAME_PATTERN,
         },
         "type": {"enum": metric_types_enum_values},
-        "type_params": {"$ref": "metric_type_params"},
-        "filter": {"type": "string"},
         "description": {"type": "string"},
+        "filter": {"type": "string"},
+        # TODO: Internal field added by MF parser, but it shouldn't be here.
+        "__parsing_context__": {},
     },
-    "additionalProperties": False,
-    "required": ["name", "type", "type_params"],
+    "unevaluatedProperties": False,
+    "required": ["name", "type"],
 }
+
 
 node_relation_schema = {
     "$id": "node_relation_schema",

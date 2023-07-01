@@ -45,9 +45,8 @@ def test_metric_missing_measure() -> None:
           name: "{metric_name}"
           description: "Metric with invalid measure"
           type: simple
-          type_params:
-            measure:
-              name: {measure_name}
+          measure:
+            name: {measure_name}
         """
     )
     metric_missing_measure_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)

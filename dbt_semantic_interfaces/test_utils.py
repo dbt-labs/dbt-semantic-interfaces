@@ -17,7 +17,9 @@ from dbt_semantic_interfaces.implementations.metadata import (
 )
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
-    PydanticMetricTypeParams,
+    PydanticMetricInput,
+    PydanticMetricInputMeasure,
+    PydanticMetricTimeWindow,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
@@ -27,7 +29,7 @@ from dbt_semantic_interfaces.implementations.semantic_model import (
     PydanticSemanticModel,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
-from dbt_semantic_interfaces.type_enums import MetricType
+from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +125,13 @@ def default_meta() -> PydanticMetadata:
 def metric_with_guaranteed_meta(
     name: str,
     type: MetricType,
-    type_params: PydanticMetricTypeParams,
+    measure: Optional[PydanticMetricInputMeasure] = None,
+    numerator: Optional[PydanticMetricInput] = None,
+    denominator: Optional[PydanticMetricInput] = None,
+    window: Optional[PydanticMetricTimeWindow] = None,
+    grain_to_date: Optional[TimeGranularity] = None,
+    expr: Optional[str] = None,
+    metrics: Optional[Sequence[PydanticMetricInput]] = None,
     where_filter: Optional[PydanticWhereFilter] = None,
     metadata: PydanticMetadata = default_meta(),
     description: str = "adhoc metric",
@@ -136,7 +144,13 @@ def metric_with_guaranteed_meta(
         name=name,
         description=description,
         type=type,
-        type_params=type_params,
+        measure=measure,
+        numerator=numerator,
+        denominator=denominator,
+        window=window,
+        grain_to_date=grain_to_date,
+        expr=expr,
+        metrics=list(metrics) if metrics is not None else [],
         filter=where_filter,
         metadata=metadata,
     )

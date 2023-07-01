@@ -144,6 +144,62 @@ class MetricTypeParams(Protocol):
         pass
 
 
+class SimpleMetricParameters(Protocol):
+    """Parameters used to define a simple metric."""
+
+    @property
+    @abstractmethod
+    def measure(self) -> MetricInputMeasure:  # noqa: D
+        pass
+
+
+class RatioMetricParameters(Protocol):
+    """Parameters used to define a ratio metric."""
+
+    @property
+    @abstractmethod
+    def numerator(self) -> MetricInput:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def denominator(self) -> MetricInput:  # noqa: D
+        pass
+
+
+class CumulativeMetricParameters(Protocol):
+    """Parameters used to define a cumulative metric."""
+
+    @property
+    @abstractmethod
+    def measure(self) -> MetricInputMeasure:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def window(self) -> Optional[MetricTimeWindow]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def grain_to_date(self) -> Optional[TimeGranularity]:  # noqa: D
+        pass
+
+
+class DerivedMetricParameters(Protocol):
+    """Parameters used to define a derived metric."""
+
+    @property
+    @abstractmethod
+    def expr(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def metrics(self) -> Sequence[MetricInput]:  # noqa: D
+        pass
+
+
 class Metric(Protocol):
     """Describes a metric."""
 
@@ -164,7 +220,26 @@ class Metric(Protocol):
 
     @property
     @abstractmethod
-    def type_params(self) -> MetricTypeParams:  # noqa: D
+    def simple_metric_parameters(self) -> SimpleMetricParameters:
+        """If this describes a simple metric, return the relevant parameters (exception otherwise)."""
+        pass
+
+    @property
+    @abstractmethod
+    def ratio_metric_parameters(self) -> RatioMetricParameters:
+        """If this describes a ratio metric, then return the associated parameters (exception otherwise)."""
+        pass
+
+    @property
+    @abstractmethod
+    def cumulative_metric_parameters(self) -> CumulativeMetricParameters:
+        """If this describes a cumulative metric, then return the associated parameters (exception otherwise)."""
+        pass
+
+    @property
+    @abstractmethod
+    def derived_metric_parameters(self) -> DerivedMetricParameters:
+        """If this describes a derived metric, then return the associated parameters (exception otherwise)."""
         pass
 
     @property

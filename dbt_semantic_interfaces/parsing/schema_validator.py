@@ -1,6 +1,6 @@
 import re
 
-from jsonschema import Draft7Validator, ValidationError
+from jsonschema import Draft202012Validator, ValidationError
 from jsonschema._utils import extras_msg
 from jsonschema.validators import extend
 
@@ -66,4 +66,6 @@ def customAdditionalProperties(validator, aP, instance, schema):  # type: ignore
 
 # Extend takes a given validator, and overrides/adds the specified validators for the validator
 # Thus here we are overriding Draft7Validator's `additionalProperties` validator
-SchemaValidator = extend(validator=Draft7Validator, validators={"additionalProperties": customAdditionalProperties})
+SchemaValidator = extend(
+    validator=Draft202012Validator, validators={"additionalProperties": customAdditionalProperties}
+)

@@ -2,10 +2,7 @@ import copy
 
 import pytest
 
-from dbt_semantic_interfaces.implementations.metric import (
-    PydanticMetricInput,
-    PydanticMetricTypeParams,
-)
+from dbt_semantic_interfaces.implementations.metric import PydanticMetricInput
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
@@ -25,10 +22,8 @@ def test_can_configure_model_validator_rules(  # noqa: D
         metric_with_guaranteed_meta(
             name="metric_doesnt_exist_squared",
             type=MetricType.DERIVED,
-            type_params=PydanticMetricTypeParams(
-                expr="metric_doesnt_exist * metric_doesnt_exist",
-                metrics=[PydanticMetricInput(name="metric_doesnt_exist")],
-            ),
+            expr="metric_doesnt_exist * metric_doesnt_exist",
+            metrics=[PydanticMetricInput(name="metric_doesnt_exist")],
         )
     )
 
