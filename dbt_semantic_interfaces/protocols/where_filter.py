@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Optional, Protocol
+from typing import List, Optional, Protocol, TypeVar
 
 from dbt_semantic_interfaces.type_enums import TimeGranularity
 
@@ -99,3 +99,9 @@ class WhereFilter(Protocol):
         [EntityInput(name='user'),]
         """
         pass
+
+
+DimensionInputT = TypeVar("DimensionInputT", bound=DimensionInput)
+TimeDimensionInputT = TypeVar("TimeDimensionInputT", bound=TimeDimensionInput)
+EntityInputT = TypeVar("EntityInputT", bound=EntityInput)
+WhereFilterT = TypeVar("WhereFilterT", bound=WhereFilter)
