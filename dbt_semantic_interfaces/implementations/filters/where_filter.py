@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Sequence
+from typing import List, Optional, Sequence
 
 import jinja2
 
@@ -24,6 +24,28 @@ from dbt_semantic_interfaces.references import (
 from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 
+class PydanticDimensionInput(HashableBaseModel):
+    """Dimension input information for the WhereFilter."""
+
+    name: str
+    entity_path: Optional[List[str]] = None
+
+
+class PydanticTimeDimensionInput(HashableBaseModel):
+    """Time dimension input information for the WhereFilter."""
+
+    name: str
+    granularity: TimeGranularity
+    entity_path: Optional[List[str]] = None
+
+
+class PydanticEntityInput(HashableBaseModel):
+    """Entity input information for the WhereFilter."""
+
+    name: str
+    entity_path: Optional[List[str]] = None
+
+
 class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
     """A filter applied to the data set containing measures, dimensions, identifiers relevant to the query.
 
@@ -34,6 +56,9 @@ class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
     """
 
     where_sql_template: str
+    input_dimensions: List[PydanticDimensionInput]
+    input_time_dimensions: List[PydanticTimeDimensionInput]
+    input_entities: List[PydanticEntityInput]
 
     @classmethod
     def _from_yaml_value(
