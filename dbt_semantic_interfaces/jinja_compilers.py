@@ -1,4 +1,4 @@
-from typing import Generic, List, Optional
+from typing import Generic, List, Optional, Type
 
 import jinja2
 
@@ -37,17 +37,17 @@ class WhereFilterCompiler(Generic[WhereFilterT, DimensionInputT, TimeDimensionIn
     )
     """
 
-    where_filter_class: WhereFilterT
-    dimension_input_class: DimensionInputT
-    time_dimension_input_class: TimeDimensionInputT
-    entity_input_class: EntityInputT
+    where_filter_class: Type[WhereFilterT]
+    dimension_input_class: Type[DimensionInputT]
+    time_dimension_input_class: Type[TimeDimensionInputT]
+    entity_input_class: Type[EntityInputT]
 
     def __init__(  # noqa: D
         self,
-        where_filter_class: WhereFilterT,
-        dimension_input_class: DimensionInputT,
-        time_dimension_input_class: TimeDimensionInputT,
-        entity_input_class: EntityInputT,
+        where_filter_class: Type[WhereFilterT],
+        dimension_input_class: Type[DimensionInputT],
+        time_dimension_input_class: Type[TimeDimensionInputT],
+        entity_input_class: Type[EntityInputT],
     ):
         self.where_filter_class = where_filter_class
         self.dimension_input_class = dimension_input_class
