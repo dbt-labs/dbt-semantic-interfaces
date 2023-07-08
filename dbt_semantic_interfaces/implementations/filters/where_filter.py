@@ -16,6 +16,7 @@ from dbt_semantic_interfaces.implementations.filters.call_parameter_sets import 
     ParseWhereFilterException,
     TimeDimensionCallParameterSet,
 )
+from dbt_semantic_interfaces.jinja_compilers import WhereFilterCompiler
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -71,7 +72,15 @@ class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
         and as such we parse them using our standard parse method below.
         """
         if isinstance(input, str):
-            return PydanticWhereFilter(where_sql_template=input)
+            compiler = WhereFilterCompiler[
+                PydanticWhereFilter, PydanticDimensionInput, PydanticTimeDimensionInput, PydanticEntityInput
+            ](
+                where_filter_class=PydanticWhereFilter,
+                dimension_input_class=PydanticDimensionInput,
+                time_dimension_input_class=PydanticTimeDimensionInput,
+                entity_input_class=PydanticEntityInput,
+            )
+            return compiler.compile(input)
         else:
             raise ValueError(f"Expected input to be of type string, but got type {type(input)} with value: {input}")
 
