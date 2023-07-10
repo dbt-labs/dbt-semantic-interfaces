@@ -84,7 +84,7 @@ def base_semantic_manifest_file() -> YamlConfigFile:
         semantic_model:
           name: sample_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: source_table
           entities:
             - name: example_entity
@@ -158,7 +158,7 @@ def semantic_model_with_guaranteed_meta(
     created_node_relation = node_relation
     if created_node_relation is None:
         created_node_relation = NodeRelation(
-            schema_name="schema",
+            schema="schema",
             alias="table",
         )
 

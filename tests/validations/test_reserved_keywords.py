@@ -78,7 +78,7 @@ def test_reserved_keywords_in_node_relation(  # noqa: D
     )
     semantic_model_with_node_relation.node_relation = NodeRelation(
         alias=random_keyword(),
-        schema_name="some_schema",
+        schema="some_schema",
     )
     issues = ReservedKeywordsRule.validate_manifest(model)
     assert len(issues) == 1

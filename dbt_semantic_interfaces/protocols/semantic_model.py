@@ -24,7 +24,7 @@ class NodeRelation(Protocol):
 
     @property
     @abstractmethod
-    def schema_name(self) -> str:  # noqa: D
+    def schema(self) -> str:  # noqa: D
         pass
 
     @property

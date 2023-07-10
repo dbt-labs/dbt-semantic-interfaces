@@ -54,7 +54,7 @@ def test_semantic_manifest_protocol() -> None:  # noqa: D
         name="test_semantic_model",
         node_relation=NodeRelation(
             alias="test_alias",
-            schema_name="test_schema_name",
+            schema="test_schema_name",
         ),
         entities=[],
         measures=[],
@@ -85,7 +85,7 @@ def test_semantic_model_protocol() -> None:  # noqa: D
         name="test_semantic_model",
         node_relation=NodeRelation(
             alias="test_alias",
-            schema_name="test_schema_name",
+            schema="test_schema_name",
         ),
         entities=[],
         measures=[],
