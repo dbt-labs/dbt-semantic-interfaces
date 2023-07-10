@@ -1,8 +1,5 @@
 import textwrap
 
-from dbt_semantic_interfaces.implementations.filters.where_filter import (
-    PydanticWhereFilter,
-)
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetricInput,
     PydanticMetricInputMeasure,
@@ -19,6 +16,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 from tests.example_project_configuration import (
     EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
 )
+from tests.fixtures.semantic_manifest_fixtures import PydanticWhereFilterCompilerT
 
 
 def test_legacy_measure_metric_parsing() -> None:
@@ -43,7 +41,9 @@ def test_legacy_measure_metric_parsing() -> None:
     assert metric.type_params.measure == PydanticMetricInputMeasure(name="legacy_measure")
 
 
-def test_legacy_metric_input_measure_object_parsing() -> None:
+def test_legacy_metric_input_measure_object_parsing(
+    pydantic_where_filter_compiler: PydanticWhereFilterCompilerT,
+) -> None:
     """Test for parsing a simple metric specification with the `measure` parameter set with object notation."""
     yaml_contents = textwrap.dedent(
         """\
@@ -64,7 +64,7 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.type_params.measure == PydanticMetricInputMeasure(
         name="legacy_measure_from_object",
-        filter=PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}"""),
+        filter=pydantic_where_filter_compiler.compile(where_sql_template="""{{ dimension('some_bool') }}"""),
     )
 
 
@@ -127,7 +127,9 @@ def test_ratio_metric_parsing() -> None:
     assert metric.type_params.denominator == PydanticMetricInput(name="denominator_metric")
 
 
-def test_ratio_metric_input_measure_object_parsing() -> None:
+def test_ratio_metric_input_measure_object_parsing(
+    pydantic_where_filter_compiler: PydanticWhereFilterCompilerT,
+) -> None:
     """Test for parsing a ratio metric specification with object inputs for numerator and denominator."""
     yaml_contents = textwrap.dedent(
         """\
@@ -150,7 +152,7 @@ def test_ratio_metric_input_measure_object_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.type_params.numerator == PydanticMetricInput(
         name="numerator_metric_from_object",
-        filter=PydanticWhereFilter(
+        filter=pydantic_where_filter_compiler.compile(
             where_sql_template="some_number > 5",
         ),
     )
@@ -276,7 +278,7 @@ def test_derive_metric_offset_to_grain_parsing() -> None:
     assert metric.type_params.expr == "bookings / bookings_at_start_of_month"
 
 
-def test_constraint_metric_parsing() -> None:
+def test_constraint_metric_parsing(pydantic_where_filter_compiler: PydanticWhereFilterCompilerT) -> None:
     """Test for parsing a metric specification with a constraint included."""
     yaml_contents = textwrap.dedent(
         """\
@@ -297,12 +299,12 @@ def test_constraint_metric_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "constraint_test"
     assert metric.type is MetricType.SIMPLE
-    assert metric.filter == PydanticWhereFilter(
+    assert metric.filter == pydantic_where_filter_compiler.compile(
         where_sql_template="{{ dimension('some_dimension') }} IN ('value1', 'value2')"
     )
 
 
-def test_derived_metric_input_parsing() -> None:
+def test_derived_metric_input_parsing(pydantic_where_filter_compiler: PydanticWhereFilterCompilerT) -> None:
     """Test for parsing derived metrics with metric_input properties."""
     yaml_contents = textwrap.dedent(
         """\
@@ -333,7 +335,7 @@ def test_derived_metric_input_parsing() -> None:
     assert metric.type_params.metrics[1] == PydanticMetricInput(
         name="input_metric",
         alias="constrained_input_metric",
-        filter=PydanticWhereFilter(where_sql_template="input_metric < 10"),
+        filter=pydantic_where_filter_compiler.compile(where_sql_template="input_metric < 10"),
     )
 
 

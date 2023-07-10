@@ -8,9 +8,16 @@ from typing import Dict
 
 import pytest
 
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
+    PydanticDimensionInput,
+    PydanticEntityInput,
+    PydanticTimeDimensionInput,
+    PydanticWhereFilter,
+)
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.jinja_compilers import WhereFilterCompiler
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_directory_of_yaml_files_to_semantic_manifest,
 )
@@ -56,3 +63,20 @@ def simple_semantic_manifest__with_primary_transforms(template_mapping: Dict[str
         ordered_rule_sequences=(PydanticSemanticManifestTransformRuleSet().primary_rules,),
     )
     return transformed_model
+
+
+PydanticWhereFilterCompilerT = WhereFilterCompiler[
+    PydanticWhereFilter, PydanticDimensionInput, PydanticTimeDimensionInput, PydanticEntityInput
+]
+
+
+@pytest.fixture(scope="session")
+def pydantic_where_filter_compiler() -> PydanticWhereFilterCompilerT:  # noqa: D
+    return WhereFilterCompiler[
+        PydanticWhereFilter, PydanticDimensionInput, PydanticTimeDimensionInput, PydanticEntityInput
+    ](
+        where_filter_class=PydanticWhereFilter,
+        dimension_input_class=PydanticDimensionInput,
+        time_dimension_input_class=PydanticTimeDimensionInput,
+        entity_input_class=PydanticEntityInput,
+    )
