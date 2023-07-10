@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Add more structure around WhereFilter protocol
+time: 2023-07-10T12:39:29.64364-07:00
+custom:
+  Author: QMalcolm
+  Issue: "102"
