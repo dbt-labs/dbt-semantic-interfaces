@@ -37,10 +37,10 @@ class WhereFilterCompiler(Generic[WhereFilterT, DimensionInputT, TimeDimensionIn
     )
     """
 
-    where_filter_class: Type[WhereFilterT]
-    dimension_input_class: Type[DimensionInputT]
-    time_dimension_input_class: Type[TimeDimensionInputT]
-    entity_input_class: Type[EntityInputT]
+    _where_filter_class: Type[WhereFilterT]
+    _dimension_input_class: Type[DimensionInputT]
+    _time_dimension_input_class: Type[TimeDimensionInputT]
+    _entity_input_class: Type[EntityInputT]
 
     def __init__(  # noqa: D
         self,
@@ -49,10 +49,10 @@ class WhereFilterCompiler(Generic[WhereFilterT, DimensionInputT, TimeDimensionIn
         time_dimension_input_class: Type[TimeDimensionInputT],
         entity_input_class: Type[EntityInputT],
     ):
-        self.where_filter_class = where_filter_class
-        self.dimension_input_class = dimension_input_class
-        self.time_dimension_input_class = time_dimension_input_class
-        self.entity_input_class = entity_input_class
+        self._where_filter_class = where_filter_class
+        self._dimension_input_class = dimension_input_class
+        self._time_dimension_input_class = time_dimension_input_class
+        self._entity_input_class = entity_input_class
 
     def compile(self, where_sql_template: str) -> WhereFilterT:
         """Compiles the `where_sql_template` to a valid `WhereFilterT`."""
@@ -61,19 +61,19 @@ class WhereFilterCompiler(Generic[WhereFilterT, DimensionInputT, TimeDimensionIn
         entity_inputs: List[EntityInputT] = []
 
         def _dimension(name: str, entity_path: Optional[List[str]] = None) -> str:
-            input = self.dimension_input_class(name=name, entity_path=entity_path)
+            input = self._dimension_input_class(name=name, entity_path=entity_path)
             dimesion_inputs.append(input)
             return f"{{{{ {name} }}}}"
 
         def _time_dimension(name: str, granularity: str, entity_path: Optional[List[str]] = None):
-            input = self.time_dimension_input_class(
+            input = self._time_dimension_input_class(
                 name=name, granularity=TimeGranularity(granularity), entity_path=entity_path
             )
             time_dimension_inputs.append(input)
             return f"{{{{ {name} }}}}"
 
         def _entity(name: str, entity_path: Optional[List[str]] = None):
-            input = self.entity_input_class(name=name, entity_path=entity_path)
+            input = self._entity_input_class(name=name, entity_path=entity_path)
             entity_inputs.append(input)
             return f"{{{{ {name} }}}}"
 
@@ -83,7 +83,7 @@ class WhereFilterCompiler(Generic[WhereFilterT, DimensionInputT, TimeDimensionIn
             entity=_entity,
         )
 
-        return self.where_filter_class(
+        return self._where_filter_class(
             where_sql_template=compiled_filter_str,
             input_dimensions=dimesion_inputs,
             input_time_dimensions=time_dimension_inputs,
