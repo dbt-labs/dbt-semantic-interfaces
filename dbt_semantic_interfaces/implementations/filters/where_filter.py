@@ -8,6 +8,11 @@ from dbt_semantic_interfaces.implementations.base import (
     PydanticParseableValueType,
 )
 from dbt_semantic_interfaces.jinja_compilers import WhereFilterCompiler
+from dbt_semantic_interfaces.references import (
+    DimensionReference,
+    EntityReference,
+    TimeDimensionReference,
+)
 from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 
@@ -17,6 +22,18 @@ class PydanticDimensionInput(HashableBaseModel):
     name: str
     entity_path: Optional[List[str]] = None
 
+    @property
+    def reference(self) -> DimensionReference:
+        """`DimensionReference` for the `DimensionInput`."""
+        return DimensionReference(self.name)
+
+    @property
+    def entity_path_references(self) -> List[EntityReference]:
+        """The `EntityReference`s for the `DimensionInput.entity_path."""
+        if self.entity_path is not None:
+            return [EntityReference(element_name=entity_name) for entity_name in self.entity_path]
+        return []
+
 
 class PydanticTimeDimensionInput(HashableBaseModel):
     """Time dimension input information for the WhereFilter."""
@@ -25,12 +42,36 @@ class PydanticTimeDimensionInput(HashableBaseModel):
     granularity: TimeGranularity
     entity_path: Optional[List[str]] = None
 
+    @property
+    def reference(self) -> TimeDimensionReference:
+        """`TimeDimensionReference` for the `TimeDimensionInput`."""
+        return TimeDimensionReference(self.name)
+
+    @property
+    def entity_path_references(self) -> List[EntityReference]:
+        """The `EntityReference`s for the `TimeDimensionInput.entity_path."""
+        if self.entity_path is not None:
+            return [EntityReference(element_name=entity_name) for entity_name in self.entity_path]
+        return []
+
 
 class PydanticEntityInput(HashableBaseModel):
     """Entity input information for the WhereFilter."""
 
     name: str
     entity_path: Optional[List[str]] = None
+
+    @property
+    def reference(self) -> EntityReference:
+        """`EntityReference` for the `EntityInput`."""
+        return EntityReference(self.name)
+
+    @property
+    def entity_path_references(self) -> List[EntityReference]:
+        """The `EntityReference`s for the `EntityInput.entity_path."""
+        if self.entity_path is not None:
+            return [EntityReference(element_name=entity_name) for entity_name in self.entity_path]
+        return []
 
 
 class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):

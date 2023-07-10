@@ -1,6 +1,11 @@
 from abc import abstractmethod
 from typing import Optional, Protocol, Sequence, TypeVar
 
+from dbt_semantic_interfaces.references import (
+    DimensionReference,
+    EntityReference,
+    TimeDimensionReference,
+)
 from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 
@@ -22,6 +27,18 @@ class DimensionInput(Protocol):
     @abstractmethod
     def entity_path(self) -> Optional[Sequence[str]]:
         """An optional path of entities to get to the required dimension."""
+        pass
+
+    @property
+    @abstractmethod
+    def reference(self) -> DimensionReference:
+        """`DimensionReference` for the `DimensionInput`."""
+        pass
+
+    @property
+    @abstractmethod
+    def entity_path_references(self) -> Sequence[EntityReference]:
+        """`EntityReferences` for the `EntityInput.entity_path`."""
         pass
 
 
@@ -51,6 +68,18 @@ class TimeDimensionInput(Protocol):
         """An optional path of entities to get to the required time dimension."""
         pass
 
+    @property
+    @abstractmethod
+    def reference(self) -> TimeDimensionReference:
+        """`TimeDimensionReference` for the `TimeDimensionInput`."""
+        pass
+
+    @property
+    @abstractmethod
+    def entity_path_references(self) -> Sequence[EntityReference]:
+        """`EntityReferences` for the `TimeDimensionInput.entity_path`."""
+        pass
+
 
 class EntityInput(Protocol):
     """Entity input information necessary for the where filter."""
@@ -70,6 +99,18 @@ class EntityInput(Protocol):
     @abstractmethod
     def entity_path(self) -> Optional[Sequence[str]]:
         """An optional path of entities to get to the required entity."""
+        pass
+
+    @property
+    @abstractmethod
+    def reference(self) -> EntityReference:
+        """`EntityReference` for the `EntityInput`."""
+        pass
+
+    @property
+    @abstractmethod
+    def entity_path_references(self) -> Sequence[EntityReference]:
+        """`EntityReferences` for the `EntityInput.entity_path`."""
         pass
 
 
