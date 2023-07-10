@@ -80,7 +80,7 @@ class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
                 time_dimension_input_class=PydanticTimeDimensionInput,
                 entity_input_class=PydanticEntityInput,
             )
-            return compiler.compile(input)
+            return compiler.compile(where_sql_template=input)
         else:
             raise ValueError(f"Expected input to be of type string, but got type {type(input)} with value: {input}")
 

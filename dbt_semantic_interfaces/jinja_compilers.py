@@ -54,8 +54,8 @@ class WhereFilterCompiler(Generic[WhereFilterT, DimensionInputT, TimeDimensionIn
         self.time_dimension_input_class = time_dimension_input_class
         self.entity_input_class = entity_input_class
 
-    def compile(self, where_template_sql: str) -> WhereFilterT:
-        """Compiles the `where_template_sql` to a valid `WhereFilterT`."""
+    def compile(self, where_sql_template: str) -> WhereFilterT:
+        """Compiles the `where_sql_template` to a valid `WhereFilterT`."""
         dimesion_inputs: List[DimensionInputT] = []
         time_dimension_inputs: List[TimeDimensionInputT] = []
         entity_inputs: List[EntityInputT] = []
@@ -77,7 +77,7 @@ class WhereFilterCompiler(Generic[WhereFilterT, DimensionInputT, TimeDimensionIn
             entity_inputs.append(input)
             return f"{{{{ {name} }}}}"
 
-        compiled_filter_str = jinja2.Template(where_template_sql).render(
+        compiled_filter_str = jinja2.Template(where_sql_template).render(
             dimension=_dimension,
             time_dimension=_time_dimension,
             entity=_entity,
