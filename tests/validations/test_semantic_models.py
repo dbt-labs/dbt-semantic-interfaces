@@ -52,7 +52,7 @@ def test_semantic_model_defaults_invalid() -> None:  # noqa: D
         semantic_model:
           name: semantic_model_name
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: some_alias
           defaults:
             agg_time_dimension: doesnotexist

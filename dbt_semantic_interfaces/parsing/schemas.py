@@ -222,12 +222,12 @@ node_relation_schema = {
     "type": "object",
     "properties": {
         "alias": {"type": "string"},
-        "schema_name": {"type": "string"},
+        "schema": {"type": "string"},
         "database": {"type": "string"},
         "relation_name": {"type": "string"},
     },
     "additionalProperties": False,
-    "required": ["alias", "schema_name"],
+    "required": ["alias", "schema"],
 }
 
 

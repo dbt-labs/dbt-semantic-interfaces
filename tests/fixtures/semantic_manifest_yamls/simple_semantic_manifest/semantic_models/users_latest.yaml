@@ -4,7 +4,7 @@ semantic_model:
   description: users_latest
 
   node_relation:
-    schema_name: $source_schema
+    schema: $source_schema
     alias: dim_users_latest
 
   dimensions:

@@ -4,7 +4,7 @@ semantic_model:
   description: lux_listing_mapping
 
   node_relation:
-    schema_name: $source_schema
+    schema: $source_schema
     alias: dim_lux_listing_id_mapping
 
   entities:
