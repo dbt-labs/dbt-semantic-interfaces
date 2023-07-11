@@ -338,13 +338,13 @@
                 "relation_name": {
                     "type": "string"
                 },
-                "schema_name": {
+                "schema": {
                     "type": "string"
                 }
             },
             "required": [
                 "alias",
-                "schema_name"
+                "schema"
             ],
             "type": "object"
         },

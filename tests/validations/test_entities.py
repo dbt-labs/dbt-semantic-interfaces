@@ -74,7 +74,7 @@ def test_multiple_natural_entities() -> None:
         semantic_model:
           name: too_many_natural_entities
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: natural_entity_table
           entities:
             - name: natural_key_one
@@ -116,7 +116,7 @@ def test_natural_entity_used_in_wrong_context() -> None:
         semantic_model:
           name: random_natural_entity
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: random_natural_entity_table
           entities:
             - name: natural_key

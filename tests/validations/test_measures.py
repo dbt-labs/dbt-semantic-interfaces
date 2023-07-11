@@ -70,7 +70,7 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
         semantic_model:
           name: sample_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: source_table
           entities:
             - name: example_entity
@@ -111,7 +111,7 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
         semantic_model:
           name: sample_semantic_model_2
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: source_table
           entities:
             - name: example_entity_2
@@ -157,7 +157,7 @@ def test_invalid_non_additive_dimension_properties() -> None:
         semantic_model:
           name: sample_semantic_model_2
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: source_table
           entities:
             - name: example_entity
@@ -238,7 +238,7 @@ def test_count_measure_missing_expr() -> None:
         semantic_model:
           name: sample_semantic_model_2
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: source_table
           entities:
             - name: example_entity
@@ -291,7 +291,7 @@ def test_count_measure_with_distinct_expr() -> None:
         semantic_model:
           name: sample_semantic_model_2
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: source_table
           entities:
             - name: example_entity
@@ -342,7 +342,7 @@ def test_percentile_measure_missing_agg_params() -> None:
         semantic_model:
           name: sample_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: source_table
           entities:
             - name: example_entity
@@ -411,7 +411,7 @@ def test_percentile_measure_bad_percentile_values() -> None:
         semantic_model:
           name: sample_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: source_table
           entities:
             - name: example_entity

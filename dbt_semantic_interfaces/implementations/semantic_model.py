@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import Field
 from typing import Any, List, Optional, Sequence
 
 from pydantic import validator
@@ -29,7 +30,7 @@ class NodeRelation(HashableBaseModel):
     """Path object to where the data should be."""
 
     alias: str
-    schema_name: str
+    schema_name: str = Field(alias="schema")
     database: Optional[str] = None
     relation_name: str = ""
 
@@ -41,7 +42,7 @@ class NodeRelation(HashableBaseModel):
             # Only build the relation_name if it was not present in config.
             return value
 
-        alias, schema, database = values.get("alias"), values.get("schema_name"), values.get("database")
+        alias, schema, database = values.get("alias"), values.get("schema"), values.get("database")
         if alias is None or schema is None:
             raise ValueError(
                 f"Failed to build relation_name because alias and/or schema was None. schema: {schema}, alias: {alias}"
