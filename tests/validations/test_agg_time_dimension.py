@@ -45,6 +45,9 @@ def test_unset_aggregation_time_dimension(simple_semantic_manifest: PydanticSema
         lambda semantic_model: len(semantic_model.measures) > 0,
     )
 
+    if semantic_model_with_measures.defaults is not None:
+        semantic_model_with_measures.defaults.agg_time_dimension = None
+
     semantic_model_with_measures.measures[0].agg_time_dimension = None
 
     with pytest.raises(
