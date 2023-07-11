@@ -29,7 +29,6 @@ from dbt_semantic_interfaces.validations.non_empty import NonEmptyRule
 from dbt_semantic_interfaces.validations.reserved_keywords import ReservedKeywordsRule
 from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelDefaultsRule,
-    SemanticModelTimeDimensionWarningsRule,
     SemanticModelValidityWindowRule,
 )
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
@@ -62,7 +61,6 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         DerivedMetricRule[SemanticManifestT](),
         CountAggregationExprRule[SemanticManifestT](),
         SemanticModelMeasuresUniqueRule[SemanticManifestT](),
-        SemanticModelTimeDimensionWarningsRule[SemanticManifestT](),
         SemanticModelValidityWindowRule[SemanticManifestT](),
         DimensionConsistencyRule[SemanticManifestT](),
         ElementConsistencyRule[SemanticManifestT](),
