@@ -39,7 +39,7 @@ class AggregationTimeDimensionRule(SemanticManifestValidationRule[SemanticManife
                 ),
                 element_type=SemanticModelElementType.MEASURE,
             )
-            agg_time_dimension_reference = measure.checked_agg_time_dimension
+            agg_time_dimension_reference = semantic_model.checked_agg_time_dimension_for_measure(measure)
             if not SemanticModelValidationHelpers.time_dimension_in_model(
                 time_dimension_name=agg_time_dimension_reference.element_name, semantic_model=semantic_model
             ):
