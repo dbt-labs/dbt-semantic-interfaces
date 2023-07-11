@@ -9,7 +9,7 @@ from dbt_semantic_interfaces.implementations.base import (
     PydanticCustomInputParser,
     PydanticParseableValueType,
 )
-from dbt_semantic_interfaces.implementations.filters.call_parameter_sets import (
+from dbt_semantic_interfaces.protocols.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     FilterCallParameterSets,
