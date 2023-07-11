@@ -9,15 +9,10 @@ from dbt_semantic_interfaces.implementations.base import (
     PydanticCustomInputParser,
     PydanticParseableValueType,
 )
-from dbt_semantic_interfaces.protocols.semantic_version import SemanticVersion
 
 
 class PydanticSemanticVersion(PydanticCustomInputParser, HashableBaseModel):
     """Pydantic implementation of SemanticVersion."""
-
-    @override
-    def _implements_protocol(self) -> SemanticVersion:
-        return self
 
     major_version: str
     minor_version: str
