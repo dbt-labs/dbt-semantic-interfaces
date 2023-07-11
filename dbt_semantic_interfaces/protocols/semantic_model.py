@@ -11,6 +11,7 @@ from dbt_semantic_interfaces.references import (
     LinkableElementReference,
     MeasureReference,
     SemanticModelReference,
+    TimeDimensionReference,
 )
 
 
@@ -145,6 +146,14 @@ class SemanticModel(Protocol):
     @abstractmethod
     def metadata(self) -> Optional[Metadata]:  # noqa: D
         pass
+
+    @abstractmethod
+    def checked_agg_time_dimension_for_measure(self, measure: Measure) -> TimeDimensionReference:
+        """Returns the `TimeDimensionReference` what a measure should use for it's `agg_time_dimension`.
+
+        Should raise an exception if a TimeDimensionReference cannot be built
+        """
+        ...
 
 
 SemanticModelT = TypeVar("SemanticModelT", bound=SemanticModel)
