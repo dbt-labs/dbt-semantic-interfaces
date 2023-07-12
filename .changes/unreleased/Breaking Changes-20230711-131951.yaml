@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Add call_parameter_sets to the WhereFilter Protocol
+time: 2023-07-11T13:19:51.806399-07:00
+custom:
+  Author: plypaul
+  Issue: "109"

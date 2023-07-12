@@ -1,6 +1,6 @@
 import logging
 
-from dbt_semantic_interfaces.implementations.filters.call_parameter_sets import (
+from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     FilterCallParameterSets,
