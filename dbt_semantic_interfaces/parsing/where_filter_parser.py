@@ -4,7 +4,7 @@ from typing import List, Sequence
 
 import jinja2
 
-from dbt_semantic_interfaces.protocols.call_parameter_sets import (
+from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     FilterCallParameterSets,

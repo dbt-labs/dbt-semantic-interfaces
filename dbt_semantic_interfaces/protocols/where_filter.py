@@ -1,9 +1,7 @@
 from abc import abstractmethod
 from typing import Protocol
 
-from dbt_semantic_interfaces.protocols.call_parameter_sets import (
-    FilterCallParameterSets,
-)
+from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
 
 
 class WhereFilter(Protocol):

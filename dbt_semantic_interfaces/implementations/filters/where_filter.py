@@ -1,14 +1,12 @@
 from __future__ import annotations
 
+from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
 from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     PydanticCustomInputParser,
     PydanticParseableValueType,
 )
 from dbt_semantic_interfaces.parsing.where_filter_parser import WhereFilterParser
-from dbt_semantic_interfaces.protocols.call_parameter_sets import (
-    FilterCallParameterSets,
-)
 
 
 class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):

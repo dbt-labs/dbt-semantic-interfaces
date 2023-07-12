@@ -1,13 +1,13 @@
 import logging
 
-from dbt_semantic_interfaces.implementations.filters.where_filter import (
-    PydanticWhereFilter,
-)
-from dbt_semantic_interfaces.protocols.call_parameter_sets import (
+from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     FilterCallParameterSets,
     TimeDimensionCallParameterSet,
+)
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
+    PydanticWhereFilter,
 )
 from dbt_semantic_interfaces.references import (
     DimensionReference,
