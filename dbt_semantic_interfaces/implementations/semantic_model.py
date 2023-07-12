@@ -14,7 +14,6 @@ from dbt_semantic_interfaces.implementations.elements.entity import PydanticEnti
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.protocols import (
-    Measure,
     ProtocolHint,
     SemanticModel,
     SemanticModelDefaults,
@@ -170,7 +169,8 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
 
         raise ValueError(f"No entity with name ({entity_reference}) in semantic_model with name ({self.name})")
 
-    def checked_agg_time_dimension_for_measure(self, measure: Measure):  # noqa: D
+    def checked_agg_time_dimension_for_measure(self, measure_reference: MeasureReference):  # noqa: D
+        measure = self.get_measure(measure_reference=measure_reference)
         if self.defaults is not None:
             default_agg_time_dimesion = self.defaults.agg_time_dimension
 
