@@ -10,9 +10,6 @@ from dbt_semantic_interfaces.protocols import ProtocolHint
 from dbt_semantic_interfaces.transformations.add_input_metric_measures import (
     AddInputMetricMeasuresRule,
 )
-from dbt_semantic_interfaces.transformations.agg_time_dimension import (
-    SetMeasureAggregationTimeDimensionRule,
-)
 from dbt_semantic_interfaces.transformations.boolean_measure import (
     BooleanMeasureAggregationRule,
 )
@@ -43,10 +40,7 @@ class PydanticSemanticManifestTransformRuleSet(
 
     @property
     def primary_rules(self) -> Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]:  # noqa:
-        return (
-            LowerCaseNamesRule(),
-            SetMeasureAggregationTimeDimensionRule(),
-        )
+        return (LowerCaseNamesRule(),)
 
     @property
     def secondary_rules(self) -> Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]:  # noqa: D

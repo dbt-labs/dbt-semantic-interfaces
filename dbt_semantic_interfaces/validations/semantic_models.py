@@ -17,43 +17,6 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 logger = logging.getLogger(__name__)
 
 
-class SemanticModelTimeDimensionWarningsRule(
-    SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]
-):
-    """Checks time dimensions in semantic models."""
-
-    @staticmethod
-    @validate_safely(whats_being_done="running model validation ensuring time dimensions are defined properly")
-    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
-        issues: List[ValidationIssue] = []
-
-        for semantic_model in semantic_manifest.semantic_models:
-            issues.extend(
-                SemanticModelTimeDimensionWarningsRule._validate_semantic_model(semantic_model=semantic_model)
-            )
-        return issues
-
-    @staticmethod
-    @validate_safely(whats_being_done="checking validity of the semantic model's time dimensions")
-    def _validate_semantic_model(semantic_model: SemanticModel) -> List[ValidationIssue]:
-        issues: List[ValidationIssue] = []
-
-        for measure in semantic_model.measures:
-            if measure.agg_time_dimension is None:
-                issues.append(
-                    ValidationError(
-                        context=SemanticModelContext(
-                            file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                            semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
-                        ),
-                        message=f"Aggregation time dimension not specified for measure named '{measure.name}' in the "
-                        f"semantic model named '{semantic_model.name}'. Please add one",
-                    )
-                )
-
-        return issues
-
-
 class SemanticModelValidityWindowRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks validity windows in semantic models to ensure they comply with runtime requirements."""
 

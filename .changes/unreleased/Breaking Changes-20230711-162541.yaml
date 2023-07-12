@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Migrate from `checked_agg_time_dimension` to `checked_agg_time_dimension_for_measure`
+time: 2023-07-11T16:25:41.337984-07:00
+custom:
+  Author: QMalcolm
+  Issue: None

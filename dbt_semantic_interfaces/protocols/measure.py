@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
-from dbt_semantic_interfaces.references import MeasureReference, TimeDimensionReference
+from dbt_semantic_interfaces.references import MeasureReference
 from dbt_semantic_interfaces.type_enums import AggregationType
 
 
@@ -86,12 +86,6 @@ class Measure(Protocol):
     @abstractmethod
     def agg_time_dimension(self) -> Optional[str]:  # noqa: D
         pass
-
-    @property
-    @abstractmethod
-    def checked_agg_time_dimension(self) -> TimeDimensionReference:
-        """Returns the aggregation time dimension, throwing an exception if it's not set."""
-        ...
 
     @property
     @abstractmethod

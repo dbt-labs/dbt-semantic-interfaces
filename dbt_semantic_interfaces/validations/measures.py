@@ -232,12 +232,9 @@ class MeasuresNonAdditiveDimensionRule(SemanticManifestValidationRule[SemanticMa
                 non_additive_dimension = measure.non_additive_dimension
                 if non_additive_dimension is None:
                     continue
+                agg_time_dimension_reference = semantic_model.checked_agg_time_dimension_for_measure(measure.reference)
                 agg_time_dimension = next(
-                    (
-                        dim
-                        for dim in semantic_model.dimensions
-                        if measure.checked_agg_time_dimension.element_name == dim.name
-                    ),
+                    (dim for dim in semantic_model.dimensions if agg_time_dimension_reference.element_name == dim.name),
                     None,
                 )
                 if agg_time_dimension is None:
@@ -253,7 +250,7 @@ class MeasuresNonAdditiveDimensionRule(SemanticManifestValidationRule[SemanticMa
                             ),
                             message=(
                                 f"Measure '{measure.name}' has a agg_time_dimension of "
-                                f"{measure.checked_agg_time_dimension.element_name} "
+                                f"{agg_time_dimension_reference.element_name} "
                                 f"that is not defined as a dimension in semantic model '{semantic_model.name}'."
                             ),
                         )
