@@ -340,7 +340,7 @@ def generate_exception_issue(
     return ValidationError(
         context=context,
         message=f"An error occurred while {what_was_being_done} - "
-        f"{''.join(traceback.format_exception_only(etype=type(e), value=e))}",
+        f"{''.join(traceback.format_exception_only(type(e), value=e))}",
         extra_detail="\n".join([f"{key}: {value}" for key, value in extras.items()]),
     )
 
