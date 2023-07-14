@@ -20,6 +20,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     ValidationIssue,
     ValidationIssueLevel,
     ValidationWarning,
+    validate_safely,
 )
 
 
@@ -136,3 +137,14 @@ def test_merge_two_model_validation_results(list_of_issues: List[ValidationIssue
     assert merged.warnings == validation_results.warnings + validation_results_dup.warnings
     assert merged.future_errors == validation_results.future_errors + validation_results_dup.future_errors
     assert merged.errors == validation_results.errors + validation_results_dup.errors
+
+
+def test_validate_safely_handles_exceptions():  # noqa: D
+    @validate_safely("testing validate safely handles exceptions gracefully")
+    def checking_validate_safely() -> List[ValidationIssue]:
+        raise (Exception("Oh no an exception!"))
+        return []
+
+    # We shouldn't get an unhandled exception from this
+    validation_issues = checking_validate_safely()
+    assert len(validation_issues) == 1
