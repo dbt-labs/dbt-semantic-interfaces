@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from typing import List, Sequence
 
-import jinja2
+from jinja2 import StrictUndefined
+from jinja2.exceptions import SecurityError, TemplateSyntaxError, UndefinedError
+from jinja2.sandbox import SandboxedEnvironment
 
 from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
@@ -68,12 +70,12 @@ class WhereFilterParser:
             return _DUMMY_PLACEHOLDER
 
         try:
-            jinja2.Template(where_sql_template, undefined=jinja2.StrictUndefined).render(
+            SandboxedEnvironment(undefined=StrictUndefined).from_string(where_sql_template).render(
                 dimension=_dimension_call,
                 time_dimension=_time_dimension_call,
                 entity=_entity_call,
             )
-        except (jinja2.exceptions.UndefinedError, jinja2.exceptions.TemplateSyntaxError) as e:
+        except (UndefinedError, TemplateSyntaxError, SecurityError) as e:
             raise ParseWhereFilterException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
 
         return FilterCallParameterSets(
