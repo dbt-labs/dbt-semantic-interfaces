@@ -53,6 +53,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                     name="sum_measure",
                     measures=[],
                     dimensions=[PydanticDimension(name=dim_name, type=DimensionType.CATEGORICAL)],
+                    entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
                 ),
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure2",
@@ -73,6 +74,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                             ),
                         ),
                     ],
+                    entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
                 ),
             ],
             metrics=[

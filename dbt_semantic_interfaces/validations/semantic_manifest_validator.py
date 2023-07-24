@@ -9,10 +9,7 @@ from dbt_semantic_interfaces.validations.agg_time_dimension import (
 )
 from dbt_semantic_interfaces.validations.dimension_const import DimensionConsistencyRule
 from dbt_semantic_interfaces.validations.element_const import ElementConsistencyRule
-from dbt_semantic_interfaces.validations.entities import (
-    NaturalEntityConfigurationRule,
-    OnePrimaryEntityPerSemanticModelRule,
-)
+from dbt_semantic_interfaces.validations.entities import NaturalEntityConfigurationRule
 from dbt_semantic_interfaces.validations.measures import (
     CountAggregationExprRule,
     MeasureConstraintAliasesRule,
@@ -26,6 +23,7 @@ from dbt_semantic_interfaces.validations.metrics import (
     DerivedMetricRule,
 )
 from dbt_semantic_interfaces.validations.non_empty import NonEmptyRule
+from dbt_semantic_interfaces.validations.primary_entity import PrimaryEntityRule
 from dbt_semantic_interfaces.validations.reserved_keywords import ReservedKeywordsRule
 from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelDefaultsRule,
@@ -65,7 +63,6 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         DimensionConsistencyRule[SemanticManifestT](),
         ElementConsistencyRule[SemanticManifestT](),
         NaturalEntityConfigurationRule[SemanticManifestT](),
-        OnePrimaryEntityPerSemanticModelRule[SemanticManifestT](),
         MeasureConstraintAliasesRule[SemanticManifestT](),
         MetricMeasuresRule[SemanticManifestT](),
         CumulativeMetricRule[SemanticManifestT](),
@@ -75,6 +72,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         ReservedKeywordsRule[SemanticManifestT](),
         MeasuresNonAdditiveDimensionRule[SemanticManifestT](),
         SemanticModelDefaultsRule[SemanticManifestT](),
+        PrimaryEntityRule[SemanticManifestT](),
     )
 
     def __init__(

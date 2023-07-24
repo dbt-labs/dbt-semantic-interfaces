@@ -44,7 +44,7 @@ class Entity(Protocol):
     @property
     @abstractmethod
     def is_linkable_entity_type(self) -> bool:
-        """Indicates whether or not this entity can be used as a linkable entity type for joins.
+        """Indicates whether this entity can be used as a linkable entity type for joins.
 
         That is, can you use the entity as a linkable element in multi-hop dundered syntax. For example,
         the country dimension in the listings data source can be linked via listing__country, because listing

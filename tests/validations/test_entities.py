@@ -17,10 +17,8 @@ from dbt_semantic_interfaces.test_utils import (
     find_semantic_model_with,
 )
 from dbt_semantic_interfaces.type_enums import EntityType
-from dbt_semantic_interfaces.validations.entities import (
-    NaturalEntityConfigurationRule,
-    OnePrimaryEntityPerSemanticModelRule,
-)
+from dbt_semantic_interfaces.validations.entities import NaturalEntityConfigurationRule
+from dbt_semantic_interfaces.validations.primary_entity import PrimaryEntityRule
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
     SemanticManifestValidator,
 )
@@ -49,22 +47,19 @@ def test_semantic_model_cant_have_more_than_one_primary_entity(
         entity_references.add(entity.reference)
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
-        [OnePrimaryEntityPerSemanticModelRule()]
+        [PrimaryEntityRule()]
     ).validate_semantic_manifest(model)
 
-    future_issue = (
+    expected_issue_message = (
         f"Semantic models can have only one primary entity. The semantic model"
         f" `{multiple_entity_semantic_model.name}` has {len(entity_references)}"
     )
 
-    found_future_issue = False
-
-    if model_issues is not None:
-        for issue in model_issues.all_issues:
-            if re.search(future_issue, issue.message):
-                found_future_issue = True
-
-    assert found_future_issue
+    assert len(
+        tuple(
+            issue for issue in model_issues.all_issues if re.search(expected_issue_message, issue.message) is not None
+        )
+    )
 
 
 def test_multiple_natural_entities() -> None:
