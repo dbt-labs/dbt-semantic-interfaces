@@ -279,6 +279,9 @@ semantic_model_schema = {
         },
         "node_relation": {"$ref": "node_relation_schema"},
         "defaults": {"$ref": "semantic_model_defaults_schema"},
+        "primary_entity": {
+            "type": "string",
+        },
         "entities": {"type": "array", "items": {"$ref": "entity_schema"}},
         "measures": {"type": "array", "items": {"$ref": "measure_schema"}},
         "dimensions": {"type": "array", "items": {"$ref": "dimension_schema"}},

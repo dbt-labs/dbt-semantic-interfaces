@@ -19,6 +19,7 @@ from dbt_semantic_interfaces.protocols import (
     SemanticModelDefaults,
 )
 from dbt_semantic_interfaces.references import (
+    EntityReference,
     LinkableElementReference,
     MeasureReference,
     SemanticModelReference,
@@ -87,6 +88,7 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
     description: Optional[str]
     node_relation: NodeRelation
 
+    primary_entity: Optional[str]
     entities: Sequence[PydanticEntity] = []
     measures: Sequence[PydanticMeasure] = []
     dimensions: Sequence[PydanticDimension] = []
@@ -181,3 +183,7 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
             f"source containing the measure."
         )
         return TimeDimensionReference(element_name=agg_time_dimension_name)
+
+    @property
+    def primary_entity_reference(self) -> Optional[EntityReference]:  # noqa: D
+        return EntityReference(element_name=self.primary_entity) if self.primary_entity is not None else None
