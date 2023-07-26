@@ -95,8 +95,27 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         self._rules = rules
         self._executor = ProcessPoolExecutor(max_workers=max_workers)
 
-    def validate_semantic_manifest(self, semantic_manifest: SemanticManifestT) -> SemanticManifestValidationResults:
+    def validate_semantic_manifest(
+        self, semantic_manifest: SemanticManifestT, multi_process: bool = False
+    ) -> SemanticManifestValidationResults:
         """Validate a manifest according to configured rules."""
+        if multi_process:
+            return self._validate_multi_process(semantic_manifest=semantic_manifest)
+        else:
+            return self._validate_sync(semantic_manifest=semantic_manifest)
+
+    def _validate_sync(self, semantic_manifest: SemanticManifestT) -> SemanticManifestValidationResults:  # noqa: D
+        results: List[SemanticManifestValidationResults] = []
+
+        for rule in self._rules:
+            issues = rule.validate_manifest(semantic_manifest=semantic_manifest)
+            results.append(SemanticManifestValidationResults.from_issues_sequence(issues))
+
+        return SemanticManifestValidationResults.merge(results)
+
+    def _validate_multi_process(  # noqa: D
+        self, semantic_manifest: SemanticManifestT
+    ) -> SemanticManifestValidationResults:
         results: List[SemanticManifestValidationResults] = []
 
         futures = [
