@@ -12,6 +12,7 @@ from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
 )
 from dbt_semantic_interfaces.validations.unique_valid_name import (
     MetricFlowReservedKeywords,
+    PrimaryEntityDimensionPairs,
     UniqueAndValidNameRule,
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
@@ -151,6 +152,35 @@ def test_duplicate_entity_name(  # noqa:D
         "for a entity",
     ):
         SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(model)
+
+
+"""
+    Test PrimaryEntityDimensionPairs rule
+"""
+
+
+def test_primary_entity_dimension_pairs_without_issues(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([PrimaryEntityDimensionPairs()])
+    results = validator.validate_semantic_manifest(simple_semantic_manifest__with_primary_transforms)
+    assert not results.has_blocking_issues
+
+
+def test_primary_entity_dimension_pairs_with_issues(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    semantic_model_with_dimensions, _ = find_semantic_model_with(
+        manifest, lambda semantic_model: len(semantic_model.dimensions) > 0
+    )
+    duplicate_semantic_model = deepcopy(semantic_model_with_dimensions)
+    duplicate_semantic_model.name = "semantic_model_causes_duplicate_dimension_primary_entity_pairs"
+    manifest.semantic_models.append(duplicate_semantic_model)
+
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([PrimaryEntityDimensionPairs()])
+    results = validator.validate_semantic_manifest(manifest)
+    assert results.has_blocking_issues
 
 
 """
