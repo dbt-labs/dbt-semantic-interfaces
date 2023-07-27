@@ -1,0 +1,54 @@
+from copy import deepcopy
+
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
+from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
+    SemanticManifestValidator,
+)
+
+
+def test_semantic_manifest_validator_default_success(  # noqa:D
+    simple_semantic_manifest: PydanticSemanticManifest,
+) -> None:
+    semantic_manifest = deepcopy(simple_semantic_manifest)
+    validator = SemanticManifestValidator[PydanticSemanticManifest]()
+    results = validator.validate_semantic_manifest(semantic_manifest)
+    assert not results.has_blocking_issues
+
+
+def test_semantic_manifest_validator_default_failure(  # noqa:D
+    simple_semantic_manifest: PydanticSemanticManifest,
+) -> None:
+    semantic_manifest = deepcopy(simple_semantic_manifest)
+    semantic_manifest.metrics = []
+    semantic_manifest.semantic_models = []
+
+    validator = SemanticManifestValidator[PydanticSemanticManifest]()
+    results = validator.validate_semantic_manifest(semantic_manifest)
+    assert results.has_blocking_issues
+
+
+def test_multi_process_validator_results_same_as_sync(  # noqa:D
+    simple_semantic_manifest: PydanticSemanticManifest,
+) -> None:
+    semantic_manifest = deepcopy(simple_semantic_manifest)
+
+    validator = SemanticManifestValidator[PydanticSemanticManifest]()
+    default_results = validator.validate_semantic_manifest(semantic_manifest)
+    multi_process_results = validator.validate_semantic_manifest(
+        semantic_manifest=semantic_manifest, multi_process=True
+    )
+    assert not default_results.has_blocking_issues
+    assert not multi_process_results.has_blocking_issues
+    assert default_results.all_issues == multi_process_results.all_issues
+
+    semantic_manifest.metrics = []
+    semantic_manifest.semantic_models = []
+    default_results = validator.validate_semantic_manifest(semantic_manifest)
+    multi_process_results = validator.validate_semantic_manifest(
+        semantic_manifest=semantic_manifest, multi_process=True
+    )
+    assert default_results.has_blocking_issues
+    assert multi_process_results.has_blocking_issues
+    assert default_results.all_issues == multi_process_results.all_issues
