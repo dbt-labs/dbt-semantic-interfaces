@@ -1,0 +1,6 @@
+kind: Features
+body: Add new `PrimaryEntityDimensionPairs` validation rule
+time: 2023-07-27T16:11:28.794732-07:00
+custom:
+  Author: QMalcolm
+  Issue: "103"
