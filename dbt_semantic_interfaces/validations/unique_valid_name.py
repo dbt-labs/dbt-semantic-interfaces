@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.references import (
     SemanticModelElementReference,
     SemanticModelReference,
 )
-from dbt_semantic_interfaces.type_enums import TimeGranularity
+from dbt_semantic_interfaces.type_enums import EntityType, TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     MetricContext,
@@ -226,5 +226,70 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
 
         for semantic_model in semantic_manifest.semantic_models:
             issues += UniqueAndValidNameRule._validate_semantic_model_elements(semantic_model=semantic_model)
+
+        return issues
+
+
+class PrimaryEntityDimensionPairs(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """All dimension + primary entity pairs across the semantic manifest are unique."""
+
+    @staticmethod
+    @validate_safely(
+        whats_being_done="validating the semantic model doesn't have dimension + primary entity pair conflicts"
+    )
+    def _check_semantic_model(  # noqa: D
+        semantic_model: SemanticModel, known_pairings: Dict[str, Dict[str, str]]
+    ) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        primary_entity = semantic_model.primary_entity
+        if primary_entity is None:
+            for entity in semantic_model.entities:
+                if entity.type is EntityType.PRIMARY:
+                    primary_entity = entity.name
+                    break
+
+        # If primary entity is still none, return early. It's an issue,
+        # but not the subject of this validation. This is handled by
+        # PrimaryEntityRule
+        if primary_entity is None:
+            return issues
+
+        safe = False
+        if known_pairings.get(primary_entity) is None:
+            known_pairings[primary_entity] = {}
+            safe = True
+
+        for dimension in semantic_model.dimensions:
+            if safe or known_pairings[primary_entity].get(dimension.name) is None:
+                known_pairings[primary_entity][dimension.name] = semantic_model.name
+            else:
+                issues.append(
+                    ValidationError(
+                        context=SemanticModelElementContext(
+                            file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                            semantic_model_element=SemanticModelElementReference(
+                                semantic_model_name=semantic_model.name, element_name=dimension.name
+                            ),
+                            element_type=SemanticModelElementType.DIMENSION,
+                        ),
+                        message="Duplicate dimension + primary entity pairing detected, dimension + primary entity "
+                        f"pairings must be unique. Semantic model `{semantic_model.name}` has a primary entity of "
+                        f"`{primary_entity}` and dimension `{dimension.name}`, but this pairing is already in use on "
+                        f"semantic model `{known_pairings[primary_entity][dimension.name]}`.",
+                    )
+                )
+
+        return issues
+
+    @staticmethod
+    @validate_safely(whats_being_done="validating there are no duplicate dimension primary entity pairs")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues = []
+        known_pairings: Dict[str, Dict[str, str]] = {}
+        for semantic_model in semantic_manifest.semantic_models:
+            issues += PrimaryEntityDimensionPairs._check_semantic_model(
+                semantic_model=semantic_model, known_pairings=known_pairings
+            )
 
         return issues
