@@ -8,10 +8,10 @@ semantic_model:
     alias: dim_users
 
   defaults:
-    agg_time_dimension: ds
+    agg_time_dimension: ds_source_date
 
   dimensions:
-    - name: ds
+    - name: ds_source_date
       type: time
       type_params:
         time_granularity: day

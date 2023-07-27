@@ -65,7 +65,7 @@ def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
                         )
                     ],
                     dimensions=[
-                        PydanticDimension(name=dim_name, type=DimensionType.CATEGORICAL),
+                        PydanticDimension(name=f"{dim_name}_dup", type=DimensionType.CATEGORICAL),
                         PydanticDimension(
                             name=dim2_name,
                             type=DimensionType.TIME,
