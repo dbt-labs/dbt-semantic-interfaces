@@ -29,7 +29,10 @@ from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelDefaultsRule,
     SemanticModelValidityWindowRule,
 )
-from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
+from dbt_semantic_interfaces.validations.unique_valid_name import (
+    PrimaryEntityDimensionPairs,
+    UniqueAndValidNameRule,
+)
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
     SemanticManifestValidationResults,
@@ -73,6 +76,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         MeasuresNonAdditiveDimensionRule[SemanticManifestT](),
         SemanticModelDefaultsRule[SemanticManifestT](),
         PrimaryEntityRule[SemanticManifestT](),
+        PrimaryEntityDimensionPairs[SemanticManifestT](),
     )
 
     def __init__(
