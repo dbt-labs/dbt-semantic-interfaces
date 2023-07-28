@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from dbt_semantic_interfaces.dataclass_serialization import SerializableDataclass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class ElementReference(SerializableDataclass):
     """Used when we need to refer to a dimension, measure, entity, but other attributes are unknown."""
 
