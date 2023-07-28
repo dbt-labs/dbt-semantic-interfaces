@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
@@ -11,6 +13,7 @@ from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetricInputMeasure,
     PydanticMetricTimeWindow,
     PydanticMetricTypeParams,
+    PydanticWhereFilter,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
@@ -21,6 +24,7 @@ from dbt_semantic_interfaces.references import (
     TimeDimensionReference,
 )
 from dbt_semantic_interfaces.test_utils import (
+    find_metric_with,
     metric_with_guaranteed_meta,
     semantic_model_with_guaranteed_meta,
 )
@@ -31,7 +35,10 @@ from dbt_semantic_interfaces.type_enums import (
     MetricType,
     TimeGranularity,
 )
-from dbt_semantic_interfaces.validations.metrics import DerivedMetricRule
+from dbt_semantic_interfaces.validations.metrics import (
+    DerivedMetricRule,
+    WhereFiltersAreParseable,
+)
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
     SemanticManifestValidator,
 )
@@ -299,3 +306,106 @@ def test_derived_metric() -> None:  # noqa: D
         f"Failed to match one or more expected errors: {missing_error_strings} in "
         f"{set([x.as_readable_str() for x in build_issues])}"
     )
+
+
+def test_where_filter_validations_happy(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
+    results = validator.validate_semantic_manifest(simple_semantic_manifest__with_primary_transforms)
+    assert not results.has_blocking_issues
+
+
+def test_where_filter_validations_bad_base_filter(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+
+    metric, _ = find_metric_with(manifest, lambda metric: metric.filter is not None)
+    assert metric.filter is not None
+    metric.filter.where_sql_template = "{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
+    with pytest.raises(SemanticManifestValidationException, match=f"trying to parse filter of metric `{metric.name}`"):
+        validator.checked_validations(manifest)
+
+
+def test_where_filter_validations_bad_measure_filter(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+
+    metric, _ = find_metric_with(
+        manifest, lambda metric: metric.type_params is not None and metric.type_params.measure is not None
+    )
+    assert metric.type_params.measure is not None
+    metric.type_params.measure.filter = PydanticWhereFilter(
+        where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    )
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=f"trying to parse filter of measure input `{metric.type_params.measure.name}` on metric `{metric.name}`",
+    ):
+        validator.checked_validations(manifest)
+
+
+def test_where_filter_validations_bad_numerator_filter(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+
+    metric, _ = find_metric_with(
+        manifest, lambda metric: metric.type_params is not None and metric.type_params.numerator is not None
+    )
+    assert metric.type_params.numerator is not None
+    metric.type_params.numerator.filter = PydanticWhereFilter(
+        where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    )
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
+    with pytest.raises(
+        SemanticManifestValidationException, match=f"trying to parse the numerator filter on metric `{metric.name}`"
+    ):
+        validator.checked_validations(manifest)
+
+
+def test_where_filter_validations_bad_denominator_filter(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+
+    metric, _ = find_metric_with(
+        manifest, lambda metric: metric.type_params is not None and metric.type_params.denominator is not None
+    )
+    assert metric.type_params.denominator is not None
+    metric.type_params.denominator.filter = PydanticWhereFilter(
+        where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    )
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
+    with pytest.raises(
+        SemanticManifestValidationException, match=f"trying to parse the denominator filter on metric `{metric.name}`"
+    ):
+        validator.checked_validations(manifest)
+
+
+def test_where_filter_validations_bad_input_metric_filter(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+
+    metric, _ = find_metric_with(
+        manifest,
+        lambda metric: metric.type_params is not None
+        and metric.type_params.metrics is not None
+        and len(metric.type_params.metrics) > 0,
+    )
+    assert metric.type_params.metrics is not None
+    input_metric = metric.type_params.metrics[0]
+    input_metric.filter = PydanticWhereFilter(
+        where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    )
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=f"trying to parse filter for input metric `{input_metric.name}` on metric `{metric.name}`",
+    ):
+        validator.checked_validations(manifest)

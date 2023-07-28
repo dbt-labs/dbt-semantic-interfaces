@@ -1,0 +1,6 @@
+kind: Features
+body: Add `WhereFiltersAreParseable` validation rule
+time: 2023-07-28T09:08:57.463411-07:00
+custom:
+  Author: QMalcolm
+  Issue: "120"

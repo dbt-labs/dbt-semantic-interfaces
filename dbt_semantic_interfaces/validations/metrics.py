@@ -17,6 +17,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationRule,
     ValidationError,
     ValidationIssue,
+    generate_exception_issue,
     validate_safely,
 )
 
@@ -152,4 +153,116 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
         for metric in semantic_manifest.metrics or []:
             issues += DerivedMetricRule._validate_alias_collision(metric=metric)
             issues += DerivedMetricRule._validate_time_offset_params(metric=metric)
+        return issues
+
+
+class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """Validates that all Metric WhereFilters are parseable."""
+
+    @staticmethod
+    @validate_safely(
+        whats_being_done="running model validation ensuring a metric's filter properties are configured properly"
+    )
+    def _validate_metric(metric: Metric) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+        context = MetricContext(
+            file_context=FileContext.from_metadata(metadata=metric.metadata),
+            metric=MetricModelReference(metric_name=metric.name),
+        )
+
+        if metric.filter is not None:
+            try:
+                metric.filter.call_parameter_sets
+            except Exception as e:
+                issues.append(
+                    generate_exception_issue(
+                        what_was_being_done=f"trying to parse filter of metric `{metric.name}`",
+                        e=e,
+                        context=context,
+                        extras={
+                            "traceback": "".join(traceback.format_tb(e.__traceback__)),
+                            "filter": metric.filter.where_sql_template,
+                        },
+                    )
+                )
+
+        if metric.type_params:
+            measure = metric.type_params.measure
+            if measure is not None and measure.filter is not None:
+                try:
+                    measure.filter.call_parameter_sets
+                except Exception as e:
+                    issues.append(
+                        generate_exception_issue(
+                            what_was_being_done=f"trying to parse filter of measure input `{measure.name}` "
+                            f"on metric `{metric.name}`",
+                            e=e,
+                            context=context,
+                            extras={
+                                "traceback": "".join(traceback.format_tb(e.__traceback__)),
+                                "filter": measure.filter.where_sql_template,
+                            },
+                        )
+                    )
+
+            numerator = metric.type_params.numerator
+            if numerator is not None and numerator.filter is not None:
+                try:
+                    numerator.filter.call_parameter_sets
+                except Exception as e:
+                    issues.append(
+                        generate_exception_issue(
+                            what_was_being_done=f"trying to parse the numerator filter on metric `{metric.name}`",
+                            e=e,
+                            context=context,
+                            extras={
+                                "traceback": "".join(traceback.format_tb(e.__traceback__)),
+                                "filter": numerator.filter.where_sql_template,
+                            },
+                        )
+                    )
+
+            denominator = metric.type_params.denominator
+            if denominator is not None and denominator.filter is not None:
+                try:
+                    denominator.filter.call_parameter_sets
+                except Exception as e:
+                    issues.append(
+                        generate_exception_issue(
+                            what_was_being_done=f"trying to parse the denominator filter on metric `{metric.name}`",
+                            e=e,
+                            context=context,
+                            extras={
+                                "traceback": "".join(traceback.format_tb(e.__traceback__)),
+                                "filter": denominator.filter.where_sql_template,
+                            },
+                        )
+                    )
+
+            for input_metric in metric.type_params.metrics or []:
+                if input_metric.filter is not None:
+                    try:
+                        input_metric.filter.call_parameter_sets
+                    except Exception as e:
+                        issues.append(
+                            generate_exception_issue(
+                                what_was_being_done=f"trying to parse filter for input metric `{input_metric.name}` "
+                                f"on metric `{metric.name}`",
+                                e=e,
+                                context=context,
+                                extras={
+                                    "traceback": "".join(traceback.format_tb(e.__traceback__)),
+                                    "filter": input_metric.filter.where_sql_template,
+                                },
+                            )
+                        )
+        return issues
+
+    @staticmethod
+    @validate_safely(whats_being_done="running manifest validation ensuring all metric where filters are parseable")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+
+        for metric in semantic_manifest.metrics or []:
+            issues += WhereFiltersAreParseable._validate_metric(metric)
         return issues
