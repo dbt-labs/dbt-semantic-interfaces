@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Require primary entities when specifying dimensions in the WhereFilter.
+time: 2023-07-27T16:50:05.653782-07:00
+custom:
+  Author: plypaul
+  Issue: "123"
