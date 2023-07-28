@@ -23,8 +23,8 @@ def test_extract_dimension_call_parameter_sets() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
         where_sql_template=(
             """\
-                {{ dimension('booking__is_instant') }} \
-                AND {{ dimension('user__country', entity_path=['listing']) }} == 'US'\
+                {{ Dimension('booking__is_instant') }} \
+                AND {{ Dimension('user__country', entity_path=['listing']) }} == 'US'\
                 """
         )
     ).call_parameter_sets
@@ -50,7 +50,7 @@ def test_extract_dimension_call_parameter_sets() -> None:  # noqa: D
 def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
         where_sql_template=(
-            """{{ time_dimension('user__created_at', 'month', entity_path=['listing']) }} = '2020-01-01'"""
+            """{{ TimeDimension('user__created_at', 'month', entity_path=['listing']) }} = '2020-01-01'"""
         )
     ).call_parameter_sets
 
@@ -70,7 +70,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
 
 def test_extract_metric_time_dimension_call_parameter_sets() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
-        where_sql_template=("""{{ time_dimension('metric_time', 'month') }} = '2020-01-01'""")
+        where_sql_template=("""{{ TimeDimension('metric_time', 'month') }} = '2020-01-01'""")
     ).call_parameter_sets
 
     assert parse_result == FilterCallParameterSets(
@@ -87,7 +87,7 @@ def test_extract_metric_time_dimension_call_parameter_sets() -> None:  # noqa: D
 def test_extract_entity_call_parameter_sets() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
         where_sql_template=(
-            """{{ entity('listing') }} AND {{ entity('user', entity_path=['listing']) }} == 'TEST_USER_ID'"""
+            """{{ Entity('listing') }} AND {{ Entity('user', entity_path=['listing']) }} == 'TEST_USER_ID'"""
         )
     ).call_parameter_sets
 

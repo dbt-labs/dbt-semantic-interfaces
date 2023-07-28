@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Use CamelCase in the `WhereFilter` Template Calls
+time: 2023-07-27T17:05:35.447535-07:00
+custom:
+  Author: plypaul
+  Issue: "129"
