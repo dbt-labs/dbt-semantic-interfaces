@@ -1,6 +1,0 @@
-kind: Fixes
-body: Ensuring calls to `format_exception_only` aren't breaking in python 3.10+
-time: 2023-07-14T13:03:38.117362-07:00
-custom:
-  Author: QMalcolm
-  Issue: "117"

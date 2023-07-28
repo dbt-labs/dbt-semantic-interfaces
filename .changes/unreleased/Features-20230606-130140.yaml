@@ -1,6 +1,0 @@
-kind: Features
-body: Added new validation rule for validating SemanticModel.defaults
-time: 2023-06-06T13:01:40.461195-04:00
-custom:
-  Author: WilliamDee
-  Issue: metricflow#565

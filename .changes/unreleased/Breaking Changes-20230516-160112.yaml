@@ -1,6 +1,0 @@
-kind: Breaking Changes
-body: The `objects` lib is now `implementations`
-time: 2023-05-16T16:01:12.470866-07:00
-custom:
-  Author: QMalcolm
-  Issue: None
