@@ -72,9 +72,6 @@ class SemanticModelReference(ModelReference):
 
     semantic_model_name: str
 
-    def __hash__(self) -> int:  # noqa: D
-        return hash(self.semantic_model_name)
-
 
 @dataclass(frozen=True)
 class SemanticModelElementReference(ModelReference):
