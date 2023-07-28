@@ -53,9 +53,8 @@ class PydanticDimension(HashableBaseModel, ModelWithMetadataParsing):
         return DimensionReference(element_name=self.name)
 
     @property
-    def time_dimension_reference(self) -> TimeDimensionReference:  # noqa: D
-        assert self.type == DimensionType.TIME, f"Got type as {self.type} instead of {DimensionType.TIME}"
-        return TimeDimensionReference(element_name=self.name)
+    def time_dimension_reference(self) -> Optional[TimeDimensionReference]:  # noqa: D
+        return TimeDimensionReference(element_name=self.name) if self.type is DimensionType.TIME else None
 
     @property
     def validity_params(self) -> Optional[PydanticDimensionValidityParams]:
