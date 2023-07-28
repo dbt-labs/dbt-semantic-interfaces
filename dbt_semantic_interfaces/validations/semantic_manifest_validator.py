@@ -21,6 +21,7 @@ from dbt_semantic_interfaces.validations.measures import (
 from dbt_semantic_interfaces.validations.metrics import (
     CumulativeMetricRule,
     DerivedMetricRule,
+    WhereFiltersAreParseable,
 )
 from dbt_semantic_interfaces.validations.non_empty import NonEmptyRule
 from dbt_semantic_interfaces.validations.primary_entity import PrimaryEntityRule
@@ -77,6 +78,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         SemanticModelDefaultsRule[SemanticManifestT](),
         PrimaryEntityRule[SemanticManifestT](),
         PrimaryEntityDimensionPairs[SemanticManifestT](),
+        WhereFiltersAreParseable[SemanticManifestT](),
     )
 
     def __init__(
