@@ -33,6 +33,7 @@ def test_validity_window_configuration() -> None:
           node_relation:
             schema_name: some_schema
             alias: scd_table
+          primary_entity: some_primary_entity
           entities:
             - name: scd_key
               type: natural

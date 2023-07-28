@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Add Primary Entity Field For Local Dimensions
+time: 2023-07-24T13:56:14.924647-07:00
+custom:
+  Author: plypaul
+  Issue: "123"

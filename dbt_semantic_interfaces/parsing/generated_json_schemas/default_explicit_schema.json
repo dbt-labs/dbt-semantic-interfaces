@@ -436,6 +436,9 @@
                 },
                 "node_relation": {
                     "$ref": "#/definitions/node_relation_schema"
+                },
+                "primary_entity": {
+                    "type": "string"
                 }
             },
             "required": [

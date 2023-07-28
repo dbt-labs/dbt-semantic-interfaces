@@ -19,6 +19,7 @@ from dbt_semantic_interfaces.protocols import (
     SemanticModelDefaults,
 )
 from dbt_semantic_interfaces.references import (
+    EntityReference,
     LinkableElementReference,
     MeasureReference,
     SemanticModelReference,
@@ -87,6 +88,7 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
     description: Optional[str]
     node_relation: NodeRelation
 
+    primary_entity: Optional[str]
     entities: Sequence[PydanticEntity] = []
     measures: Sequence[PydanticMeasure] = []
     dimensions: Sequence[PydanticDimension] = []
@@ -169,15 +171,20 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
 
         raise ValueError(f"No entity with name ({entity_reference}) in semantic_model with name ({self.name})")
 
-    def checked_agg_time_dimension_for_measure(self, measure_reference: MeasureReference):  # noqa: D
+    def checked_agg_time_dimension_for_measure(  # noqa: D
+        self, measure_reference: MeasureReference
+    ) -> TimeDimensionReference:
         measure = self.get_measure(measure_reference=measure_reference)
-        if self.defaults is not None:
-            default_agg_time_dimesion = self.defaults.agg_time_dimension
+        default_agg_time_dimension = self.defaults.agg_time_dimension if self.defaults is not None else None
 
-        agg_time_dimension_name = measure.agg_time_dimension or default_agg_time_dimesion
+        agg_time_dimension_name = measure.agg_time_dimension or default_agg_time_dimension
         assert agg_time_dimension_name is not None, (
             f"Aggregation time dimension for measure {measure.name} is not set! This should either be set directly on "
             f"the measure specification in the model, or else defaulted to the primary time dimension in the data "
             f"source containing the measure."
         )
         return TimeDimensionReference(element_name=agg_time_dimension_name)
+
+    @property
+    def primary_entity_reference(self) -> Optional[EntityReference]:  # noqa: D
+        return EntityReference(element_name=self.primary_entity) if self.primary_entity is not None else None

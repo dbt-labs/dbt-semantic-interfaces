@@ -8,6 +8,7 @@ from dbt_semantic_interfaces.protocols.entity import Entity
 from dbt_semantic_interfaces.protocols.measure import Measure
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.references import (
+    EntityReference,
     LinkableElementReference,
     MeasureReference,
     SemanticModelReference,
@@ -71,6 +72,17 @@ class SemanticModel(Protocol):
     @property
     @abstractmethod
     def node_relation(self) -> NodeRelation:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def primary_entity(self) -> Optional[str]:
+        """The primary entity for dimensions listed in this model.
+
+        This is for cases where there are dimensions in the model, but no entity with primary type. This allows those
+        dimensions to be accessed as dimensions need to be qualified by an entity for access. This may be None if there
+        are no dimensions in this model.
+        """
         pass
 
     @property
@@ -154,6 +166,12 @@ class SemanticModel(Protocol):
         Should raise an exception if a TimeDimensionReference cannot be built
         """
         ...
+
+    @property
+    @abstractmethod
+    def primary_entity_reference(self) -> Optional[EntityReference]:
+        """Reference object form of primary_entity."""
+        pass
 
 
 SemanticModelT = TypeVar("SemanticModelT", bound=SemanticModel)

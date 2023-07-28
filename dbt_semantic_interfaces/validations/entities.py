@@ -1,6 +1,5 @@
 import logging
-from datetime import date
-from typing import Generic, List, MutableSet, Sequence
+from typing import Generic, List, Sequence
 
 from dbt_semantic_interfaces.protocols import SemanticManifestT, SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelReference
@@ -10,7 +9,6 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationRule,
     SemanticModelContext,
     ValidationError,
-    ValidationFutureError,
     ValidationIssue,
     validate_safely,
 )
@@ -67,45 +65,5 @@ class NaturalEntityConfigurationRule(SemanticManifestValidationRule[SemanticMani
             issues += NaturalEntityConfigurationRule._validate_semantic_model_natural_entities(
                 semantic_model=semantic_model
             )
-
-        return issues
-
-
-class OnePrimaryEntityPerSemanticModelRule(
-    SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]
-):
-    """Ensures that each semantic model has only one primary entity."""
-
-    @staticmethod
-    @validate_safely(whats_being_done="checking semantic model has only one primary entity")
-    def _only_one_primary_entity(semantic_model: SemanticModel) -> List[ValidationIssue]:
-        primary_entity_names: MutableSet[str] = set()
-        for entity in semantic_model.entities or []:
-            if entity.type == EntityType.PRIMARY:
-                primary_entity_names.add(entity.reference.element_name)
-
-        if len(primary_entity_names) > 1:
-            return [
-                ValidationFutureError(
-                    context=SemanticModelContext(
-                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                        semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
-                    ),
-                    message=f"Semantic models can have only one primary entity. The semantic model"
-                    f" `{semantic_model.name}` has {len(primary_entity_names)}: {', '.join(primary_entity_names)}",
-                    error_date=date(2022, 1, 12),  # Wed January 12th 2022
-                )
-            ]
-        return []
-
-    @staticmethod
-    @validate_safely(
-        whats_being_done="running model validation ensuring each semantic model has only one primary entity"
-    )
-    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
-        issues = []
-
-        for semantic_model in semantic_manifest.semantic_models:
-            issues += OnePrimaryEntityPerSemanticModelRule._only_one_primary_entity(semantic_model=semantic_model)
 
         return issues
