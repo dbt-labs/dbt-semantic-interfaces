@@ -121,9 +121,9 @@ class WhereFilterParser:
 
         try:
             SandboxedEnvironment(undefined=StrictUndefined).from_string(where_sql_template).render(
-                dimension=_dimension_call,
-                time_dimension=_time_dimension_call,
-                entity=_entity_call,
+                Dimension=_dimension_call,
+                TimeDimension=_time_dimension_call,
+                Entity=_entity_call,
             )
         except (UndefinedError, TemplateSyntaxError, SecurityError) as e:
             raise ParseWhereFilterException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
