@@ -51,6 +51,12 @@ class WhereFilterParser:
         def _dimension_call(dimension_name: str, entity_path: Sequence[str] = ()) -> str:
             """Gets called by Jinja when rendering {{ dimension(...) }}."""
             group_by_item_name = DunderedNameFormatter.parse_name(dimension_name)
+            if is_metric_time_name(group_by_item_name.element_name):
+                raise ParseWhereFilterException(
+                    f"{METRIC_TIME_ELEMENT_NAME} is a time dimension, so it should be referenced using "
+                    f"TimeDimension(...)"
+                )
+
             if len(group_by_item_name.entity_links) != 1:
                 raise ParseWhereFilterException(
                     WhereFilterParser._exception_message_for_incorrect_format(dimension_name)
@@ -78,12 +84,9 @@ class WhereFilterParser:
             if is_metric_time_name(group_by_item_name.element_name):
                 if len(group_by_item_name.entity_links) != 0 or group_by_item_name.time_granularity is not None:
                     raise ParseWhereFilterException(
-                        WhereFilterParser._exception_message_for_incorrect_format(
-                            f"Name is in an incorrect format: {time_dimension_name} "
-                            f"When referencing {METRIC_TIME_ELEMENT_NAME}, the name should not have any dunders."
-                        )
+                        f"Name is in an incorrect format: {time_dimension_name} "
+                        f"When referencing {METRIC_TIME_ELEMENT_NAME}, the name should not have any dunders."
                     )
-
             else:
                 if len(group_by_item_name.entity_links) != 1 or group_by_item_name.time_granularity is not None:
                     raise ParseWhereFilterException(
