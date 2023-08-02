@@ -1,9 +1,12 @@
 import logging
 
+import pytest
+
 from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     FilterCallParameterSets,
+    ParseWhereFilterException,
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
@@ -104,3 +107,11 @@ def test_extract_entity_call_parameter_sets() -> None:  # noqa: D
             ),
         ),
     )
+
+
+def test_metric_time_in_dimension_call_error() -> None:  # noqa: D
+    with pytest.raises(ParseWhereFilterException, match="so it should be referenced using TimeDimension"):
+        assert (
+            PydanticWhereFilter(where_sql_template="{{ Dimension('metric_time') }} > '2020-01-01'").call_parameter_sets
+            is not None
+        )
