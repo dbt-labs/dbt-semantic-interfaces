@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from dbt_semantic_interfaces.dataclass_serialization import SerializableDataclass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class ElementReference(SerializableDataclass):
     """Used when we need to refer to a dimension, measure, entity, but other attributes are unknown."""
 
@@ -71,9 +71,6 @@ class SemanticModelReference(ModelReference):
     """A reference to a semantic model definition in the model."""
 
     semantic_model_name: str
-
-    def __hash__(self) -> int:  # noqa: D
-        return hash(self.semantic_model_name)
 
 
 @dataclass(frozen=True)

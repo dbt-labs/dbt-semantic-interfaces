@@ -268,7 +268,7 @@ class DataClassDeserializer:
                 for x in obj
             )
         elif issubclass(field_type, SerializableDataclass):
-            logger.error(f"Handling field_type={field_type} object={repr(obj)}")
+            logger.debug(f"Handling field_type={field_type} object={repr(obj)}")
             # Redundant assertion is needed for mypy to pass.
             assert issubclass(field_type, SerializableDataclass), f"Got field type: {field_type.__name__}"
             assert isinstance(obj, (SerializableDataclass, BaseModel)), f"Got object of type: {obj.__class__.__name__}"
