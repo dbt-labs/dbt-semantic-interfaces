@@ -21,7 +21,7 @@ classifiers = [
 ]
 dependencies = [
   "pydantic~=1.10",
-  "jsonschema~=3.0",
+  "jsonschema>=3.0,<5",
   "PyYAML~=6.0",
   "more-itertools~=8.0",
   "Jinja2~=3.0",
