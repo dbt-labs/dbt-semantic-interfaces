@@ -1,6 +1,0 @@
-kind: Breaking Changes
-body: Add a defaults section for SemanticModel and remove Dimension.is_primary.
-time: 2023-05-29T19:08:35.894545-07:00
-custom:
-  Author: plypaul
-  Issue: "50"

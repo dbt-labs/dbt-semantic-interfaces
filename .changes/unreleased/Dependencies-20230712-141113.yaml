@@ -1,6 +1,0 @@
-kind: Dependencies
-body: Repinning ruff because we need to do work to move off of 0.0.260
-time: 2023-07-12T14:11:13.375068-07:00
-custom:
-  Author: QMalcolm
-  PR: None

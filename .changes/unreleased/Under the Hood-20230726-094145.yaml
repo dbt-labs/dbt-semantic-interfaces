@@ -1,6 +1,0 @@
-kind: Under the Hood
-body: Switch `validate_semantic_manifest` to work in synchronous manner
-time: 2023-07-26T09:41:45.59555-07:00
-custom:
-  Author: QMalcolm
-  Issue: "125"

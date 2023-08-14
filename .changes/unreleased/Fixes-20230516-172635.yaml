@@ -1,6 +1,0 @@
-kind: Fixes
-body: Updating measure protocol for new design. Goodbye mixins!
-time: 2023-05-16T17:26:35.770026-05:00
-custom:
-  Author: callum-mcdata
-  Issue: "35"
