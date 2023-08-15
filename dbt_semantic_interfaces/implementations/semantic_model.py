@@ -73,7 +73,7 @@ class PydanticSemanticModelDefaults(HashableBaseModel, ProtocolHint[SemanticMode
     def _implements_protocol(self) -> SemanticModelDefaults:  # noqa: D
         return self
 
-    agg_time_dimension: Optional[str]
+    agg_time_dimension: Optional[str] = None
 
 
 class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[SemanticModel]):
@@ -84,17 +84,17 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
         return self
 
     name: str
-    defaults: Optional[PydanticSemanticModelDefaults]
-    description: Optional[str]
     node_relation: NodeRelation
+    defaults: Optional[PydanticSemanticModelDefaults] = None
+    description: Optional[str] = None
 
-    primary_entity: Optional[str]
+    primary_entity: Optional[str] = None
     entities: Sequence[PydanticEntity] = []
     measures: Sequence[PydanticMeasure] = []
     dimensions: Sequence[PydanticDimension] = []
     label: Optional[str] = None
 
-    metadata: Optional[PydanticMetadata]
+    metadata: Optional[PydanticMetadata] = None
 
     @property
     def entity_references(self) -> List[LinkableElementReference]:  # noqa: D

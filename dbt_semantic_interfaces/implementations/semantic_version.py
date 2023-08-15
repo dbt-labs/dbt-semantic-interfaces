@@ -16,7 +16,7 @@ class PydanticSemanticVersion(PydanticCustomInputParser, HashableBaseModel):
 
     major_version: str
     minor_version: str
-    patch_version: Optional[str]
+    patch_version: Optional[str] = None
 
     @classmethod
     @override

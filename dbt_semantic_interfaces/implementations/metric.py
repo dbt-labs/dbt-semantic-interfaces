@@ -32,8 +32,8 @@ class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
     """
 
     name: str
-    filter: Optional[PydanticWhereFilterIntersection]
-    alias: Optional[str]
+    filter: Optional[PydanticWhereFilterIntersection] = None
+    alias: Optional[str] = None
     join_to_timespine: bool = False
     fill_nulls_with: Optional[int] = None
 
@@ -129,10 +129,10 @@ class PydanticMetricInput(HashableBaseModel):
     """Provides a pointer to a metric along with the additional properties used on that metric."""
 
     name: str
-    filter: Optional[PydanticWhereFilterIntersection]
-    alias: Optional[str]
-    offset_window: Optional[PydanticMetricTimeWindow]
-    offset_to_grain: Optional[TimeGranularity]
+    filter: Optional[PydanticWhereFilterIntersection] = None
+    alias: Optional[str] = None
+    offset_window: Optional[PydanticMetricTimeWindow] = None
+    offset_to_grain: Optional[TimeGranularity] = None
 
     @property
     def as_reference(self) -> MetricReference:
@@ -152,21 +152,21 @@ class PydanticConversionTypeParams(HashableBaseModel):
     conversion_measure: PydanticMetricInputMeasure
     entity: str
     calculation: ConversionCalculationType = ConversionCalculationType.CONVERSION_RATE
-    window: Optional[PydanticMetricTimeWindow]
-    constant_properties: Optional[List[PydanticConstantPropertyInput]]
+    window: Optional[PydanticMetricTimeWindow] = None
+    constant_properties: Optional[List[PydanticConstantPropertyInput]] = None
 
 
 class PydanticMetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
-    measure: Optional[PydanticMetricInputMeasure]
-    numerator: Optional[PydanticMetricInput]
-    denominator: Optional[PydanticMetricInput]
-    expr: Optional[str]
-    window: Optional[PydanticMetricTimeWindow]
-    grain_to_date: Optional[TimeGranularity]
-    metrics: Optional[List[PydanticMetricInput]]
-    conversion_type_params: Optional[PydanticConversionTypeParams]
+    measure: Optional[PydanticMetricInputMeasure] = None
+    numerator: Optional[PydanticMetricInput] = None
+    denominator: Optional[PydanticMetricInput] = None
+    expr: Optional[str] = None
+    window: Optional[PydanticMetricTimeWindow] = None
+    grain_to_date: Optional[TimeGranularity] = None
+    metrics: Optional[List[PydanticMetricInput]] = None
+    conversion_type_params: Optional[PydanticConversionTypeParams] = None
 
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
 
@@ -175,11 +175,11 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a metric."""
 
     name: str
-    description: Optional[str]
+    description: Optional[str] = None
     type: MetricType
     type_params: PydanticMetricTypeParams
-    filter: Optional[PydanticWhereFilterIntersection]
-    metadata: Optional[PydanticMetadata]
+    filter: Optional[PydanticWhereFilterIntersection] = None
+    metadata: Optional[PydanticMetadata] = None
     label: Optional[str] = None
 
     @property

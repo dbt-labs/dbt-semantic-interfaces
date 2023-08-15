@@ -15,9 +15,9 @@ class PydanticEntity(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a entity."""
 
     name: str
-    description: Optional[str]
     type: EntityType
-    role: Optional[str]
+    description: Optional[str] = None
+    role: Optional[str] = None
     expr: Optional[str] = None
     metadata: Optional[PydanticMetadata] = None
     label: Optional[str] = None

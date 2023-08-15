@@ -70,8 +70,8 @@ class SemanticModelElementType(Enum):
 class FileContext(BaseModel):
     """The base context class for validation issues."""
 
-    file_name: Optional[str]
-    line_number: Optional[int]
+    file_name: Optional[str] = None
+    line_number: Optional[int] = None
 
     class Config:
         """Pydantic class configuration options."""
@@ -185,7 +185,7 @@ class ValidationIssue(ABC, BaseModel):
 
     message: str
     context: Optional[ValidationContext] = None
-    extra_detail: Optional[str]
+    extra_detail: Optional[str] = None
 
     @property
     @abstractmethod

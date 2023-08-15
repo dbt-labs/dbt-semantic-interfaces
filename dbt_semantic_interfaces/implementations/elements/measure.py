@@ -37,11 +37,11 @@ class PydanticMeasure(HashableBaseModel, ModelWithMetadataParsing):
 
     name: str
     agg: AggregationType
-    description: Optional[str]
-    create_metric: Optional[bool]
+    description: Optional[str] = None
+    create_metric: Optional[bool] = None
     expr: Optional[str] = None
-    agg_params: Optional[PydanticMeasureAggregationParameters]
-    metadata: Optional[PydanticMetadata]
+    agg_params: Optional[PydanticMeasureAggregationParameters] = None
+    metadata: Optional[PydanticMetadata] = None
     non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters] = None
     agg_time_dimension: Optional[str] = None
     label: Optional[str] = None

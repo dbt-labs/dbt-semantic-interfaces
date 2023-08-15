@@ -41,12 +41,12 @@ class PydanticDimension(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a dimension."""
 
     name: str
-    description: Optional[str]
+    description: Optional[str] = None
     type: DimensionType
     is_partition: bool = False
-    type_params: Optional[PydanticDimensionTypeParams]
+    type_params: Optional[PydanticDimensionTypeParams] = None
     expr: Optional[str] = None
-    metadata: Optional[PydanticMetadata]
+    metadata: Optional[PydanticMetadata] = None
     label: Optional[str] = None
 
     @property
