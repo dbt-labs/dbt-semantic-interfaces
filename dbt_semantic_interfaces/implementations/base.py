@@ -21,7 +21,7 @@ class HashableBaseModel(BaseModel):
     """Extends BaseModel with a generic hash function."""
 
     def __hash__(self) -> int:  # noqa: D
-        return hash(json.dumps(self.json(sort_keys=True), sort_keys=True))
+        return hash(json.dumps(self.model_dump_json(), sort_keys=True))
 
 
 class FrozenBaseModel(HashableBaseModel):
@@ -34,7 +34,7 @@ class FrozenBaseModel(HashableBaseModel):
 
     def to_pretty_json(self) -> str:
         """Convert to a pretty JSON representation."""
-        raw_json_str = self.json()
+        raw_json_str = self.model_dump_json()
         json_obj = json.loads(raw_json_str)
         return json.dumps(json_obj, indent=4)
 

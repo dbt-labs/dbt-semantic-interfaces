@@ -234,7 +234,7 @@ class DataclassSerializer:
         return self._convert_dataclass_instance_to_pydantic_model(
             object_type=obj_class,
             obj=obj,
-        ).json()
+        ).model_dump_json()
 
 
 class DataClassDeserializer:

@@ -9,6 +9,6 @@ def test_model_serialization_deserialization(simple_semantic_manifest: PydanticS
     This ensures any custom parsing operations internal to our Pydantic models are properly applied to not only
     user-provided YAML input, but also to internal parsing operations based on serialized model objects.
     """
-    serialized_model = simple_semantic_manifest.json()
+    serialized_model = simple_semantic_manifest.model_dump_json()
     deserialized_model = simple_semantic_manifest.parse_raw(serialized_model)
     assert deserialized_model == simple_semantic_manifest
