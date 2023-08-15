@@ -331,16 +331,16 @@ def parse_config_yaml(
             try:
                 if document_type == METRIC_TYPE:
                     metric_validator.validate(config_document[document_type])
-                    results.append(metric_class.parse_obj(object_cfg))
+                    results.append(metric_class.model_validate(object_cfg))
                 elif document_type == SEMANTIC_MODEL_TYPE:
                     semantic_model_validator.validate(config_document[document_type])
-                    results.append(semantic_model_class.parse_obj(object_cfg))
+                    results.append(semantic_model_class.model_validate(object_cfg))
                 elif document_type == PROJECT_CONFIGURATION_TYPE:
                     project_configuration_validator.validate(config_document[document_type])
-                    results.append(project_configuration_class.parse_obj(object_cfg))
+                    results.append(project_configuration_class.model_validate(object_cfg))
                 elif document_type == SAVED_QUERY_TYPE:
                     saved_query_validator.validate(config_document[document_type])
-                    results.append(saved_query_class.parse_obj(object_cfg))
+                    results.append(saved_query_class.model_validate(object_cfg))
                 else:
                     issues.append(
                         ValidationError(
@@ -358,7 +358,7 @@ def parse_config_yaml(
                         extra_detail="".join(traceback.format_tb(e.__traceback__)),
                     )
                 )
-            # ParsingException: catches exceptions from *.parse_obj calls
+            # ParsingException: catches exceptions from *.model_validate calls
             # Exception: general exception for a given document. Basicially we
             # don't want an exception on one document to halt checking the rest
             # of the documents

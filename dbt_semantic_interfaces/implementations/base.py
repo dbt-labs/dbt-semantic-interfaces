@@ -126,7 +126,7 @@ class PydanticCustomInputParser(ABC, Generic[ModelObjectT_co]):
     def __get_validators__(
         cls: Type[PydanticCustomInputParser[ModelObjectT_co]],
     ) -> Generator[Callable[[PydanticParseableValueType], PydanticCustomInputParser[ModelObjectT_co]], None, None]:
-        """Pydantic magic method for allowing parsing of arbitrary input on parse_obj invocation.
+        """Pydantic magic method for allowing parsing of arbitrary input on validate_model invocation.
 
         This allows for parsing and validation prior to object initialization. Most classes implementing this
         interface in our model are doing so because the input value from user-supplied YAML will be a string
