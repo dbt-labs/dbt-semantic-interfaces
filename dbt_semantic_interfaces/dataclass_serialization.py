@@ -299,7 +299,7 @@ class DataClassDeserializer:
         try:
             ClassAsPydantic = self._to_pydantic_type_converter.to_pydantic_type(dataclass_type)
             logger.debug(f"Serialized object for creation of {ClassAsPydantic} is {serialized_obj}")
-            pydantic_object = ClassAsPydantic.parse_raw(serialized_obj)
+            pydantic_object = ClassAsPydantic.model_validate_json(serialized_obj)
             return self._construct_dataclass_from_dataclass_like_object(
                 dataclass_type=dataclass_type,
                 obj=pydantic_object,

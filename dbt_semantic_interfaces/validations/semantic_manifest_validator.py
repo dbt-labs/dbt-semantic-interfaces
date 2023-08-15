@@ -140,7 +140,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         ]
         for future in as_completed(futures):
             res = future.result()
-            result = SemanticManifestValidationResults.parse_raw(res)
+            result = SemanticManifestValidationResults.model_validate_json(res)
             results.append(result)
 
         return SemanticManifestValidationResults.merge(results)
