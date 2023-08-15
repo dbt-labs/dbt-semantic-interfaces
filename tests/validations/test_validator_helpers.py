@@ -115,7 +115,7 @@ def test_jsonifying_and_reloading_model_validation_results_is_equal(  # noqa: D
     set_context_types = set([issue.context.__class__ for issue in list_of_issues])
 
     model_validation_issues = SemanticManifestValidationResults.from_issues_sequence(list_of_issues)
-    model_validation_issues_new = SemanticManifestValidationResults.parse_raw(model_validation_issues.json())
+    model_validation_issues_new = SemanticManifestValidationResults.parse_raw(model_validation_issues.model_dump_json())
     assert model_validation_issues_new == model_validation_issues
     assert model_validation_issues_new != SemanticManifestValidationResults(
         warnings=model_validation_issues.warnings,

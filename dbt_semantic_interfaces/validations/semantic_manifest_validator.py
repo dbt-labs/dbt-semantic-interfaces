@@ -52,7 +52,7 @@ def _validate_manifest_with_one_rule(
     """
     return SemanticManifestValidationResults.from_issues_sequence(
         validation_rule.validate_manifest(semantic_manifest)
-    ).json()
+    ).model_dump_json()
 
 
 class SemanticManifestValidator(Generic[SemanticManifestT]):
