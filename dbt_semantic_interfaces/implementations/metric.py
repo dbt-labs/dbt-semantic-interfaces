@@ -28,8 +28,8 @@ class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
     """
 
     name: str
-    filter: Optional[PydanticWhereFilter]
-    alias: Optional[str]
+    filter: Optional[PydanticWhereFilter] = None
+    alias: Optional[str] = None
 
     @classmethod
     def _from_yaml_value(cls, input: PydanticParseableValueType) -> PydanticMetricInputMeasure:
@@ -116,10 +116,10 @@ class PydanticMetricInput(HashableBaseModel):
     """Provides a pointer to a metric along with the additional properties used on that metric."""
 
     name: str
-    filter: Optional[PydanticWhereFilter]
-    alias: Optional[str]
-    offset_window: Optional[PydanticMetricTimeWindow]
-    offset_to_grain: Optional[TimeGranularity]
+    filter: Optional[PydanticWhereFilter] = None
+    alias: Optional[str] = None
+    offset_window: Optional[PydanticMetricTimeWindow] = None
+    offset_to_grain: Optional[TimeGranularity] = None
 
     @property
     def as_reference(self) -> MetricReference:
@@ -135,13 +135,13 @@ class PydanticMetricInput(HashableBaseModel):
 class PydanticMetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
-    measure: Optional[PydanticMetricInputMeasure]
-    numerator: Optional[PydanticMetricInput]
-    denominator: Optional[PydanticMetricInput]
-    expr: Optional[str]
-    window: Optional[PydanticMetricTimeWindow]
-    grain_to_date: Optional[TimeGranularity]
-    metrics: Optional[List[PydanticMetricInput]]
+    measure: Optional[PydanticMetricInputMeasure] = None
+    numerator: Optional[PydanticMetricInput] = None
+    denominator: Optional[PydanticMetricInput] = None
+    expr: Optional[str] = None
+    window: Optional[PydanticMetricTimeWindow] = None
+    grain_to_date: Optional[TimeGranularity] = None
+    metrics: Optional[List[PydanticMetricInput]] = None
 
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
 
@@ -150,11 +150,11 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a metric."""
 
     name: str
-    description: Optional[str]
     type: MetricType
     type_params: PydanticMetricTypeParams
-    filter: Optional[PydanticWhereFilter]
-    metadata: Optional[PydanticMetadata]
+    description: Optional[str] = None
+    filter: Optional[PydanticWhereFilter] = None
+    metadata: Optional[PydanticMetadata] = None
 
     @property
     def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:
