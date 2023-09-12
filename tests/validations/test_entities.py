@@ -47,7 +47,7 @@ def test_semantic_model_cant_have_more_than_one_primary_entity(
         entity_references.add(entity.reference)
 
     model_issues = SemanticManifestValidator[PydanticSemanticManifest](
-        [PrimaryEntityRule()]
+        [PrimaryEntityRule[PydanticSemanticManifest]()]
     ).validate_semantic_manifest(model)
 
     expected_issue_message = (
