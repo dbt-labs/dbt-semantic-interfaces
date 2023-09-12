@@ -82,6 +82,9 @@ ignore = [
   # Missing docstring in public package -- often docs handled within files not __init__.py
   "D104"
 ]
+# Let ruff autofix these errors.
+# F401 - Unused imports.
+fixable = ["F401"]
 
 [tool.ruff.pydocstyle]
 convention = "google"
