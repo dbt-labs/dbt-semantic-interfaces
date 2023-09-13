@@ -26,6 +26,7 @@ from dbt_semantic_interfaces.validations.metrics import (
 from dbt_semantic_interfaces.validations.non_empty import NonEmptyRule
 from dbt_semantic_interfaces.validations.primary_entity import PrimaryEntityRule
 from dbt_semantic_interfaces.validations.reserved_keywords import ReservedKeywordsRule
+from dbt_semantic_interfaces.validations.saved_query import SavedQueryRule
 from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelDefaultsRule,
     SemanticModelValidityWindowRule,
@@ -79,6 +80,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         PrimaryEntityRule[SemanticManifestT](),
         PrimaryEntityDimensionPairs[SemanticManifestT](),
         WhereFiltersAreParseable[SemanticManifestT](),
+        SavedQueryRule[SemanticManifestT](),
     )
 
     def __init__(
