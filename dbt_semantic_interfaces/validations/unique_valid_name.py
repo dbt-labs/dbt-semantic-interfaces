@@ -73,9 +73,10 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
             issues.append(
                 ValidationError(
                     context=context,
-                    message=f"Invalid name `{name}` - names should only consist of lower case letters, numbers, "
-                    f"and underscores. In addition, names should start with a lower case letter, and should not end "
-                    f"with an underscore, and they must be at least 2 characters long.",
+                    message=f"Invalid name `{name}` - names may only contain lower case letters, numbers, "
+                    f"and underscores. Additionally, names must start with a lower case letter, cannot end "
+                    f"with an underscore, cannot contain dunders (double underscores, or __), and must be "
+                    f"at least 2 characters long.",
                 )
             )
         if name.upper() in TimeGranularity.list_names():
