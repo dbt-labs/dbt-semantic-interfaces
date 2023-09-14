@@ -59,7 +59,11 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     * Names of semantic models, dimension sets and metric sets in the model are unique / valid.
     """
 
-    NAME_REGEX = re.compile(r"\A[a-z][a-z0-9_]*[a-z0-9]\Z")
+    # name must start with a lower case letter
+    # name must end with a number or lower case letter
+    # name may include lower case letters, numbers, and underscores
+    # name may not contain dunders (two sequential underscores
+    NAME_REGEX = re.compile(r"\A[a-z]((?!__)[a-z0-9_])*[a-z0-9]\Z")
 
     @staticmethod
     def check_valid_name(name: str, context: Optional[ValidationContext] = None) -> List[ValidationIssue]:  # noqa: D
