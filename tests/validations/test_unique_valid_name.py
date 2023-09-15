@@ -206,6 +206,7 @@ def test_invalid_names() -> None:  # noqa:D
     assert UniqueAndValidNameRule.check_valid_name("_no_leading_underscore") != []
     assert UniqueAndValidNameRule.check_valid_name("no_trailing_underscore_") != []
     assert UniqueAndValidNameRule.check_valid_name("_definitely_no_leading_and_trailing_underscore_") != []
+    assert UniqueAndValidNameRule.check_valid_name("name__with__dunders") != []
 
     # time granularity values are reserved
     assert UniqueAndValidNameRule.check_valid_name("day") != []

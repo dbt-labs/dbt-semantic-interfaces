@@ -1,0 +1,6 @@
+kind: Fixes
+body: Disallow dunders semantic object names
+time: 2023-09-14T13:47:08.907492-07:00
+custom:
+  Author: QMalcolm
+  Issue: "149"
