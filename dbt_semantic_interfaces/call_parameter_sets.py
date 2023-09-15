@@ -13,7 +13,7 @@ from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 @dataclass(frozen=True)
 class DimensionCallParameterSet:
-    """When 'dimension(...)' is used in the Jinja template of the where filter, the parameters to that call."""
+    """When 'Dimension(...)' is used in the Jinja template of the where filter, the parameters to that call."""
 
     entity_path: Tuple[EntityReference, ...]
     dimension_reference: DimensionReference
@@ -21,7 +21,7 @@ class DimensionCallParameterSet:
 
 @dataclass(frozen=True)
 class TimeDimensionCallParameterSet:
-    """When 'time_dimension(...)' is used in the Jinja template of the where filter, the parameters to that call."""
+    """When 'TimeDimension(...)' is used in the Jinja template of the where filter, the parameters to that call."""
 
     entity_path: Tuple[EntityReference, ...]
     time_dimension_reference: TimeDimensionReference
@@ -30,7 +30,7 @@ class TimeDimensionCallParameterSet:
 
 @dataclass(frozen=True)
 class EntityCallParameterSet:
-    """When 'entity(...)' is used in the Jinja template of the where filter, the parameters to that call."""
+    """When 'Entity(...)' is used in the Jinja template of the where filter, the parameters to that call."""
 
     entity_path: Tuple[EntityReference, ...]
     entity_reference: EntityReference
