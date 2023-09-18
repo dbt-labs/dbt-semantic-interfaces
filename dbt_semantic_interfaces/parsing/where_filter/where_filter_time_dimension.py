@@ -2,30 +2,35 @@ from __future__ import annotations
 
 from typing import List, Sequence
 
-from dbt_semantic_interfaces.call_parameter_sets import (
-    TimeDimensionCallParameterSet,
+from typing_extensions import override
+
+from dbt_semantic_interfaces.call_parameter_sets import TimeDimensionCallParameterSet
+from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
+    ParameterSetFactory,
 )
-from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import ParameterSetFactory
 from dbt_semantic_interfaces.parsing.where_filter.query_interface import (
     QueryInterfaceTimeDimension,
     QueryInterfaceTimeDimensionFactory,
 )
 from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
-from typing_extensions import override
 
 
 class TimeDimensionStub(ProtocolHint[QueryInterfaceTimeDimension]):
+    """A TimeDimension implementation that does nothing."""
+
     @override
     def _implements_protocol(self) -> QueryInterfaceTimeDimension:
         return self
 
 
 class WhereFilterTimeDimensionFactory(ProtocolHint[QueryInterfaceTimeDimensionFactory]):
+    """Executes in the Jinja sandbox to produce parameter sets and append them to a list."""
+
     @override
     def _implements_protocol(self) -> QueryInterfaceTimeDimensionFactory:
         return self
 
-    def __init__(self):  # noqa
+    def __init__(self) -> None:  # noqa
         self.time_dimension_call_parameter_sets: List[TimeDimensionCallParameterSet] = []
 
     def create(

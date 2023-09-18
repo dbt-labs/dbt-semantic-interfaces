@@ -1,9 +1,4 @@
 from __future__ import annotations
-from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import ParameterSetFactory
-
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_dimension import WhereFilterDimensionFactory
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_entity import WhereFilterEntityFactory
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_time_dimension import WhereFilterTimeDimensionFactory
 
 from jinja2 import StrictUndefined
 from jinja2.exceptions import SecurityError, TemplateSyntaxError, UndefinedError
@@ -12,6 +7,18 @@ from jinja2.sandbox import SandboxedEnvironment
 from dbt_semantic_interfaces.call_parameter_sets import (
     FilterCallParameterSets,
     ParseWhereFilterException,
+)
+from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
+    ParameterSetFactory,
+)
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_dimension import (
+    WhereFilterDimensionFactory,
+)
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_entity import (
+    WhereFilterEntityFactory,
+)
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_time_dimension import (
+    WhereFilterTimeDimensionFactory,
 )
 
 

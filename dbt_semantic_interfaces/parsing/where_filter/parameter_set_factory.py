@@ -7,12 +7,21 @@ from dbt_semantic_interfaces.call_parameter_sets import (
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.naming.dundered import DunderedNameFormatter
-from dbt_semantic_interfaces.naming.keywords import METRIC_TIME_ELEMENT_NAME, is_metric_time_name
-from dbt_semantic_interfaces.references import DimensionReference, EntityReference, TimeDimensionReference
+from dbt_semantic_interfaces.naming.keywords import (
+    METRIC_TIME_ELEMENT_NAME,
+    is_metric_time_name,
+)
+from dbt_semantic_interfaces.references import (
+    DimensionReference,
+    EntityReference,
+    TimeDimensionReference,
+)
 from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 
 class ParameterSetFactory:
+    """Creates parameter sets for use in the Jinja sandbox."""
+
     @staticmethod
     def _exception_message_for_incorrect_format(element_name: str) -> str:
         return (

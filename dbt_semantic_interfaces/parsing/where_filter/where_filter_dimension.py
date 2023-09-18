@@ -2,18 +2,17 @@ from __future__ import annotations
 
 from typing import List, Optional, Sequence
 
-from dbt_semantic_interfaces.call_parameter_sets import (
-    DimensionCallParameterSet,
-    TimeDimensionCallParameterSet,
+from typing_extensions import override
+
+from dbt_semantic_interfaces.call_parameter_sets import TimeDimensionCallParameterSet
+from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
+    ParameterSetFactory,
 )
-from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import ParameterSetFactory
 from dbt_semantic_interfaces.parsing.where_filter.query_interface import (
     QueryInterfaceDimension,
     QueryInterfaceDimensionFactory,
 )
 from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
-from typing_extensions import override
-
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 
 
@@ -39,7 +38,7 @@ class WhereFilterDimension(ProtocolHint[QueryInterfaceDimension]):
         """The time granularity."""
         self.time_granularity = TimeGranularity(time_granularity)
         self._time_dimension_call_parameter_sets.append(
-            ParameterSetFactory.create_time_dimension(self.name, self.time_granularity, self.entity_path)
+            ParameterSetFactory.create_time_dimension(self.name, time_granularity, self.entity_path)
         )
         return self
 
@@ -59,7 +58,6 @@ class WhereFilterDimensionFactory(ProtocolHint[QueryInterfaceDimensionFactory]):
         return self
 
     def __init__(self, time_dimension_call_parameter_sets: List[TimeDimensionCallParameterSet]):  # noqa
-        self.dimension_call_parameter_sets: List[DimensionCallParameterSet] = []
         self.created: List[WhereFilterDimension] = []
         self._time_dimension_call_parameter_sets = time_dimension_call_parameter_sets
 
