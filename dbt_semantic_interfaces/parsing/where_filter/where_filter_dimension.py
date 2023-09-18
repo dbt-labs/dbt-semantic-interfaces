@@ -4,19 +4,14 @@ from typing import List, Optional, Sequence
 
 from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
-    ParseWhereFilterException,
     TimeDimensionCallParameterSet,
 )
-from dbt_semantic_interfaces.naming.dundered import DunderedNameFormatter
-from dbt_semantic_interfaces.naming.keywords import METRIC_TIME_ELEMENT_NAME, is_metric_time_name
 from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import ParameterSetFactory
 from dbt_semantic_interfaces.parsing.where_filter.query_interface import (
     QueryInterfaceDimension,
     QueryInterfaceDimensionFactory,
 )
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_error import WhereFilterError
 from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
-from dbt_semantic_interfaces.references import DimensionReference, EntityReference
 from typing_extensions import override
 
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
@@ -44,8 +39,9 @@ class WhereFilterDimension(ProtocolHint[QueryInterfaceDimension]):
         """The time granularity."""
         self.time_granularity = TimeGranularity(time_granularity)
         self._time_dimension_call_parameter_sets.append(
-            ParameterSetFactory.create_time_dimension(self.name, self.entity_path, self.time_granularity)
+            ParameterSetFactory.create_time_dimension(self.name, self.time_granularity, self.entity_path)
         )
+        return self
 
     def alias(self, _alias: str) -> QueryInterfaceDimension:
         """Renaming the column."""
