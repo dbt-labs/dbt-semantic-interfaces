@@ -59,7 +59,11 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     * Names of semantic models, dimension sets and metric sets in the model are unique / valid.
     """
 
-    NAME_REGEX = re.compile(r"\A[a-z][a-z0-9_]*[a-z0-9]\Z")
+    # name must start with a lower case letter
+    # name must end with a number or lower case letter
+    # name may include lower case letters, numbers, and underscores
+    # name may not contain dunders (two sequential underscores
+    NAME_REGEX = re.compile(r"\A[a-z]((?!__)[a-z0-9_])*[a-z0-9]\Z")
 
     @staticmethod
     def check_valid_name(name: str, context: Optional[ValidationContext] = None) -> List[ValidationIssue]:  # noqa: D
@@ -69,9 +73,10 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
             issues.append(
                 ValidationError(
                     context=context,
-                    message=f"Invalid name `{name}` - names should only consist of lower case letters, numbers, "
-                    f"and underscores. In addition, names should start with a lower case letter, and should not end "
-                    f"with an underscore, and they must be at least 2 characters long.",
+                    message=f"Invalid name `{name}` - names may only contain lower case letters, numbers, "
+                    f"and underscores. Additionally, names must start with a lower case letter, cannot end "
+                    f"with an underscore, cannot contain dunders (double underscores, or __), and must be "
+                    f"at least 2 characters long.",
                 )
             )
         if name.upper() in TimeGranularity.list_names():
