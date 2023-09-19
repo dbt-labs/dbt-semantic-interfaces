@@ -8,7 +8,7 @@ from dbt_semantic_interfaces.call_parameter_sets import TimeDimensionCallParamet
 from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
     ParameterSetFactory,
 )
-from dbt_semantic_interfaces.parsing.where_filter.query_interface import (
+from dbt_semantic_interfaces.protocols.query_interface import (
     QueryInterfaceTimeDimension,
     QueryInterfaceTimeDimensionFactory,
 )
