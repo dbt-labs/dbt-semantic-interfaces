@@ -391,6 +391,41 @@
             ],
             "type": "object"
         },
+        "saved_query_schema": {
+            "$id": "saved_query_schema",
+            "additionalProperties": false,
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "group_bys": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "metrics": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "where": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            },
+            "required": [
+                "name",
+                "metrics"
+            ],
+            "type": "object"
+        },
         "semantic_model_defaults_schema": {
             "$id": "semantic_model_defaults_schema",
             "additionalProperties": false,

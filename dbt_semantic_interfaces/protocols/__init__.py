@@ -18,6 +18,7 @@ from dbt_semantic_interfaces.protocols.metric import (  # noqa:F401
     MetricTypeParams,
 )
 from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint  # noqa:F401
+from dbt_semantic_interfaces.protocols.saved_query import SavedQuery  # noqa:F401
 from dbt_semantic_interfaces.protocols.semantic_manifest import (  # noqa:F401
     SemanticManifest,
     SemanticManifestT,

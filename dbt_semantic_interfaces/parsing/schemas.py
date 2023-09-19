@@ -269,6 +269,29 @@ project_configuration_schema = {
 }
 
 
+saved_query_schema = {
+    "$id": "saved_query_schema",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "metrics": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "group_bys": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "where": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+    },
+    "required": ["name", "metrics"],
+    "additionalProperties": False,
+}
+
 semantic_model_schema = {
     "$id": "semantic_model_schema",
     "type": "object",
@@ -297,6 +320,7 @@ schema_store = {
     metric_schema["$id"]: metric_schema,
     semantic_model_schema["$id"]: semantic_model_schema,
     project_configuration_schema["$id"]: project_configuration_schema,
+    saved_query_schema["$id"]: saved_query_schema,
     # Sub-object schemas
     metric_input_measure_schema["$id"]: metric_input_measure_schema,
     metric_type_params_schema["$id"]: metric_type_params_schema,
@@ -318,3 +342,4 @@ resolver = RefResolver.from_schema(schema=metric_schema, store=schema_store)
 semantic_model_validator = SchemaValidator(semantic_model_schema, resolver=resolver)
 metric_validator = SchemaValidator(metric_schema, resolver=resolver)
 project_configuration_validator = SchemaValidator(project_configuration_schema, resolver=resolver)
+saved_query_validator = SchemaValidator(saved_query_schema, resolver=resolver)

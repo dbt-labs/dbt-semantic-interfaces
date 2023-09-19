@@ -135,11 +135,35 @@ class SemanticModelElementContext(BaseModel):
         )
 
 
+class SavedQueryElementType(Enum):
+    """Maps the fields in a saved query to a readable string."""
+
+    METRIC = "metric"
+    GROUP_BY = "group by"
+    WHERE = "where"
+
+
+class SavedQueryContext(BaseModel):
+    """Provides context on where a saved query was defined."""
+
+    file_context: FileContext
+    element_type: SavedQueryElementType
+    element_value: str
+
+    def context_str(self) -> str:
+        """Human-readable stringified representation of the context."""
+        return (
+            f"with a {self.element_type.value} in saved query `{self.element_type.value}` "
+            f"{self.file_context.context_str()}"
+        )
+
+
 ValidationContext = Union[
     FileContext,
     MetricContext,
     SemanticModelContext,
     SemanticModelElementContext,
+    SavedQueryContext,
 ]
 
 

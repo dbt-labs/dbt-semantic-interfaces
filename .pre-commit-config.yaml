@@ -27,6 +27,7 @@ repos:
     - id: ruff
       verbose: true
       language: system
+      args: [--fix]
 
   - repo: https://github.com/pre-commit/mirrors-mypy # configured via mypy.ini
     rev: v1.3.0
