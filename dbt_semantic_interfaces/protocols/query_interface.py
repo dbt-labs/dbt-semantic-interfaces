@@ -1,4 +1,5 @@
 from __future__ import annotations
+from abc import abstractmethod
 
 from typing import Protocol, Sequence
 
@@ -6,13 +7,15 @@ from typing import Protocol, Sequence
 class QueryInterfaceDimension(Protocol):
     """Represents the interface for Dimension in the query interface."""
 
+    @abstractmethod
     def grain(self, _grain: str) -> QueryInterfaceDimension:
         """The time granularity."""
-        raise NotImplementedError
+        pass
 
+    @abstractmethod
     def alias(self, _alias: str) -> QueryInterfaceDimension:
         """Renaming the column."""
-        raise NotImplementedError
+        pass
 
 
 class QueryInterfaceDimensionFactory(Protocol):
@@ -21,9 +24,10 @@ class QueryInterfaceDimensionFactory(Protocol):
     Represented as the Dimension constructor in the Jinja sandbox.
     """
 
+    @abstractmethod
     def create(self, name: str, entity_path: Sequence[str] = ()) -> QueryInterfaceDimension:
         """Create a QueryInterfaceDimension."""
-        raise NotImplementedError
+        pass
 
 
 class QueryInterfaceTimeDimension(Protocol):
@@ -38,6 +42,7 @@ class QueryInterfaceTimeDimensionFactory(Protocol):
     Represented as the TimeDimension constructor in the Jinja sandbox.
     """
 
+    @abstractmethod
     def create(
         self,
         time_dimension_name: str,
@@ -45,7 +50,7 @@ class QueryInterfaceTimeDimensionFactory(Protocol):
         entity_path: Sequence[str] = (),
     ) -> QueryInterfaceTimeDimension:
         """Create a TimeDimension."""
-        raise NotImplementedError
+        pass
 
 
 class QueryInterfaceEntity(Protocol):
@@ -60,6 +65,7 @@ class QueryInterfaceEntityFactory(Protocol):
     Represented as the Entity constructor in the Jinja sandbox.
     """
 
+    @abstractmethod
     def create(self, entity_name: str, entity_path: Sequence[str] = ()) -> QueryInterfaceEntity:
         """Create an Entity."""
-        raise NotImplementedError
+        pass
