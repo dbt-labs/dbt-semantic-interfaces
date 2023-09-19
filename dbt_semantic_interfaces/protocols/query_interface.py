@@ -12,11 +12,6 @@ class QueryInterfaceDimension(Protocol):
         """The time granularity."""
         pass
 
-    @abstractmethod
-    def alias(self, _alias: str) -> QueryInterfaceDimension:
-        """Renaming the column."""
-        pass
-
 
 class QueryInterfaceDimensionFactory(Protocol):
     """Creates a Dimension for the query interface.

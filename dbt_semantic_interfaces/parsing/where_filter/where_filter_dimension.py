@@ -42,10 +42,6 @@ class WhereFilterDimension(ProtocolHint[QueryInterfaceDimension]):
         )
         return self
 
-    def alias(self, _alias: str) -> QueryInterfaceDimension:
-        """Renaming the column."""
-        raise NotImplementedError
-
 
 class WhereFilterDimensionFactory(ProtocolHint[QueryInterfaceDimensionFactory]):
     """Creates a WhereFilterDimension.
