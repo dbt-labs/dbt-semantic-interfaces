@@ -42,7 +42,8 @@ class ParameterSetFactory:
             if len(group_by_item_name.entity_links) != 0 or group_by_item_name.time_granularity is not None:
                 raise ParseWhereFilterException(
                     f"Name is in an incorrect format: {time_dimension_name} "
-                    f"When referencing {METRIC_TIME_ELEMENT_NAME}, the name should not have any dunders."
+                    f"When referencing {METRIC_TIME_ELEMENT_NAME},"
+                    "the name should not have any dunders (double underscores, or __)."
                 )
         else:
             if len(group_by_item_name.entity_links) != 1 or group_by_item_name.time_granularity is not None:
