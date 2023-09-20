@@ -4,10 +4,6 @@ from typing import List, Optional, Sequence
 
 from typing_extensions import override
 
-from dbt_semantic_interfaces.call_parameter_sets import TimeDimensionCallParameterSet
-from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
-    ParameterSetFactory,
-)
 from dbt_semantic_interfaces.protocols.query_interface import (
     QueryInterfaceDimension,
     QueryInterfaceDimensionFactory,
@@ -27,38 +23,32 @@ class WhereFilterDimension(ProtocolHint[QueryInterfaceDimension]):
         self,
         name: str,
         entity_path: Sequence[str],
-        time_dimension_call_parameter_sets: List[TimeDimensionCallParameterSet],
     ):
         self.name = name
         self.entity_path = entity_path
-        self._time_dimension_call_parameter_sets = time_dimension_call_parameter_sets
         self.time_granularity: Optional[TimeGranularity] = None
 
     def grain(self, time_granularity: str) -> QueryInterfaceDimension:
         """The time granularity."""
         self.time_granularity = TimeGranularity(time_granularity)
-        self._time_dimension_call_parameter_sets.append(
-            ParameterSetFactory.create_time_dimension(self.name, time_granularity, self.entity_path)
-        )
         return self
 
 
 class WhereFilterDimensionFactory(ProtocolHint[QueryInterfaceDimensionFactory]):
     """Creates a WhereFilterDimension.
 
-    Each call to `create` adds a WhereFilterDimension to created.
+    Each call to `create` adds a WhereFilterDimension to `created`.
     """
 
     @override
     def _implements_protocol(self) -> QueryInterfaceDimensionFactory:
         return self
 
-    def __init__(self, time_dimension_call_parameter_sets: List[TimeDimensionCallParameterSet]):  # noqa
+    def __init__(self):  # noqa
         self.created: List[WhereFilterDimension] = []
-        self._time_dimension_call_parameter_sets = time_dimension_call_parameter_sets
 
     def create(self, dimension_name: str, entity_path: Sequence[str] = ()) -> WhereFilterDimension:
         """Gets called by Jinja when rendering {{ Dimension(...) }}."""
-        dimension = WhereFilterDimension(dimension_name, entity_path, self._time_dimension_call_parameter_sets)
+        dimension = WhereFilterDimension(dimension_name, entity_path)
         self.created.append(dimension)
         return dimension

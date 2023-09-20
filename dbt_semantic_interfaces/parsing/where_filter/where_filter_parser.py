@@ -29,7 +29,7 @@ class WhereFilterParser:
     def parse_call_parameter_sets(where_sql_template: str) -> FilterCallParameterSets:
         """Return the result of extracting the semantic objects referenced in the where SQL template string."""
         time_dimension_factory = WhereFilterTimeDimensionFactory()
-        dimension_factory = WhereFilterDimensionFactory(time_dimension_factory.time_dimension_call_parameter_sets)
+        dimension_factory = WhereFilterDimensionFactory()
         entity_factory = WhereFilterEntityFactory()
 
         try:
@@ -44,9 +44,18 @@ class WhereFilterParser:
 
         dimension_parameter_sets = []
         for dimension in dimension_factory.created:
-            if not dimension.time_granularity:
-                param_set = ParameterSetFactory.create_dimension(dimension.name, dimension.entity_path)
-                dimension_parameter_sets.append(param_set)
+            if dimension.time_granularity:
+                time_dimension_factory.time_dimension_call_parameter_sets.append(
+                    ParameterSetFactory.create_time_dimension(
+                        dimension.name,
+                        dimension.time_granularity,
+                        dimension.entity_path,
+                    )
+                )
+            else:
+                dimension_parameter_sets.append(
+                    ParameterSetFactory.create_dimension(dimension.name, dimension.entity_path)
+                )
 
         return FilterCallParameterSets(
             dimension_call_parameter_sets=tuple(dimension_parameter_sets),
