@@ -4,7 +4,9 @@ from typing import Generic, List, Sequence, Set
 
 from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
 from dbt_semantic_interfaces.naming.keywords import METRIC_TIME_ELEMENT_NAME
-from dbt_semantic_interfaces.parsing.where_filter_parser import WhereFilterParser
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
+    WhereFilterParser,
+)
 from dbt_semantic_interfaces.protocols import SemanticManifestT
 from dbt_semantic_interfaces.protocols.saved_query import SavedQuery
 from dbt_semantic_interfaces.validations.validator_helpers import (

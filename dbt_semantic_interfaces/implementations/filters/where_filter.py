@@ -6,7 +6,9 @@ from dbt_semantic_interfaces.implementations.base import (
     PydanticCustomInputParser,
     PydanticParseableValueType,
 )
-from dbt_semantic_interfaces.parsing.where_filter_parser import WhereFilterParser
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
+    WhereFilterParser,
+)
 
 
 class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
