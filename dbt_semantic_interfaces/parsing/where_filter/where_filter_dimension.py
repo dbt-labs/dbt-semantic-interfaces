@@ -4,12 +4,11 @@ from typing import List, Optional, Sequence
 
 from typing_extensions import override
 
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.protocols.query_interface import (
     QueryInterfaceDimension,
     QueryInterfaceDimensionFactory,
 )
-from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
-from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 
 
 class WhereFilterDimension(ProtocolHint[QueryInterfaceDimension]):
@@ -23,14 +22,14 @@ class WhereFilterDimension(ProtocolHint[QueryInterfaceDimension]):
         self,
         name: str,
         entity_path: Sequence[str],
-    ):
+    ) -> None:
         self.name = name
         self.entity_path = entity_path
-        self.time_granularity: Optional[TimeGranularity] = None
+        self.time_granularity_name: Optional[str] = None
 
     def grain(self, time_granularity: str) -> QueryInterfaceDimension:
         """The time granularity."""
-        self.time_granularity = TimeGranularity(time_granularity)
+        self.time_granularity_name = time_granularity
         return self
 
 
@@ -44,7 +43,7 @@ class WhereFilterDimensionFactory(ProtocolHint[QueryInterfaceDimensionFactory]):
     def _implements_protocol(self) -> QueryInterfaceDimensionFactory:
         return self
 
-    def __init__(self):  # noqa
+    def __init__(self) -> None:  # noqa
         self.created: List[WhereFilterDimension] = []
 
     def create(self, dimension_name: str, entity_path: Sequence[str] = ()) -> WhereFilterDimension:

@@ -48,11 +48,11 @@ class WhereFilterParser:
         """
         dimension_call_parameter_sets = []
         for dimension in dimension_factory.created:
-            if dimension.time_granularity:
+            if dimension.time_granularity_name:
                 time_dimension_factory.time_dimension_call_parameter_sets.append(
                     ParameterSetFactory.create_time_dimension(
                         dimension.name,
-                        dimension.time_granularity,
+                        dimension.time_granularity_name,
                         dimension.entity_path,
                     )
                 )

@@ -8,11 +8,11 @@ from dbt_semantic_interfaces.call_parameter_sets import TimeDimensionCallParamet
 from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
     ParameterSetFactory,
 )
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.protocols.query_interface import (
     QueryInterfaceTimeDimension,
     QueryInterfaceTimeDimensionFactory,
 )
-from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 
 
 class TimeDimensionStub(ProtocolHint[QueryInterfaceTimeDimension]):
