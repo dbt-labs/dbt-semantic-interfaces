@@ -66,7 +66,7 @@ class ParameterSetFactory:
         if is_metric_time_name(group_by_item_name.element_name):
             raise ParseWhereFilterException(
                 f"{METRIC_TIME_ELEMENT_NAME} is a time dimension, so it should be referenced using "
-                f"TimeDimension(...)"
+                f"TimeDimension(...) or Dimension(...).grain(...)"
             )
 
         if len(group_by_item_name.entity_links) != 1:
