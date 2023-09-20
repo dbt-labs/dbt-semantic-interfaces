@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 
 
 class TimeDimensionStub(ProtocolHint[QueryInterfaceTimeDimension]):
-    """A TimeDimension implementation that does nothing to satisfy the protocol.
+    """A TimeDimension implementation that just satisfies the protocol.
 
     QueryInterfaceTimeDimension currently has no methods and the parameter set is created in the factory.
     So, there is nothing to do here.
