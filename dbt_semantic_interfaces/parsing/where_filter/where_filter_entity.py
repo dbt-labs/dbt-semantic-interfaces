@@ -16,7 +16,11 @@ from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 
 
 class EntityStub(ProtocolHint[QueryInterfaceEntity]):
-    """An Entity implementation that does nothing."""
+    """An Entity implementation that does nothing to satisfy the protocol.
+
+    QueryInterfaceEntity currently has no methods and the parameter set is created in the factory.
+    So, there is nothing to do here.
+    """
 
     @override
     def _implements_protocol(self) -> QueryInterfaceEntity:

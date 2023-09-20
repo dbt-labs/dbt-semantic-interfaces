@@ -42,7 +42,11 @@ class WhereFilterParser:
         except (UndefinedError, TemplateSyntaxError, SecurityError) as e:
             raise ParseWhereFilterException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
 
-        dimension_parameter_sets = []
+        """
+        Dimensions that are created with a grain parameter, Dimension(...).grain(...), are
+        added to time_dimension_call_parameter_sets otherwise they are add to dimension_call_parameter_sets
+        """
+        dimension_call_parameter_sets = []
         for dimension in dimension_factory.created:
             if dimension.time_granularity:
                 time_dimension_factory.time_dimension_call_parameter_sets.append(
@@ -53,12 +57,12 @@ class WhereFilterParser:
                     )
                 )
             else:
-                dimension_parameter_sets.append(
+                dimension_call_parameter_sets.append(
                     ParameterSetFactory.create_dimension(dimension.name, dimension.entity_path)
                 )
 
         return FilterCallParameterSets(
-            dimension_call_parameter_sets=tuple(dimension_parameter_sets),
+            dimension_call_parameter_sets=tuple(dimension_call_parameter_sets),
             time_dimension_call_parameter_sets=tuple(time_dimension_factory.time_dimension_call_parameter_sets),
             entity_call_parameter_sets=tuple(entity_factory.entity_call_parameter_sets),
         )
