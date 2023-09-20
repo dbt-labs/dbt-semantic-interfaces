@@ -12,6 +12,7 @@ from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.project_configuration import (
     PydanticProjectConfiguration,
 )
+from dbt_semantic_interfaces.implementations.saved_query import PydanticSavedQuery
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
@@ -20,6 +21,7 @@ from dbt_semantic_interfaces.parsing.objects import Version, YamlConfigFile
 from dbt_semantic_interfaces.parsing.schemas import (
     metric_validator,
     project_configuration_validator,
+    saved_query_validator,
     semantic_model_validator,
 )
 from dbt_semantic_interfaces.parsing.yaml_loader import (
@@ -45,8 +47,9 @@ VERSION_KEY = "mf_config_schema"
 METRIC_TYPE = "metric"
 SEMANTIC_MODEL_TYPE = "semantic_model"
 PROJECT_CONFIGURATION_TYPE = "project_configuration"
+SAVED_QUERY_TYPE = "saved_query"
 
-DOCUMENT_TYPES = [METRIC_TYPE, SEMANTIC_MODEL_TYPE, PROJECT_CONFIGURATION_TYPE]
+DOCUMENT_TYPES = [METRIC_TYPE, SEMANTIC_MODEL_TYPE, PROJECT_CONFIGURATION_TYPE, SAVED_QUERY_TYPE]
 
 
 @dataclass(frozen=True)
@@ -65,7 +68,7 @@ class FileParsingResult:
         issues: Issues found when trying to parse the file
     """
 
-    elements: List[Union[PydanticSemanticModel, PydanticMetric, PydanticProjectConfiguration]]
+    elements: List[Union[PydanticSemanticModel, PydanticMetric, PydanticProjectConfiguration, PydanticSavedQuery]]
     issues: List[ValidationIssue]
 
 
@@ -191,6 +194,7 @@ def parse_yaml_files_to_semantic_manifest(
     semantic_model_class: Type[PydanticSemanticModel] = PydanticSemanticModel,
     metric_class: Type[PydanticMetric] = PydanticMetric,
     project_configuration_class: Type[PydanticProjectConfiguration] = PydanticProjectConfiguration,
+    saved_query_class: Type[PydanticSavedQuery] = PydanticSavedQuery,
 ) -> SemanticManifestBuildResult:
     """Builds SemanticManifest from list of config files (as strings).
 
@@ -202,7 +206,14 @@ def parse_yaml_files_to_semantic_manifest(
     semantic_models = []
     metrics = []
     project_configurations = []
-    valid_object_classes = [semantic_model_class.__name__, metric_class.__name__, project_configuration_class.__name__]
+    saved_queries = []
+
+    valid_object_classes = [
+        semantic_model_class.__name__,
+        metric_class.__name__,
+        project_configuration_class.__name__,
+        saved_query_class.__name__,
+    ]
     issues: List[ValidationIssue] = []
 
     for config_file in files:
@@ -211,6 +222,7 @@ def parse_yaml_files_to_semantic_manifest(
             semantic_model_class=semantic_model_class,
             metric_class=metric_class,
             project_configuration_class=project_configuration_class,
+            saved_query_class=saved_query_class,
         )
         file_issues = parsing_result.issues
         for obj in parsing_result.elements:
@@ -220,6 +232,8 @@ def parse_yaml_files_to_semantic_manifest(
                 metrics.append(obj)
             elif isinstance(obj, project_configuration_class):
                 project_configurations.append(obj)
+            elif isinstance(obj, saved_query_class):
+                saved_queries.append(obj)
             else:
                 file_issues.append(
                     ValidationError(
@@ -241,6 +255,7 @@ def parse_yaml_files_to_semantic_manifest(
             semantic_models=semantic_models,
             metrics=metrics,
             project_configuration=project_configurations[0],
+            saved_queries=saved_queries,
         ),
         issues=SemanticManifestValidationResults.from_issues_sequence(issues),
     )
@@ -251,9 +266,10 @@ def parse_config_yaml(
     semantic_model_class: Type[PydanticSemanticModel] = PydanticSemanticModel,
     metric_class: Type[PydanticMetric] = PydanticMetric,
     project_configuration_class: Type[PydanticProjectConfiguration] = PydanticProjectConfiguration,
+    saved_query_class: Type[PydanticSavedQuery] = PydanticSavedQuery,
 ) -> FileParsingResult:
     """Parses transform config file passed as string - Returns list of model objects."""
-    results: List[Union[PydanticSemanticModel, PydanticMetric, PydanticProjectConfiguration]] = []
+    results: List[Union[PydanticSemanticModel, PydanticMetric, PydanticProjectConfiguration, PydanticSavedQuery]] = []
     ctx: Optional[ParsingContext] = None
     issues: List[ValidationIssue] = []
     try:
@@ -322,6 +338,9 @@ def parse_config_yaml(
                 elif document_type == PROJECT_CONFIGURATION_TYPE:
                     project_configuration_validator.validate(config_document[document_type])
                     results.append(project_configuration_class.parse_obj(object_cfg))
+                elif document_type == SAVED_QUERY_TYPE:
+                    saved_query_validator.validate(config_document[document_type])
+                    results.append(saved_query_class.parse_obj(object_cfg))
                 else:
                     issues.append(
                         ValidationError(

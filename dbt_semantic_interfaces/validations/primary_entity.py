@@ -1,9 +1,6 @@
 import logging
 from typing import Generic, List, Sequence
 
-from dbt_semantic_interfaces.implementations.semantic_manifest import (
-    PydanticSemanticManifest,
-)
 from dbt_semantic_interfaces.protocols import SemanticManifestT, SemanticModel
 from dbt_semantic_interfaces.references import SemanticModelReference
 from dbt_semantic_interfaces.type_enums import EntityType
@@ -95,7 +92,7 @@ class PrimaryEntityRule(SemanticManifestValidationRule[SemanticManifestT], Gener
 
     @staticmethod
     @validate_safely("Check that semantic models in the manifest have properly configured primary entities.")
-    def validate_manifest(semantic_manifest: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
         for semantic_model in semantic_manifest.semantic_models:
             issues += PrimaryEntityRule._check_model(semantic_model)
