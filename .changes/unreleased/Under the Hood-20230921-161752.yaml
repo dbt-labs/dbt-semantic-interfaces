@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Support for descending & date_part in the query interface
+time: 2023-09-21T16:17:52.090209-05:00
+custom:
+  Author: DevonFulcher
+  Issue: None

@@ -1,7 +1,16 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Protocol, Sequence
+from typing import Optional, Protocol, Sequence
+
+
+class QueryInterfaceMetric(Protocol):
+    """Represents the interface for Metric in the query interface."""
+
+    @abstractmethod
+    def descending(self, _is_descending: bool) -> QueryInterfaceMetric:
+        """Set the sort order for order-by."""
+        pass
 
 
 class QueryInterfaceDimension(Protocol):
@@ -10,6 +19,16 @@ class QueryInterfaceDimension(Protocol):
     @abstractmethod
     def grain(self, _grain: str) -> QueryInterfaceDimension:
         """The time granularity."""
+        pass
+
+    @abstractmethod
+    def descending(self, _is_descending: bool) -> QueryInterfaceDimension:
+        """Set the sort order for order-by."""
+        pass
+
+    @abstractmethod
+    def date_part(self, _date_part: str) -> QueryInterfaceDimension:
+        """Date part to extract from the dimension."""
         pass
 
 
@@ -42,6 +61,8 @@ class QueryInterfaceTimeDimensionFactory(Protocol):
         self,
         time_dimension_name: str,
         time_granularity_name: str,
+        descending: Optional[bool] = None,
+        date_part_name: Optional[str] = None,
         entity_path: Sequence[str] = (),
     ) -> QueryInterfaceTimeDimension:
         """Create a TimeDimension."""

@@ -4,6 +4,7 @@ from typing import List, Optional, Sequence
 
 from typing_extensions import override
 
+from dbt_semantic_interfaces.errors import InvalidQuerySyntax
 from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.protocols.query_interface import (
     QueryInterfaceDimension,
@@ -31,6 +32,14 @@ class WhereFilterDimension(ProtocolHint[QueryInterfaceDimension]):
         """The time granularity."""
         self.time_granularity_name = time_granularity
         return self
+
+    def descending(self, _is_descending: bool) -> QueryInterfaceDimension:
+        """Set the sort order for order-by."""
+        raise InvalidQuerySyntax("descending is invalid in the where parameter and filter spec")
+
+    def date_part(self, _date_part: str) -> QueryInterfaceDimension:
+        """Date part to extract from the dimension."""
+        raise InvalidQuerySyntax("date_part isn't currently supported in the where parameter and filter spec")
 
 
 class WhereFilterDimensionFactory(ProtocolHint[QueryInterfaceDimensionFactory]):
