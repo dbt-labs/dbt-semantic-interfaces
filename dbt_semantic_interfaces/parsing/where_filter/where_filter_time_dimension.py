@@ -42,9 +42,9 @@ class WhereFilterTimeDimensionFactory(ProtocolHint[QueryInterfaceTimeDimensionFa
         self,
         time_dimension_name: str,
         time_granularity_name: str,
+        entity_path: Sequence[str] = (),
         descending: Optional[bool] = None,
         date_part_name: Optional[str] = None,
-        entity_path: Sequence[str] = (),
     ) -> TimeDimensionStub:
         """Gets called by Jinja when rendering {{ TimeDimension(...) }}."""
         if descending is not None:
