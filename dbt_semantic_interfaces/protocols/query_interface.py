@@ -61,9 +61,9 @@ class QueryInterfaceTimeDimensionFactory(Protocol):
         self,
         time_dimension_name: str,
         time_granularity_name: str,
+        entity_path: Sequence[str] = (),
         descending: Optional[bool] = None,
         date_part_name: Optional[str] = None,
-        entity_path: Sequence[str] = (),
     ) -> QueryInterfaceTimeDimension:
         """Create a TimeDimension."""
         pass
