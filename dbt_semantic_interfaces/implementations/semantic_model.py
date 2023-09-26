@@ -92,6 +92,7 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
     entities: Sequence[PydanticEntity] = []
     measures: Sequence[PydanticMeasure] = []
     dimensions: Sequence[PydanticDimension] = []
+    label: Optional[str] = None
 
     metadata: Optional[PydanticMetadata]
 

@@ -44,6 +44,7 @@ class PydanticMeasure(HashableBaseModel, ModelWithMetadataParsing):
     metadata: Optional[PydanticMetadata]
     non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters] = None
     agg_time_dimension: Optional[str] = None
+    label: Optional[str] = None
 
     @property
     def reference(self) -> MeasureReference:  # noqa: D

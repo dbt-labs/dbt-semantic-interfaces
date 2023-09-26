@@ -155,6 +155,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     type_params: PydanticMetricTypeParams
     filter: Optional[PydanticWhereFilter]
     metadata: Optional[PydanticMetadata]
+    label: Optional[str] = None
 
     @property
     def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:

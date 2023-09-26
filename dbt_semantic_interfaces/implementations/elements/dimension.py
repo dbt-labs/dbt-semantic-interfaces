@@ -47,6 +47,7 @@ class PydanticDimension(HashableBaseModel, ModelWithMetadataParsing):
     type_params: Optional[PydanticDimensionTypeParams]
     expr: Optional[str] = None
     metadata: Optional[PydanticMetadata]
+    label: Optional[str] = None
 
     @property
     def reference(self) -> DimensionReference:  # noqa: D
