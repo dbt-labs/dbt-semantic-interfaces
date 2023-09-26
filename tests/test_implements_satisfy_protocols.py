@@ -56,6 +56,7 @@ def test_semantic_manifest_protocol() -> None:  # noqa: D
             alias="test_alias",
             schema_name="test_schema_name",
         ),
+        label="Test Semantic Model",
         entities=[],
         measures=[],
         dimensions=[],
@@ -105,6 +106,7 @@ def test_metric_protocol() -> None:  # noqa: D
     test_metric = PydanticMetric(
         name="test_metric",
         type=MetricType.SIMPLE,
+        label="Test Metric",
         type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="test_measure")),
     )
     assert isinstance(test_metric, RuntimeCheckableMetric)
@@ -121,6 +123,7 @@ def test_entity_protocol() -> None:  # noqa: D
     test_entity = PydanticEntity(
         name="test_name",
         type=EntityType.PRIMARY,
+        label="Test Name",
     )
     assert isinstance(test_entity, RuntimeCheckableEntity)
 
@@ -137,6 +140,7 @@ def test_measure_protocol() -> None:  # noqa: D
         name="test_measure",
         agg=AggregationType.SUM,
         agg_time_dimension="some_time_dimension",
+        label="Test Measure",
     )
     assert isinstance(test_measure, RuntimeCheckableMeasure)
 
@@ -152,6 +156,7 @@ def test_dimension_protocol() -> None:  # noqa: D
     time_dim = PydanticDimension(
         name="test_time_dim",
         type=DimensionType.TIME,
+        label="Test Time Dim",
         type_params=PydanticDimensionTypeParams(
             time_granularity=TimeGranularity.DAY,
             validity_params=PydanticDimensionValidityParams(),
