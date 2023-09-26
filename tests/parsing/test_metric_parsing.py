@@ -68,6 +68,33 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
     )
 
 
+def test_base_metric_parsing() -> None:
+    """Test parsing base attributes of PydanticMetric object."""
+    metric_type = MetricType.SIMPLE
+    description = "Test metric description"
+    label = "Base Test"
+    yaml_contents = textwrap.dedent(
+        f"""\
+        metric:
+          name: base_test
+          type: {metric_type.value}
+          description: {description}
+          label: {label}
+          type_params:
+            measure:
+              name: metadata_test_measure
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    assert len(build_result.semantic_manifest.metrics) == 1
+    metric = build_result.semantic_manifest.metrics[0]
+    assert metric.type == metric_type
+    assert metric.description == description
+    assert metric.label == label
+
+
 def test_metric_metadata_parsing() -> None:
     """Test for asserting that internal metadata is parsed into the PydanticMetric object."""
     yaml_contents = textwrap.dedent(

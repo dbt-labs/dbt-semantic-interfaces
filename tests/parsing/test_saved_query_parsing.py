@@ -42,11 +42,13 @@ def test_saved_query_base_parsing() -> None:
     """Test for base parsing a saved query."""
     name = "base_parsing_test"
     description = "the base saved query parsing test"
+    label = "Base Parsing Test"
     yaml_contents = textwrap.dedent(
         f"""\
         saved_query:
           name: {name}
           description: {description}
+          label: {label}
           metrics:
             - test_metric
         """
@@ -59,6 +61,7 @@ def test_saved_query_base_parsing() -> None:
     saved_query = build_result.semantic_manifest.saved_queries[0]
     assert saved_query.name == name
     assert saved_query.description == description
+    assert saved_query.label == label
 
 
 def test_saved_query_metrics_parsing() -> None:
