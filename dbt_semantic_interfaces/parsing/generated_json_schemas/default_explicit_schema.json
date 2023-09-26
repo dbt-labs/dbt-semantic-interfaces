@@ -45,6 +45,9 @@
                 "is_partition": {
                     "type": "boolean"
                 },
+                "label": {
+                    "type": "string"
+                },
                 "name": {
                     "pattern": "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$",
                     "type": "string"
@@ -106,6 +109,9 @@
                         "string",
                         "boolean"
                     ]
+                },
+                "label": {
+                    "type": "string"
                 },
                 "name": {
                     "pattern": "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$",
@@ -195,6 +201,9 @@
                         "boolean"
                     ]
                 },
+                "label": {
+                    "type": "string"
+                },
                 "name": {
                     "pattern": "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$",
                     "type": "string"
@@ -262,6 +271,9 @@
                     "type": "string"
                 },
                 "filter": {
+                    "type": "string"
+                },
+                "label": {
                     "type": "string"
                 },
                 "name": {
@@ -404,6 +416,9 @@
                     },
                     "type": "array"
                 },
+                "label": {
+                    "type": "string"
+                },
                 "metrics": {
                     "items": {
                         "type": "string"
@@ -458,6 +473,9 @@
                         "$ref": "#/definitions/entity_schema"
                     },
                     "type": "array"
+                },
+                "label": {
+                    "type": "string"
                 },
                 "measures": {
                     "items": {
