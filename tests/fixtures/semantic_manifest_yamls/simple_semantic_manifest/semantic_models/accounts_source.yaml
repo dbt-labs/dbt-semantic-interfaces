@@ -2,6 +2,7 @@
 semantic_model:
   name: accounts_source
   description: accounts_source
+  label: Accounts Source
 
   node_relation:
     schema_name: $source_schema
@@ -13,9 +14,11 @@ semantic_model:
   measures:
     - name: account_balance
       agg: sum
+      label: Account Balance
 
     - name: total_account_balance_first_day
       agg: sum
+      label: Total Account Balance on First Day
       expr: account_balance
       non_additive_dimension:
         name: ds
@@ -23,6 +26,7 @@ semantic_model:
 
     - name: current_account_balance_by_user
       agg: sum
+      label: Current Account Banance by User
       expr: account_balance
       non_additive_dimension:
         name: ds
@@ -33,10 +37,12 @@ semantic_model:
   dimensions:
     - name: ds
       type: time
+      label: Metric Time
       type_params:
         time_granularity: day
     - name: account_type
       type: categorical
+      label: Account Type
 
   primary_entity: account
 
@@ -44,3 +50,4 @@ semantic_model:
     - name: user
       type: foreign
       expr: user_id
+      label: User
