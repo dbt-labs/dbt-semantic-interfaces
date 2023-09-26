@@ -194,3 +194,9 @@ class Metric(Protocol):
     @abstractmethod
     def metadata(self) -> Optional[Metadata]:  # noqa: D
         pass
+
+    @property
+    @abstractmethod
+    def label(self) -> Optional[str]:
+        """Returns a string representing a human readable label for the metric."""
+        pass

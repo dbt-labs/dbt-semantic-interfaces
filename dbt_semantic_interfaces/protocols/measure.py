@@ -92,3 +92,9 @@ class Measure(Protocol):
     def reference(self) -> MeasureReference:
         """Returns a reference to this measure."""
         ...
+
+    @property
+    @abstractmethod
+    def label(self) -> Optional[str]:
+        """Returns a string representing a human readable label for the measure."""
+        pass

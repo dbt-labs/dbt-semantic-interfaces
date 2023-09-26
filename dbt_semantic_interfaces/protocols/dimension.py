@@ -101,3 +101,9 @@ class Dimension(Protocol):
     def validity_params(self) -> Optional[DimensionValidityParams]:
         """Returns the DimensionValidityParams if they exist for the dimension implementation."""
         ...
+
+    @property
+    @abstractmethod
+    def label(self) -> Optional[str]:
+        """Returns a string representing a human readable label for the dimension."""
+        pass
