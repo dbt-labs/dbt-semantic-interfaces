@@ -221,8 +221,14 @@
                         "alias": {
                             "type": "string"
                         },
+                        "fill_nulls_with": {
+                            "type": "integer"
+                        },
                         "filter": {
                             "type": "string"
+                        },
+                        "join_to_timespine": {
+                            "type": "boolean"
                         },
                         "name": {
                             "type": "string"
