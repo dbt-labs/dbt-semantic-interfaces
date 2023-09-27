@@ -11,6 +11,7 @@ from dbt_semantic_interfaces.validations.dimension_const import DimensionConsist
 from dbt_semantic_interfaces.validations.element_const import ElementConsistencyRule
 from dbt_semantic_interfaces.validations.entities import NaturalEntityConfigurationRule
 from dbt_semantic_interfaces.validations.labels import (
+    EntityLabelsRule,
     MetricLabelsRule,
     SemanticModelLabelsRule,
 )
@@ -87,6 +88,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         SavedQueryRule[SemanticManifestT](),
         MetricLabelsRule[SemanticManifestT](),
         SemanticModelLabelsRule[SemanticManifestT](),
+        EntityLabelsRule[SemanticManifestT](),
     )
 
     def __init__(

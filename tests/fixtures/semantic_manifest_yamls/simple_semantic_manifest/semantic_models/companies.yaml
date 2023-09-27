@@ -18,3 +18,4 @@ semantic_model:
     - name: user
       type: unique
       expr: user_id
+      label: User

@@ -2,6 +2,7 @@ from copy import deepcopy
 
 import pytest
 
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
@@ -9,7 +10,9 @@ from dbt_semantic_interfaces.test_utils import (
     find_metric_with,
     find_semantic_model_with,
 )
+from dbt_semantic_interfaces.type_enums import EntityType
 from dbt_semantic_interfaces.validations.labels import (
+    EntityLabelsRule,
     MetricLabelsRule,
     SemanticModelLabelsRule,
 )
@@ -121,4 +124,32 @@ def test_semantic_model_with_duplicate_measure_labels(  # noqa: D
     ):
         SemanticManifestValidator[PydanticSemanticManifest](
             [SemanticModelLabelsRule[PydanticSemanticManifest]()]
+        ).checked_validations(manifest)
+
+
+def test_entity_labels_happy_path(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    SemanticManifestValidator[PydanticSemanticManifest](
+        [EntityLabelsRule[PydanticSemanticManifest]()]
+    ).checked_validations(manifest)
+
+
+def test_entities_with_same_name_but_different_labels(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    entity = PydanticEntity(name="random_entity", type=EntityType.FOREIGN, label="Random Entity")
+    entity_conflict = PydanticEntity(name="random_entity", type=EntityType.FOREIGN, label="Random Entity Scoped")
+    manifest.semantic_models[0].entities = list(manifest.semantic_models[0].entities) + [entity]
+    manifest.semantic_models[1].entities = list(manifest.semantic_models[1].entities) + [entity_conflict]
+
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf"Entities with the same name must have the same label or the label must be `None`. Entity "
+        f"`{entity.name}`",
+    ):
+        SemanticManifestValidator[PydanticSemanticManifest](
+            [EntityLabelsRule[PydanticSemanticManifest]()]
         ).checked_validations(manifest)

@@ -1,5 +1,6 @@
 import logging
 from collections import defaultdict
+from dataclasses import dataclass
 from typing import DefaultDict, Dict, Generic, List, Sequence
 
 from dbt_semantic_interfaces.protocols import Metric, SemanticManifestT, SemanticModel
@@ -140,5 +141,54 @@ class SemanticModelLabelsRule(SemanticManifestValidationRule[SemanticManifestT],
             issues += SemanticModelLabelsRule._check_semantic_model_dimensions(semantic_model=semantic_model)
             issues += SemanticModelLabelsRule._check_semantic_model_entities(semantic_model=semantic_model)
             issues += SemanticModelLabelsRule._check_semantic_model_measures(semantic_model=semantic_model)
+
+        return issues
+
+
+class EntityLabelsRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """Checks that the entity labels are consistent across semantic models."""
+
+    @dataclass
+    class EntityInfo:
+        """Class used in validating of entity labels across semantic models."""
+
+        semantic_model_name: str
+        label: str
+
+    @staticmethod
+    @validate_safely("Checking entities of the same name have the same label (or None for the label)")
+    def _check_semantic_model_entities(
+        semantic_model: SemanticModel, existing_labels: Dict[str, EntityInfo]
+    ) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+        for entity in semantic_model.entities:
+            if entity.label is not None:
+                if entity.name not in existing_labels:
+                    existing_labels[entity.name] = EntityLabelsRule.EntityInfo(
+                        semantic_model_name=semantic_model.name, label=entity.label
+                    )
+                elif existing_labels[entity.name].label != entity.label:
+                    issues.append(
+                        ValidationError(
+                            context=FileContext.from_metadata(semantic_model.metadata),
+                            message="Entities with the same name must have the same label or the label must be "
+                            f"`None`. Entity `{entity.name}` on semantic model `{semantic_model.name}` has label "
+                            f"`{entity.label}` but the same entity on semantic model "
+                            f"`{existing_labels[entity.name].semantic_model_name}`",
+                        )
+                    )
+
+        return issues
+
+    @staticmethod
+    @validate_safely("Checking entity labels are consistent across semantic models")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+        entity_label_map: Dict[str, EntityLabelsRule.EntityInfo] = {}
+
+        for semantic_model in semantic_manifest.semantic_models:
+            issues += EntityLabelsRule._check_semantic_model_entities(
+                semantic_model=semantic_model, existing_labels=entity_label_map
+            )
 
         return issues
