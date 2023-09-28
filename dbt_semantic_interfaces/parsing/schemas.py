@@ -338,8 +338,8 @@ schema_store = {
     time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
 }
 
-resources=[(k,DRAFT7.create_resource(v)) for k,v in schema_store.items()]
-registry=Registry().with_resources(resources)
+resources = [(k, DRAFT7.create_resource(v)) for k, v in schema_store.items()]
+registry = Registry().with_resources(resources)
 semantic_model_validator = SchemaValidator(semantic_model_schema, registry=registry)
 metric_validator = SchemaValidator(metric_schema, registry=registry)
 project_configuration_validator = SchemaValidator(project_configuration_schema, registry=registry)
