@@ -30,6 +30,8 @@ class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
     name: str
     filter: Optional[PydanticWhereFilter]
     alias: Optional[str]
+    join_to_timespine: bool = False
+    fill_nulls_with: Optional[int] = None
 
     @classmethod
     def _from_yaml_value(cls, input: PydanticParseableValueType) -> PydanticMetricInputMeasure:

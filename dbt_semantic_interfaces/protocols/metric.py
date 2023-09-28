@@ -43,6 +43,18 @@ class MetricInputMeasure(Protocol):
         """Property accessor to get the MeasureReference with the aliased name, if appropriate."""
         ...
 
+    @property
+    @abstractmethod
+    def join_to_timespine(self) -> bool:
+        """If the measure should be joined to the timespine."""
+        pass
+
+    @property
+    @abstractmethod
+    def fill_nulls_with(self) -> Optional[int]:
+        """What null values should be filled with if set."""
+        pass
+
 
 class MetricTimeWindow(Protocol):
     """Describes the window of time the metric should be accumulated over, e.g., '1 day', '2 weeks', etc."""
