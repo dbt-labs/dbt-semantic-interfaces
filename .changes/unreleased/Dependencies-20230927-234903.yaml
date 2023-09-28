@@ -1,0 +1,6 @@
+kind: Dependencies
+body: Migrated jsonschema.RefResolver to referncing.Registry for jsonschema 4 compatibility
+time: 2023-09-27T23:49:03.729376567-04:00
+custom:
+  Author: 'codecae'
+  PR: "160"

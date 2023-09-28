@@ -1,4 +1,5 @@
-from jsonschema import RefResolver
+from referencing import Registry
+from referencing.jsonschema import DRAFT7
 
 from dbt_semantic_interfaces.parsing.schema_validator import SchemaValidator
 
@@ -337,9 +338,9 @@ schema_store = {
     time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
 }
 
-
-resolver = RefResolver.from_schema(schema=metric_schema, store=schema_store)
-semantic_model_validator = SchemaValidator(semantic_model_schema, resolver=resolver)
-metric_validator = SchemaValidator(metric_schema, resolver=resolver)
-project_configuration_validator = SchemaValidator(project_configuration_schema, resolver=resolver)
-saved_query_validator = SchemaValidator(saved_query_schema, resolver=resolver)
+resources=[(k,DRAFT7.create_resource(v)) for k,v in schema_store.items()]
+registry=Registry().with_resources(resources)
+semantic_model_validator = SchemaValidator(semantic_model_schema, registry=registry)
+metric_validator = SchemaValidator(metric_schema, registry=registry)
+project_configuration_validator = SchemaValidator(project_configuration_schema, registry=registry)
+saved_query_validator = SchemaValidator(saved_query_schema, registry=registry)
