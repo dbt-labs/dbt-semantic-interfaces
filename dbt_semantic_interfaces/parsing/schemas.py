@@ -1,4 +1,4 @@
-from typing import List
+from typing import List, Tuple
 
 from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT7
@@ -340,7 +340,7 @@ schema_store = {
     time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
 }
 
-resources: List[tuple[str, Resource]] = [(str(k), DRAFT7.create_resource(v)) for k, v in schema_store.items()]
+resources: List[Tuple[str, Resource]] = [(str(k), DRAFT7.create_resource(v)) for k, v in schema_store.items()]
 registry: Registry = Registry().with_resources(resources)
 semantic_model_validator = SchemaValidator(semantic_model_schema, registry=registry)
 metric_validator = SchemaValidator(metric_schema, registry=registry)
