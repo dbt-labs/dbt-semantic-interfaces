@@ -46,6 +46,8 @@ metric_input_measure_schema = {
                 "name": {"type": "string"},
                 "filter": {"type": "string"},
                 "alias": {"type": "string"},
+                "join_to_timespine": {"type": "boolean"},
+                "fill_nulls_with": {"type": "integer"},
             },
             "additionalProperties": False,
         },
