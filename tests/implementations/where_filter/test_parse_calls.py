@@ -47,6 +47,28 @@ def test_extract_dimension_call_parameter_sets() -> None:  # noqa: D
     )
 
 
+def test_extract_dimension_with_grain_call_parameter_sets() -> None:  # noqa: D
+    parse_result = PydanticWhereFilter(
+        where_sql_template=(
+            """
+                {{ Dimension('metric_time').grain('WEEK') }} > 2023-09-18
+            """
+        )
+    ).call_parameter_sets
+
+    assert parse_result == FilterCallParameterSets(
+        dimension_call_parameter_sets=(),
+        time_dimension_call_parameter_sets=(
+            TimeDimensionCallParameterSet(
+                entity_path=(),
+                time_dimension_reference=TimeDimensionReference(element_name="metric_time"),
+                time_granularity=TimeGranularity.WEEK,
+            ),
+        ),
+        entity_call_parameter_sets=(),
+    )
+
+
 def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
         where_sql_template=(

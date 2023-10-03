@@ -22,3 +22,10 @@ class ModelTransformError(Exception):
     """Exception to represent errors related to model transformations."""
 
     pass
+
+
+class InvalidQuerySyntax(Exception):
+    """Raised when query syntax is invalid."""
+
+    def __init__(self, msg: str) -> None:  # noqa: D
+        super().__init__(msg)

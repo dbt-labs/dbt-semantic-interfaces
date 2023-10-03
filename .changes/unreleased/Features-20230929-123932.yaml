@@ -1,0 +1,6 @@
+kind: Features
+body: 'Backport: Add support for Dimension(...).grain(...) syntax in where parameter'
+time: 2023-09-29T12:39:32.834352-05:00
+custom:
+  Author: DevonFulcher
+  Issue: None
