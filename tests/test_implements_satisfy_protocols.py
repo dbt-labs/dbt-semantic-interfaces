@@ -1,11 +1,22 @@
-from typing import Protocol, runtime_checkable
+from typing import List, Protocol, runtime_checkable
 
 from hypothesis import given
-from hypothesis.strategies import builds, just, lists
+from hypothesis.strategies import booleans, builds, from_type, just, lists, none, text
 
-from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
+from dbt_semantic_interfaces.implementations.elements.dimension import (
+    PydanticDimension,
+    PydanticDimensionTypeParams,
+    PydanticDimensionValidityParams,
+)
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
-from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.elements.measure import (
+    PydanticMeasure,
+    PydanticMeasureAggregationParameters,
+    PydanticNonAdditiveDimensionParameters,
+)
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
+    PydanticWhereFilter,
+)
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
@@ -37,19 +48,82 @@ from dbt_semantic_interfaces.protocols import SemanticModel as SemanticModelProt
 from dbt_semantic_interfaces.protocols.time_spine_configuration import (
     TimeSpineTableConfiguration as TimeSpineTableConfigurationProtocol,
 )
-from dbt_semantic_interfaces.type_enums import MetricType
+from dbt_semantic_interfaces.type_enums import DimensionType, MetricType
 
-SIMPLE_METRIC_STRATEGY = builds(
-    PydanticMetric,
-    type=just(MetricType.SIMPLE),
-    type_params=builds(PydanticMetricTypeParams, measure=builds(PydanticMetricInputMeasure)),
+OPTIONAL_STR_STRATEGY = text() | none()
+OPTIONAL_METADATA_STRATEGY = builds(PydanticMetadata) | none()
+
+CATEGORICAL_DIMENSION_STRATEGY = builds(
+    PydanticDimension,
+    description=OPTIONAL_STR_STRATEGY,
+    type=just(DimensionType.CATEGORICAL),
+    expr=OPTIONAL_STR_STRATEGY,
+    metadata=OPTIONAL_METADATA_STRATEGY,
+    label=OPTIONAL_STR_STRATEGY,
+)
+
+DIMENSION_VALIDITY_PARAMS_STRATEGY = builds(
+    PydanticDimensionValidityParams,
+    is_start=just(False),
+    is_end=just(False),
+)
+
+TIME_DIMENSION_STRATEGY = builds(
+    PydanticDimension,
+    description=OPTIONAL_STR_STRATEGY,
+    type=just(DimensionType.TIME),
+    type_params=builds(PydanticDimensionTypeParams) | none(),
+    expr=OPTIONAL_STR_STRATEGY,
+    metadata=OPTIONAL_METADATA_STRATEGY,
+    label=OPTIONAL_STR_STRATEGY,
+)
+
+DIMENSION_STRATEGY = TIME_DIMENSION_STRATEGY | CATEGORICAL_DIMENSION_STRATEGY
+
+ENTITY_STRATEGY = builds(
+    PydanticEntity,
+    description=OPTIONAL_STR_STRATEGY,
+    role=OPTIONAL_STR_STRATEGY,
+    expr=OPTIONAL_STR_STRATEGY,
+    metadata=OPTIONAL_METADATA_STRATEGY,
+    label=OPTIONAL_STR_STRATEGY,
+)
+
+MEASURE_STRATEGY = builds(
+    PydanticMeasure,
+    description=OPTIONAL_STR_STRATEGY,
+    create_metric=booleans() | none(),
+    expr=OPTIONAL_STR_STRATEGY,
+    agg_params=builds(PydanticMeasureAggregationParameters) | none(),
+    non_additive_dimesnion=builds(PydanticNonAdditiveDimensionParameters) | none(),
+    agg_time_dimension=OPTIONAL_STR_STRATEGY,
+    label=OPTIONAL_STR_STRATEGY,
 )
 
 SEMANTIC_MODEL_STRATEGY = builds(
     PydanticSemanticModel,
-    dimensions=lists(builds(PydanticDimension)),
-    entities=lists(builds(PydanticEntity)),
-    measures=lists(builds(PydanticMeasure)),
+    dimensions=lists(DIMENSION_STRATEGY),
+    entities=lists(ENTITY_STRATEGY),
+    measures=lists(MEASURE_STRATEGY),
+)
+
+SIMPLE_METRIC_STRATEGY = builds(
+    PydanticMetric,
+    description=OPTIONAL_STR_STRATEGY,
+    type=just(MetricType.SIMPLE),
+    type_params=builds(PydanticMetricTypeParams, measure=builds(PydanticMetricInputMeasure)),
+    filter=builds(PydanticWhereFilter) | none(),
+    metadata=OPTIONAL_METADATA_STRATEGY,
+    label=OPTIONAL_STR_STRATEGY,
+)
+
+SAVED_QUERY_STRATEGY = builds(
+    PydanticSavedQuery,
+    group_bys=from_type(List[str]),
+    where=from_type(List[PydanticWhereFilter]),
+    description=OPTIONAL_STR_STRATEGY,
+    metadata=OPTIONAL_METADATA_STRATEGY,
+    label=OPTIONAL_STR_STRATEGY,
 )
 
 
@@ -65,7 +139,7 @@ class RuntimeCheckableSemanticManifest(SemanticManifestProtocol, Protocol):
         PydanticSemanticManifest,
         semantic_models=lists(SEMANTIC_MODEL_STRATEGY),
         metrics=lists(SIMPLE_METRIC_STRATEGY),
-        saved_queries=lists(builds(PydanticSavedQuery)),
+        saved_queries=lists(SAVED_QUERY_STRATEGY),
         project_configuration=builds(PydanticProjectConfiguration),
     )
 )
@@ -131,7 +205,7 @@ class RuntimeCheckableEntity(EntityProtocol, Protocol):
     pass
 
 
-@given(builds(PydanticEntity))
+@given(ENTITY_STRATEGY)
 def test_entity_protocol(entity: PydanticEntity) -> None:  # noqa: D
     assert isinstance(entity, RuntimeCheckableEntity)
 
@@ -143,7 +217,7 @@ class RuntimeCheckableMeasure(MeasureProtocol, Protocol):
     pass
 
 
-@given(builds(PydanticMeasure))
+@given(MEASURE_STRATEGY)
 def test_measure_protocol(measure: PydanticMeasure) -> None:  # noqa: D
     assert isinstance(measure, RuntimeCheckableMeasure)
 
@@ -155,9 +229,9 @@ class RuntimeCheckableDimension(DimensionProtocol, Protocol):
     pass
 
 
-@given(builds(PydanticDimension))
-def test_dimension_protocol(dimesnion: PydanticDimension) -> None:  # noqa: D
-    assert isinstance(dimesnion, RuntimeCheckableDimension)
+@given(DIMENSION_STRATEGY)
+def test_dimension_protocol(dimension: PydanticDimension) -> None:  # noqa: D
+    assert isinstance(dimension, RuntimeCheckableDimension)
 
 
 @runtime_checkable
@@ -179,7 +253,7 @@ class RuntimeCheckableSavedQuery(SavedQueryProtocol, Protocol):
     pass
 
 
-@given(builds(PydanticSavedQuery))
+@given(SAVED_QUERY_STRATEGY)
 def test_saved_query_protocol(saved_query: PydanticSavedQuery) -> None:  # noqa: D
     assert isinstance(saved_query, RuntimeCheckableSavedQuery)
 
