@@ -54,3 +54,9 @@ class Entity(Protocol):
         keys reserved for SCD Type II style data sources.
         """
         ...
+
+    @property
+    @abstractmethod
+    def label(self) -> Optional[str]:
+        """Returns a string representing a human readable label for the entity."""
+        pass

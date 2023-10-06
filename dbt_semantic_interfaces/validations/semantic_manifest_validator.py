@@ -10,6 +10,11 @@ from dbt_semantic_interfaces.validations.agg_time_dimension import (
 from dbt_semantic_interfaces.validations.dimension_const import DimensionConsistencyRule
 from dbt_semantic_interfaces.validations.element_const import ElementConsistencyRule
 from dbt_semantic_interfaces.validations.entities import NaturalEntityConfigurationRule
+from dbt_semantic_interfaces.validations.labels import (
+    EntityLabelsRule,
+    MetricLabelsRule,
+    SemanticModelLabelsRule,
+)
 from dbt_semantic_interfaces.validations.measures import (
     CountAggregationExprRule,
     MeasureConstraintAliasesRule,
@@ -81,6 +86,9 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         PrimaryEntityDimensionPairs[SemanticManifestT](),
         WhereFiltersAreParseable[SemanticManifestT](),
         SavedQueryRule[SemanticManifestT](),
+        MetricLabelsRule[SemanticManifestT](),
+        SemanticModelLabelsRule[SemanticManifestT](),
+        EntityLabelsRule[SemanticManifestT](),
     )
 
     def __init__(

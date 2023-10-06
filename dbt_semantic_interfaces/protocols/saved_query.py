@@ -37,3 +37,9 @@ class SavedQuery(Protocol):
     @abstractmethod
     def where(self) -> Sequence[WhereFilter]:  # noqa: D
         pass
+
+    @property
+    @abstractmethod
+    def label(self) -> Optional[str]:
+        """Returns a string representing a human readable label for the saved query."""
+        pass

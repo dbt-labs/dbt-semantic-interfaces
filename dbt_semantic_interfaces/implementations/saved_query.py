@@ -30,3 +30,4 @@ class PydanticSavedQuery(HashableBaseModel, ModelWithMetadataParsing, ProtocolHi
 
     description: Optional[str] = None
     metadata: Optional[PydanticMetadata] = None
+    label: Optional[str] = None

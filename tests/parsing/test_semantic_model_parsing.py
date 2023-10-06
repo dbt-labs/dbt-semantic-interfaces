@@ -15,6 +15,31 @@ from tests.example_project_configuration import (
 )
 
 
+def test_base_semantic_model_parsing() -> None:
+    """Test parsing base attributes of PydanticSemanticModel object."""
+    description = "Test semantic_model description"
+    label = "Base Test"
+    yaml_contents = textwrap.dedent(
+        f"""\
+        semantic_model:
+          name: base_test
+          description: {description}
+          label: {label}
+          node_relation:
+            alias: source_table
+            schema_name: some_schema
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+
+    assert len(build_result.semantic_manifest.semantic_models) == 1
+    semantic_model = build_result.semantic_manifest.semantic_models[0]
+    assert semantic_model.description == description
+    assert semantic_model.label == label
+
+
 def test_semantic_model_metadata_parsing() -> None:
     """Test for asserting that internal metadata is parsed into the SemanticModel object."""
     yaml_contents = textwrap.dedent(
@@ -64,6 +89,35 @@ def test_semantic_model_node_relation_parsing() -> None:
     assert len(build_result.semantic_manifest.semantic_models) == 1
     semantic_model = build_result.semantic_manifest.semantic_models[0]
     assert semantic_model.node_relation.relation_name == "some_schema.source_table"
+
+
+def test_base_semantic_model_entity_parsing() -> None:
+    """Test parsing base attributes of PydanticEntity object."""
+    label = "Base Test Entity"
+    yaml_contents = textwrap.dedent(
+        f"""\
+        semantic_model:
+          name: base_test
+          node_relation:
+            alias: source_table
+            schema_name: some_schema
+          entities:
+            - name: test_base_entity
+              type: primary
+              role: test_role
+              expr: example_id
+              label: {label}
+
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    assert len(build_result.semantic_manifest.semantic_models) == 1
+    semantic_model = build_result.semantic_manifest.semantic_models[0]
+    assert len(semantic_model.entities) == 1
+    entity = semantic_model.entities[0]
+    assert entity.label == label
 
 
 def test_semantic_model_entity_parsing() -> None:
@@ -130,6 +184,38 @@ def test_semantic_model_entity_metadata_parsing() -> None:
       """
     )
     assert entity.metadata.file_slice.content == expected_metadata_content
+
+
+def test_base_semantic_model_measure_parsing() -> None:
+    """Test parsing base attributes of PydanticMeasure object."""
+    description = "Test semantic_model measure description"
+    label = "Base Test Measure"
+    yaml_contents = textwrap.dedent(
+        f"""\
+        semantic_model:
+          name: base_test
+          node_relation:
+            alias: source_table
+            schema_name: some_schema
+          measures:
+            - name: example_measure
+              agg: count_distinct
+              expr: example_input
+              description: {description}
+              label: {label}
+
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+
+    assert len(build_result.semantic_manifest.semantic_models) == 1
+    semantic_model = build_result.semantic_manifest.semantic_models[0]
+    assert len(semantic_model.measures) == 1
+    measure = semantic_model.measures[0]
+    assert measure.description == description
+    assert measure.label == label
 
 
 def test_semantic_model_measure_parsing() -> None:
@@ -332,6 +418,37 @@ def test_semantic_model_primary_time_dimension_parsing() -> None:
     dimension = semantic_model.dimensions[0]
     assert dimension.type is DimensionType.TIME
     assert dimension.type_params is not None
+
+
+def test_base_semantic_model_dimension_parsing() -> None:
+    """Test parsing base attributes of PydanticDimension object."""
+    description = "Test semantic_model dimension description"
+    label = "Base Test Dimension"
+    yaml_contents = textwrap.dedent(
+        f"""\
+        semantic_model:
+          name: base_test
+          node_relation:
+            alias: source_table
+            schema_name: some_schema
+          dimensions:
+            - name: base_dimension_test
+              type: categorical
+              description: {description}
+              label: {label}
+
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+
+    assert len(build_result.semantic_manifest.semantic_models) == 1
+    semantic_model = build_result.semantic_manifest.semantic_models[0]
+    assert len(semantic_model.dimensions) == 1
+    dimension = semantic_model.dimensions[0]
+    assert dimension.description == description
+    assert dimension.label == label
 
 
 def test_semantic_model_dimension_metadata_parsing() -> None:

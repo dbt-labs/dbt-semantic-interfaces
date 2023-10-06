@@ -173,5 +173,11 @@ class SemanticModel(Protocol):
         """Reference object form of primary_entity."""
         pass
 
+    @property
+    @abstractmethod
+    def label(self) -> Optional[str]:
+        """Returns a string representing a human readable label for the semantic model."""
+        pass
+
 
 SemanticModelT = TypeVar("SemanticModelT", bound=SemanticModel)

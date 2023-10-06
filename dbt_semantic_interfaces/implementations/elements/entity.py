@@ -20,6 +20,7 @@ class PydanticEntity(HashableBaseModel, ModelWithMetadataParsing):
     role: Optional[str]
     expr: Optional[str] = None
     metadata: Optional[PydanticMetadata] = None
+    label: Optional[str] = None
 
     @property
     def reference(self) -> EntityReference:  # noqa: D
