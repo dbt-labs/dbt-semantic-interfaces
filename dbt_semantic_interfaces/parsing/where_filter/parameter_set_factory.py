@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Optional, Sequence
 
 from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
@@ -31,7 +31,7 @@ class ParameterSetFactory:
 
     @staticmethod
     def create_time_dimension(
-        time_dimension_name: str, time_granularity_name: str, entity_path: Sequence[str] = ()
+        time_dimension_name: str, time_granularity_name: Optional[str] = None, entity_path: Sequence[str] = ()
     ) -> TimeDimensionCallParameterSet:
         """Gets called by Jinja when rendering {{ TimeDimension(...) }}."""
         group_by_item_name = DunderedNameFormatter.parse_name(time_dimension_name)
@@ -56,7 +56,7 @@ class ParameterSetFactory:
             entity_path=(
                 tuple(EntityReference(element_name=arg) for arg in entity_path) + group_by_item_name.entity_links
             ),
-            time_granularity=TimeGranularity(time_granularity_name),
+            time_granularity=TimeGranularity(time_granularity_name) if time_granularity_name is not None else None,
         )
 
     @staticmethod

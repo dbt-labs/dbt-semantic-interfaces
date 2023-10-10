@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Optional, Tuple
 
 from dbt_semantic_interfaces.references import (
     DimensionReference,
@@ -25,7 +25,7 @@ class TimeDimensionCallParameterSet:
 
     entity_path: Tuple[EntityReference, ...]
     time_dimension_reference: TimeDimensionReference
-    time_granularity: TimeGranularity
+    time_granularity: Optional[TimeGranularity] = None
 
 
 @dataclass(frozen=True)

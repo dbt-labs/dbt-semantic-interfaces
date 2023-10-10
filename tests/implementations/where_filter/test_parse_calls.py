@@ -99,7 +99,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
 
 def test_extract_metric_time_dimension_call_parameter_sets() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
-        where_sql_template=("""{{ TimeDimension('metric_time', 'month') }} = '2020-01-01'""")
+        where_sql_template="""{{ TimeDimension('metric_time', 'month') }} = '2020-01-01'"""
     ).call_parameter_sets
 
     assert parse_result == FilterCallParameterSets(
@@ -214,4 +214,22 @@ def test_where_filter_intersection_error_collection() -> None:
     assert (
         ParameterSetFactory._exception_message_for_incorrect_format("customer__has_delivery_address")
         not in error_string
+    )
+
+
+def test_time_dimension_without_granularity() -> None:  # noqa: D
+    parse_result = PydanticWhereFilter(
+        where_sql_template="{{ TimeDimension('booking__created_at') }} > 2023-09-18"
+    ).call_parameter_sets
+
+    assert parse_result == FilterCallParameterSets(
+        dimension_call_parameter_sets=(),
+        time_dimension_call_parameter_sets=(
+            TimeDimensionCallParameterSet(
+                entity_path=(EntityReference("booking"),),
+                time_dimension_reference=TimeDimensionReference(element_name="created_at"),
+                time_granularity=None,
+            ),
+        ),
+        entity_call_parameter_sets=(),
     )
