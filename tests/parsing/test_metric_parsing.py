@@ -342,6 +342,37 @@ def test_constraint_metric_parsing() -> None:
     )
 
 
+def test_constraint_list_metric_parsing() -> None:
+    """Test for parsing a metric specification with a list of constraints included."""
+    yaml_contents = textwrap.dedent(
+        """\
+        metric:
+          name: constraint_test
+          type: simple
+          type_params:
+            measure:
+              name: input_measure
+          filter:
+            - "{{ dimension('some_dimension') }} IN ('value1', 'value2')"
+            - "1 > 0"
+        """
+    )
+    file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+
+    assert len(build_result.semantic_manifest.metrics) == 1
+    metric = build_result.semantic_manifest.metrics[0]
+    assert metric.name == "constraint_test"
+    assert metric.type is MetricType.SIMPLE
+    assert metric.filter == PydanticWhereFilterIntersection(
+        where_filters=[
+            PydanticWhereFilter(where_sql_template="{{ dimension('some_dimension') }} IN ('value1', 'value2')"),
+            PydanticWhereFilter(where_sql_template="1 > 0"),
+        ]
+    )
+
+
 def test_derived_metric_input_parsing() -> None:
     """Test for parsing derived metrics with metric_input properties."""
     yaml_contents = textwrap.dedent(

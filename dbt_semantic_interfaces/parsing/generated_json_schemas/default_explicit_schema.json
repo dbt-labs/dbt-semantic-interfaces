@@ -139,6 +139,20 @@
             ],
             "type": "object"
         },
+        "filter_schema": {
+            "$id": "filter_schema",
+            "oneOf": [
+                {
+                    "type": "string"
+                },
+                {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                }
+            ]
+        },
         "is-time-dimension": {
             "properties": {
                 "type": {
@@ -234,7 +248,7 @@
                             "type": "integer"
                         },
                         "filter": {
-                            "type": "string"
+                            "$ref": "#/definitions/filter_schema"
                         },
                         "join_to_timespine": {
                             "type": "boolean"
@@ -255,7 +269,7 @@
                     "type": "string"
                 },
                 "filter": {
-                    "type": "string"
+                    "$ref": "#/definitions/filter_schema"
                 },
                 "name": {
                     "type": "string"
@@ -277,7 +291,7 @@
                     "type": "string"
                 },
                 "filter": {
-                    "type": "string"
+                    "$ref": "#/definitions/filter_schema"
                 },
                 "label": {
                     "type": "string"
@@ -435,10 +449,7 @@
                     "type": "string"
                 },
                 "where": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
+                    "$ref": "#/definitions/filter_schema"
                 }
             },
             "required": [
