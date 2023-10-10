@@ -1,0 +1,6 @@
+kind: Dependencies
+body: relax more-itertools dependency
+time: 2023-10-10T10:38:15.507159+01:00
+custom:
+  Author: lukedyer-peak luke321321
+  PR: "174"
