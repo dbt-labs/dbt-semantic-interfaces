@@ -9,7 +9,7 @@ from dbt_semantic_interfaces.implementations.base import (
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
-    PydanticWhereFilter,
+    PydanticWhereFilterIntersection,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.protocols import ProtocolHint
@@ -26,7 +26,7 @@ class PydanticSavedQuery(HashableBaseModel, ModelWithMetadataParsing, ProtocolHi
     name: str
     metrics: List[str]
     group_bys: List[str] = []
-    where: List[PydanticWhereFilter] = []
+    where: Optional[PydanticWhereFilterIntersection] = None
 
     description: Optional[str] = None
     metadata: Optional[PydanticMetadata] = None

@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.protocols.metadata import Metadata
-from dbt_semantic_interfaces.protocols.where_filter import WhereFilter
+from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 
 
 class SavedQuery(Protocol):
@@ -35,7 +35,8 @@ class SavedQuery(Protocol):
 
     @property
     @abstractmethod
-    def where(self) -> Sequence[WhereFilter]:  # noqa: D
+    def where(self) -> Optional[WhereFilterIntersection]:
+        """Returns the intersection class containing any where filters specified in the saved query."""
         pass
 
     @property
