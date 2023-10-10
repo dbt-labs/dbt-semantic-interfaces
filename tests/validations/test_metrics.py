@@ -8,12 +8,15 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
 )
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
+    PydanticWhereFilter,
+    PydanticWhereFilterIntersection,
+)
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetricInput,
     PydanticMetricInputMeasure,
     PydanticMetricTimeWindow,
     PydanticMetricTypeParams,
-    PydanticWhereFilter,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
@@ -323,7 +326,8 @@ def test_where_filter_validations_bad_base_filter(  # noqa: D
 
     metric, _ = find_metric_with(manifest, lambda metric: metric.filter is not None)
     assert metric.filter is not None
-    metric.filter.where_sql_template = "{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    assert len(metric.filter.where_filters) > 0
+    metric.filter.where_filters[0].where_sql_template = "{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
     validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(SemanticManifestValidationException, match=f"trying to parse filter of metric `{metric.name}`"):
         validator.checked_validations(manifest)
@@ -338,8 +342,10 @@ def test_where_filter_validations_bad_measure_filter(  # noqa: D
         manifest, lambda metric: metric.type_params is not None and metric.type_params.measure is not None
     )
     assert metric.type_params.measure is not None
-    metric.type_params.measure.filter = PydanticWhereFilter(
-        where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    metric.type_params.measure.filter = PydanticWhereFilterIntersection(
+        where_filters=[
+            PydanticWhereFilter(where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}")
+        ]
     )
     validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(
@@ -358,8 +364,10 @@ def test_where_filter_validations_bad_numerator_filter(  # noqa: D
         manifest, lambda metric: metric.type_params is not None and metric.type_params.numerator is not None
     )
     assert metric.type_params.numerator is not None
-    metric.type_params.numerator.filter = PydanticWhereFilter(
-        where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    metric.type_params.numerator.filter = PydanticWhereFilterIntersection(
+        where_filters=[
+            PydanticWhereFilter(where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}")
+        ]
     )
     validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(
@@ -377,8 +385,10 @@ def test_where_filter_validations_bad_denominator_filter(  # noqa: D
         manifest, lambda metric: metric.type_params is not None and metric.type_params.denominator is not None
     )
     assert metric.type_params.denominator is not None
-    metric.type_params.denominator.filter = PydanticWhereFilter(
-        where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    metric.type_params.denominator.filter = PydanticWhereFilterIntersection(
+        where_filters=[
+            PydanticWhereFilter(where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}")
+        ]
     )
     validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(
@@ -400,8 +410,10 @@ def test_where_filter_validations_bad_input_metric_filter(  # noqa: D
     )
     assert metric.type_params.metrics is not None
     input_metric = metric.type_params.metrics[0]
-    input_metric.filter = PydanticWhereFilter(
-        where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
+    input_metric.filter = PydanticWhereFilterIntersection(
+        where_filters=[
+            PydanticWhereFilter(where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}")
+        ]
     )
     validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(

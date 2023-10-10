@@ -28,4 +28,7 @@ from dbt_semantic_interfaces.protocols.semantic_model import (  # noqa:F401
     SemanticModelDefaults,
     SemanticModelT,
 )
-from dbt_semantic_interfaces.protocols.where_filter import WhereFilter  # noqa:F401
+from dbt_semantic_interfaces.protocols.where_filter import (  # noqa:F401
+    WhereFilter,
+    WhereFilterIntersection,
+)

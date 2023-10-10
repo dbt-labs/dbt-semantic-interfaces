@@ -2,6 +2,7 @@ import textwrap
 
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
+    PydanticWhereFilterIntersection,
 )
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetricInput,
@@ -66,7 +67,9 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.type_params.measure == PydanticMetricInputMeasure(
         name="legacy_measure_from_object",
-        filter=PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}"""),
+        filter=PydanticWhereFilterIntersection(
+            where_filters=[PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}""")]
+        ),
         join_to_timespine=True,
         fill_nulls_with=1,
     )
@@ -181,8 +184,12 @@ def test_ratio_metric_input_measure_object_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.type_params.numerator == PydanticMetricInput(
         name="numerator_metric_from_object",
-        filter=PydanticWhereFilter(
-            where_sql_template="some_number > 5",
+        filter=PydanticWhereFilterIntersection(
+            where_filters=[
+                PydanticWhereFilter(
+                    where_sql_template="some_number > 5",
+                )
+            ],
         ),
     )
     assert metric.type_params.denominator == PydanticMetricInput(name="denominator_metric_from_object")
@@ -328,8 +335,10 @@ def test_constraint_metric_parsing() -> None:
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "constraint_test"
     assert metric.type is MetricType.SIMPLE
-    assert metric.filter == PydanticWhereFilter(
-        where_sql_template="{{ dimension('some_dimension') }} IN ('value1', 'value2')"
+    assert metric.filter == PydanticWhereFilterIntersection(
+        where_filters=[
+            PydanticWhereFilter(where_sql_template="{{ dimension('some_dimension') }} IN ('value1', 'value2')")
+        ]
     )
 
 
@@ -364,7 +373,9 @@ def test_derived_metric_input_parsing() -> None:
     assert metric.type_params.metrics[1] == PydanticMetricInput(
         name="input_metric",
         alias="constrained_input_metric",
-        filter=PydanticWhereFilter(where_sql_template="input_metric < 10"),
+        filter=PydanticWhereFilterIntersection(
+            where_filters=[PydanticWhereFilter(where_sql_template="input_metric < 10")]
+        ),
     )
 
 
