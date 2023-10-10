@@ -84,7 +84,10 @@ class ParameterSetFactory:
         """Gets called by Jinja when rendering {{ Entity(...) }}."""
         group_by_item_name = DunderedNameFormatter.parse_name(entity_name)
         if len(group_by_item_name.entity_links) > 0 or group_by_item_name.time_granularity is not None:
-            ParameterSetFactory._exception_message_for_incorrect_format(entity_name)
+            raise ParseWhereFilterException(
+                f"Entity name is in an incorrect format: '{entity_name}'. "
+                f"It should not contain any dunders (double underscores, or __)."
+            )
 
         return EntityCallParameterSet(
             entity_path=tuple(EntityReference(element_name=arg) for arg in entity_path),

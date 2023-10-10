@@ -137,3 +137,11 @@ def test_metric_time_in_dimension_call_error() -> None:  # noqa: D
             PydanticWhereFilter(where_sql_template="{{ Dimension('metric_time') }} > '2020-01-01'").call_parameter_sets
             is not None
         )
+
+
+def test_invalid_entity_name_error() -> None:
+    """Test to ensure we throw an error if an entity name is invalid."""
+    bad_entity_filter = PydanticWhereFilter(where_sql_template="{{ Entity('order_id__is_food_order' )}}")
+
+    with pytest.raises(ParseWhereFilterException, match="Entity name is in an incorrect format"):
+        bad_entity_filter.call_parameter_sets
