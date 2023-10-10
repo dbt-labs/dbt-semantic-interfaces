@@ -1,0 +1,7 @@
+kind: Fixes
+body: Throw an exception when invalid entity names are encountered in filter/group
+  by parameters
+time: 2023-10-09T21:10:57.456012-07:00
+custom:
+  Author: tlento
+  Issue: "172"
