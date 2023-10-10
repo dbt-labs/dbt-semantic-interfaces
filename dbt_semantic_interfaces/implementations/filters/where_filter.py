@@ -1,10 +1,13 @@
 from __future__ import annotations
 
-from typing import Callable, Generator, List
+from typing import Callable, Generator, List, Tuple
 
 from typing_extensions import Self
 
-from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
+from dbt_semantic_interfaces.call_parameter_sets import (
+    FilterCallParameterSets,
+    ParseWhereFilterException,
+)
 from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     PydanticCustomInputParser,
@@ -13,6 +16,7 @@ from dbt_semantic_interfaces.implementations.base import (
 from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
     WhereFilterParser,
 )
+from dbt_semantic_interfaces.pretty_print import pformat_big_objects
 
 
 class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
@@ -109,3 +113,23 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
                 f"Expected input to be of type string, list, PydanticWhereFilter, PydanticWhereFilterIntersection, "
                 f"or dict but got {type(input)} with value {input}"
             )
+
+    @property
+    def filter_expression_parameter_sets(self) -> List[Tuple[str, FilterCallParameterSets]]:
+        """Gets the call parameter sets for each filter expression."""
+        filter_parameter_sets: List[Tuple[str, FilterCallParameterSets]] = []
+        invalid_filter_expressions: List[Tuple[str, Exception]] = []
+        for where_filter in self.where_filters:
+            try:
+                filter_parameter_sets.append((where_filter.where_sql_template, where_filter.call_parameter_sets))
+            except Exception as e:
+                invalid_filter_expressions.append((where_filter.where_sql_template, e))
+
+        if invalid_filter_expressions:
+            raise ParseWhereFilterException(
+                f"Encountered one or more errors when parsing the set of filter expressions "
+                f"{pformat_big_objects(self.where_filters)}! Invalid expressions: \n "
+                f"{pformat_big_objects(invalid_filter_expressions)}"
+            )
+
+        return filter_parameter_sets

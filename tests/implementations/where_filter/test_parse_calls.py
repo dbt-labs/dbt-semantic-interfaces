@@ -11,6 +11,10 @@ from dbt_semantic_interfaces.call_parameter_sets import (
 )
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
+    PydanticWhereFilterIntersection,
+)
+from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
+    ParameterSetFactory,
 )
 from dbt_semantic_interfaces.references import (
     DimensionReference,
@@ -145,3 +149,69 @@ def test_invalid_entity_name_error() -> None:
 
     with pytest.raises(ParseWhereFilterException, match="Entity name is in an incorrect format"):
         bad_entity_filter.call_parameter_sets
+
+
+def test_where_filter_interesection_extract_call_parameter_sets() -> None:
+    """Tests the collection of call parameter sets for a set of where filters."""
+    time_filter = PydanticWhereFilter(
+        where_sql_template=("""{{ TimeDimension('metric_time', 'month') }} = '2020-01-01'""")
+    )
+    entity_filter = PydanticWhereFilter(
+        where_sql_template=(
+            """{{ Entity('listing') }} AND {{ Entity('user', entity_path=['listing']) }} == 'TEST_USER_ID'"""
+        )
+    )
+    filter_intersection = PydanticWhereFilterIntersection(where_filters=[time_filter, entity_filter])
+
+    parse_result = dict(filter_intersection.filter_expression_parameter_sets)
+
+    assert parse_result.get(time_filter.where_sql_template) == FilterCallParameterSets(
+        time_dimension_call_parameter_sets=(
+            TimeDimensionCallParameterSet(
+                time_dimension_reference=TimeDimensionReference(element_name="metric_time"),
+                entity_path=(),
+                time_granularity=TimeGranularity.MONTH,
+            ),
+        )
+    )
+    assert parse_result.get(entity_filter.where_sql_template) == FilterCallParameterSets(
+        dimension_call_parameter_sets=(),
+        entity_call_parameter_sets=(
+            EntityCallParameterSet(
+                entity_path=(),
+                entity_reference=EntityReference("listing"),
+            ),
+            EntityCallParameterSet(
+                entity_path=(EntityReference("listing"),),
+                entity_reference=EntityReference("user"),
+            ),
+        ),
+    )
+
+
+def test_where_filter_intersection_error_collection() -> None:
+    """Tests the error behaviors when parsing where filters and collecting the call parameter sets for each.
+
+    This should result in a single exception with all broken filters represented.
+    """
+    metric_time_in_dimension_error = PydanticWhereFilter(
+        where_sql_template="{{ TimeDimension('order_id__order_time__month', 'week') }} > '2020-01-01'"
+    )
+    valid_dimension = PydanticWhereFilter(where_sql_template=" {Dimension('customer__has_delivery_address')} ")
+    entity_format_error = PydanticWhereFilter(where_sql_template="{{ Entity('order_id__is_food_order') }}")
+    filter_intersection = PydanticWhereFilterIntersection(
+        where_filters=[metric_time_in_dimension_error, valid_dimension, entity_format_error]
+    )
+
+    with pytest.raises(ParseWhereFilterException) as exc_info:
+        filter_intersection.filter_expression_parameter_sets
+
+    error_string = str(exc_info.value)
+    # These are a little too implementation-specific, but it demonstrates that we are collecting the errors we find.
+    assert ParameterSetFactory._exception_message_for_incorrect_format("order_id__order_time__month") in error_string
+    assert "Entity name is in an incorrect format: 'order_id__is_food_order'" in error_string
+    # We cannot simply scan for name because the error message contains the filter list, so we assert against the error
+    assert (
+        ParameterSetFactory._exception_message_for_incorrect_format("customer__has_delivery_address")
+        not in error_string
+    )

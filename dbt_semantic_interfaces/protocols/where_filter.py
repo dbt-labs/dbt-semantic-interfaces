@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Protocol, Sequence
+from typing import Protocol, Sequence, Tuple
 
 from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
 
@@ -39,4 +39,14 @@ class WhereFilterIntersection(Protocol):
     @abstractmethod
     def where_filters(self) -> Sequence[WhereFilter]:
         """The collection of WhereFilters to be applied to the input data set."""
+        pass
+
+    @property
+    @abstractmethod
+    def filter_expression_parameter_sets(self) -> Sequence[Tuple[str, FilterCallParameterSets]]:
+        """Mapping from distinct filter expressions to the call parameter sets associated with them.
+
+        We use a tuple, rather than a Mapping, in case the call parameter sets may vary between
+        filter expression specifications.
+        """
         pass
