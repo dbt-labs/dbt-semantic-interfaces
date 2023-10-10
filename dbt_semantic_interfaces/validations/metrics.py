@@ -172,7 +172,7 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
 
         if metric.filter is not None:
             try:
-                metric.filter.call_parameter_sets
+                metric.filter.filter_expression_parameter_sets
             except Exception as e:
                 issues.append(
                     generate_exception_issue(
@@ -181,7 +181,6 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
                         context=context,
                         extras={
                             "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                            "filter": metric.filter.where_sql_template,
                         },
                     )
                 )
@@ -190,7 +189,7 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
             measure = metric.type_params.measure
             if measure is not None and measure.filter is not None:
                 try:
-                    measure.filter.call_parameter_sets
+                    measure.filter.filter_expression_parameter_sets
                 except Exception as e:
                     issues.append(
                         generate_exception_issue(
@@ -200,7 +199,6 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
                             context=context,
                             extras={
                                 "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                                "filter": measure.filter.where_sql_template,
                             },
                         )
                     )
@@ -208,7 +206,7 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
             numerator = metric.type_params.numerator
             if numerator is not None and numerator.filter is not None:
                 try:
-                    numerator.filter.call_parameter_sets
+                    numerator.filter.filter_expression_parameter_sets
                 except Exception as e:
                     issues.append(
                         generate_exception_issue(
@@ -217,7 +215,6 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
                             context=context,
                             extras={
                                 "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                                "filter": numerator.filter.where_sql_template,
                             },
                         )
                     )
@@ -225,7 +222,7 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
             denominator = metric.type_params.denominator
             if denominator is not None and denominator.filter is not None:
                 try:
-                    denominator.filter.call_parameter_sets
+                    denominator.filter.filter_expression_parameter_sets
                 except Exception as e:
                     issues.append(
                         generate_exception_issue(
@@ -234,7 +231,6 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
                             context=context,
                             extras={
                                 "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                                "filter": denominator.filter.where_sql_template,
                             },
                         )
                     )
@@ -242,7 +238,7 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
             for input_metric in metric.type_params.metrics or []:
                 if input_metric.filter is not None:
                     try:
-                        input_metric.filter.call_parameter_sets
+                        input_metric.filter.filter_expression_parameter_sets
                     except Exception as e:
                         issues.append(
                             generate_exception_issue(
@@ -252,7 +248,6 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
                                 context=context,
                                 extras={
                                     "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                                    "filter": input_metric.filter.where_sql_template,
                                 },
                             )
                         )

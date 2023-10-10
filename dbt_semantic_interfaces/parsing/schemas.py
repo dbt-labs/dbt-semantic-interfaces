@@ -39,6 +39,17 @@ dimension_type_values += [x.lower() for x in dimension_type_values]
 
 time_dimension_type_values = ["TIME", "time"]
 
+filter_schema = {
+    "$id": "filter_schema",
+    "oneOf": [
+        {"type": "string"},
+        {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+    ],
+}
+
 metric_input_measure_schema = {
     "$id": "metric_input_measure_schema",
     "oneOf": [
@@ -47,7 +58,7 @@ metric_input_measure_schema = {
             "type": "object",
             "properties": {
                 "name": {"type": "string"},
-                "filter": {"type": "string"},
+                "filter": {"$ref": "filter_schema"},
                 "alias": {"type": "string"},
                 "join_to_timespine": {"type": "boolean"},
                 "fill_nulls_with": {"type": "integer"},
@@ -62,7 +73,7 @@ metric_input_schema = {
     "type": "object",
     "properties": {
         "name": {"type": "string"},
-        "filter": {"type": "string"},
+        "filter": {"$ref": "filter_schema"},
         "alias": {"type": "string"},
         "offset_window": {"type": "string"},
         "offset_to_grain": {"type": "string"},
@@ -218,7 +229,7 @@ metric_schema = {
         },
         "type": {"enum": metric_types_enum_values},
         "type_params": {"$ref": "metric_type_params"},
-        "filter": {"type": "string"},
+        "filter": {"$ref": "filter_schema"},
         "description": {"type": "string"},
         "label": {"type": "string"},
     },
@@ -292,10 +303,7 @@ saved_query_schema = {
             "type": "array",
             "items": {"type": "string"},
         },
-        "where": {
-            "type": "array",
-            "items": {"type": "string"},
-        },
+        "where": {"$ref": "filter_schema"},
         "label": {"type": "string"},
     },
     "required": ["name", "metrics"],
@@ -333,6 +341,7 @@ schema_store = {
     project_configuration_schema["$id"]: project_configuration_schema,
     saved_query_schema["$id"]: saved_query_schema,
     # Sub-object schemas
+    filter_schema["$id"]: filter_schema,
     metric_input_measure_schema["$id"]: metric_input_measure_schema,
     metric_type_params_schema["$id"]: metric_type_params_schema,
     entity_schema["$id"]: entity_schema,

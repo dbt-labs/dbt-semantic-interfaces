@@ -1,0 +1,7 @@
+kind: Features
+body: Allow metric filters and saved query where properties to accept lists of filter
+  expressions
+time: 2023-10-09T21:07:37.978465-07:00
+custom:
+  Author: tlento
+  Issue: "147"

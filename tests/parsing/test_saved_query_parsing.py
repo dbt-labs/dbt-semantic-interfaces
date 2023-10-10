@@ -131,5 +131,6 @@ def test_saved_query_where() -> None:
     build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
     assert len(build_result.semantic_manifest.saved_queries) == 1
     saved_query = build_result.semantic_manifest.saved_queries[0]
-    assert len(saved_query.where) == 1
-    assert where == saved_query.where[0].where_sql_template
+    assert saved_query.where is not None
+    assert len(saved_query.where.where_filters) == 1
+    assert where == saved_query.where.where_filters[0].where_sql_template

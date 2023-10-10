@@ -8,9 +8,6 @@ import dateutil.parser
 from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
-from dbt_semantic_interfaces.implementations.filters.where_filter import (
-    PydanticWhereFilter,
-)
 from dbt_semantic_interfaces.implementations.metadata import (
     PydanticFileSlice,
     PydanticMetadata,
@@ -124,7 +121,6 @@ def metric_with_guaranteed_meta(
     name: str,
     type: MetricType,
     type_params: PydanticMetricTypeParams,
-    where_filter: Optional[PydanticWhereFilter] = None,
     metadata: PydanticMetadata = default_meta(),
     description: str = "adhoc metric",
 ) -> PydanticMetric:
@@ -137,7 +133,7 @@ def metric_with_guaranteed_meta(
         description=description,
         type=type,
         type_params=type_params,
-        filter=where_filter,
+        filter=None,
         metadata=metadata,
     )
 

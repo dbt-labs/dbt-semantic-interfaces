@@ -101,7 +101,9 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
     @validate_safely("Validate the where field in a saved query.")
     def _check_where(saved_query: SavedQuery) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
-        for where_filter in saved_query.where:
+        if saved_query.where is None:
+            return issues
+        for where_filter in saved_query.where.where_filters:
             try:
                 where_filter.call_parameter_sets
             except Exception as e:

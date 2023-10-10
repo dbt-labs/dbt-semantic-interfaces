@@ -4,7 +4,7 @@ from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.protocols.metadata import Metadata
-from dbt_semantic_interfaces.protocols.where_filter import WhereFilter
+from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
 
@@ -23,7 +23,8 @@ class MetricInputMeasure(Protocol):
 
     @property
     @abstractmethod
-    def filter(self) -> Optional[WhereFilter]:  # noqa: D
+    def filter(self) -> Optional[WhereFilterIntersection]:
+        """Return the set of filters to apply prior to aggregating this input measure."""
         pass
 
     @property
@@ -80,7 +81,8 @@ class MetricInput(Protocol):
 
     @property
     @abstractmethod
-    def filter(self) -> Optional[WhereFilter]:  # noqa: D
+    def filter(self) -> Optional[WhereFilterIntersection]:
+        """Return the set of filters to apply prior to calculating this input metric."""
         pass
 
     @property
@@ -181,7 +183,8 @@ class Metric(Protocol):
 
     @property
     @abstractmethod
-    def filter(self) -> Optional[WhereFilter]:  # noqa: D
+    def filter(self) -> Optional[WhereFilterIntersection]:
+        """Return the set of filters to apply prior to calculating this metric."""
         pass
 
     @property
