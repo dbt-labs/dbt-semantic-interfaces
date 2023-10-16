@@ -1,0 +1,56 @@
+name: 🛠️ Implementation
+description: This is an implementation ticket intended for use by the maintainers of dbt-semantic-interfaces
+title: "[<project>] <title>"
+labels: ["user docs"]
+body:
+  - type: markdown
+    attributes:
+      value: This is an implementation ticket intended for use by the maintainers of dbt-semantic-interfaces
+  - type: checkboxes
+    attributes:
+      label: Housekeeping
+      description: >
+        Friendly reminders:
+          1. Link any blocking issues in the "Blocked on" field under the "Core devs & maintainers" project.
+      options:
+        - label: I am a maintainer of dbt-semantic-interfaces
+          required: true
+  - type: textarea
+    attributes:
+      label: Short description
+      description: |
+        Describe the scope of the ticket, a high-level implementation approach and any tradeoffs to consider
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Acceptance criteria
+      description: |
+        What is the definition of done for this ticket? Include any relevant edge cases and/or test cases
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Impact to Other Teams
+      description: |
+        Will this change impact other teams?  Include details of the kinds of changes required (new tests, code changes, related tickets) and _add the relevant `Impact:[team]` label_.
+      placeholder: |
+        Example: This change impacts `dbt-core` because the parsing of semantic-models will need to be modified.  The `Impact:[Team]` label has been added.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Will backports be required?
+      description: |
+        Will this change need to be backported to previous versions?  Add details, possible blockers to backporting and _add the relevant backport labels `backport 0.x.latest`_
+      placeholder: |
+        Example: This is a bad bug that we need to backport to 0.3.latest and 0.2.latest.  The `backport 0.3.latest` and `backport 0.2.latest` labels have been added.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Context
+      description: |
+        Provide the "why", motivation, and alternative approaches considered -- linking to previous refinement issues, spikes, Notion docs as appropriate
+    validations:
+      required: false
