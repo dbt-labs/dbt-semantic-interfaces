@@ -70,6 +70,27 @@ def test_duplicate_semantic_model_name(  # noqa: D
         ).checked_validations(model)
 
 
+def test_metric_name_validity(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+):
+    validator = SemanticManifestValidator[PydanticSemanticManifest](
+        [UniqueAndValidNameRule[PydanticSemanticManifest]()]
+    )
+
+    # Shouldn't raise an exception
+    validator.checked_validations(simple_semantic_manifest__with_primary_transforms)
+
+    # Should raise an exception
+    copied_manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    metric = copied_manifest.metrics[0]
+    metric.name = f"@{metric.name}"
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf"Invalid name `{metric.name}",
+    ):
+        validator.checked_validations(copied_manifest)
+
+
 def test_duplicate_metric_name(  # noqa:D
     simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:

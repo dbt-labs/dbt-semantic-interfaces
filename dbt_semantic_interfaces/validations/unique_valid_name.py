@@ -198,13 +198,15 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
         if semantic_manifest.metrics:
             metric_names = set()
             for metric in semantic_manifest.metrics:
+                metric_context = MetricContext(
+                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                    metric=MetricModelReference(metric_name=metric.name),
+                )
+                issues += UniqueAndValidNameRule.check_valid_name(name=metric.name, context=metric_context)
                 if metric.name in metric_names:
                     issues.append(
                         ValidationError(
-                            context=MetricContext(
-                                file_context=FileContext.from_metadata(metadata=metric.metadata),
-                                metric=MetricModelReference(metric_name=metric.name),
-                            ),
+                            context=metric_context,
                             message=f"Can't use name `{metric.name}` for a metric when it was already used for "
                             "a metric",
                         )
