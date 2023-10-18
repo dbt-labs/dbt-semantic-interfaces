@@ -172,23 +172,17 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     def _validate_top_level_objects(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
         """Checks names of objects that are not nested."""
         object_info_tuples = []
+        issues: List[ValidationIssue] = []
         if semantic_manifest.semantic_models:
             for semantic_model in semantic_manifest.semantic_models:
-                object_info_tuples.append(
-                    (
-                        semantic_model.name,
-                        "semantic model",
-                        SemanticModelContext(
-                            file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                            semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
-                        ),
-                    )
+                context = SemanticModelContext(
+                    file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                    semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
                 )
+                object_info_tuples.append((semantic_model.name, "semantic model", context))
+                issues += UniqueAndValidNameRule.check_valid_name(name=semantic_model.name, context=context)
 
         name_to_type: Dict[str, str] = {}
-
-        issues: List[ValidationIssue] = []
-
         for name, type_, context in object_info_tuples:
             if name in name_to_type:
                 issues.append(
@@ -217,9 +211,6 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
                     )
                 else:
                     metric_names.add(metric.name)
-
-        for name, _, context in object_info_tuples:
-            issues += UniqueAndValidNameRule.check_valid_name(name=name, context=context)
 
         return issues
 

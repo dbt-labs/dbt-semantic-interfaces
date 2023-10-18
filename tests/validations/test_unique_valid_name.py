@@ -33,6 +33,27 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 """
 
 
+def test_semantic_model_name_validity(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+):
+    validator = SemanticManifestValidator[PydanticSemanticManifest](
+        [UniqueAndValidNameRule[PydanticSemanticManifest]()]
+    )
+
+    # Shouldn't raise an exception
+    validator.checked_validations(simple_semantic_manifest__with_primary_transforms)
+
+    # Should raise an exception
+    copied_manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    semantic_model = copied_manifest.semantic_models[0]
+    semantic_model.name = f"@{semantic_model.name}"
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf"Invalid name `{semantic_model.name}",
+    ):
+        validator.checked_validations(copied_manifest)
+
+
 def test_duplicate_semantic_model_name(  # noqa: D
     simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
