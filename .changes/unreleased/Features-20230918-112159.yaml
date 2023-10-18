@@ -1,6 +1,0 @@
-kind: Features
-body: Support for `Dimension.grain(...)` in where/filter
-time: 2023-09-18T11:21:59.459474-05:00
-custom:
-  Author: DevonFulcher
-  Issue: None
