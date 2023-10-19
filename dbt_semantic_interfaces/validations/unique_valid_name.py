@@ -171,29 +171,25 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     @validate_safely(whats_being_done="checking model top level element names are sufficiently unique")
     def _validate_top_level_objects(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
         """Checks names of objects that are not nested."""
-        object_info_tuples = []
         issues: List[ValidationIssue] = []
         if semantic_manifest.semantic_models:
+            semantic_model_names = set()
             for semantic_model in semantic_manifest.semantic_models:
                 context = SemanticModelContext(
                     file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
                     semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
                 )
-                object_info_tuples.append((semantic_model.name, "semantic model", context))
                 issues += UniqueAndValidNameRule.check_valid_name(name=semantic_model.name, context=context)
-
-        name_to_type: Dict[str, str] = {}
-        for name, type_, context in object_info_tuples:
-            if name in name_to_type:
-                issues.append(
-                    ValidationError(
-                        context=context,
-                        message=f"Can't use name `{name}` for a {type_} when it was already used for a "
-                        f"{name_to_type[name]}",
+                if semantic_model.name in semantic_model_names:
+                    issues.append(
+                        ValidationError(
+                            context=context,
+                            message=f"Can't use name `{semantic_model.name}` for a semantic model when it was already "
+                            "used for a semantic model",
+                        )
                     )
-                )
-            else:
-                name_to_type[name] = type_
+                else:
+                    semantic_model_names.add(semantic_model.name)
 
         if semantic_manifest.metrics:
             metric_names = set()

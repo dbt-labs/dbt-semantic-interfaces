@@ -24,12 +24,10 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     Top level elements include
     - Semantic Models
     - Metrics
-    - PydanticMetric Sets
-    - Dimension Sets
 
-    A name for any of these elements must be unique to all other top level elements
-    except metrics. PydanticMetric names only need to be unique in comparison to other metric
-    names.
+    For each top level element type we test for
+    - Name validity checking
+    - Name uniquness checking
 """
 
 
