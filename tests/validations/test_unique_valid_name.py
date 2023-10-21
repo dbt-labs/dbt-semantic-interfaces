@@ -61,7 +61,7 @@ def test_duplicate_semantic_model_name(  # noqa: D
     with pytest.raises(
         SemanticManifestValidationException,
         match=rf"Can't use name `{duplicated_semantic_model.name}` for a semantic model when it was already used for "
-        "a semantic model",
+        "another semantic model",
     ):
         SemanticManifestValidator[PydanticSemanticManifest](
             [UniqueAndValidNameRule[PydanticSemanticManifest]()]
@@ -97,7 +97,7 @@ def test_duplicate_metric_name(  # noqa:D
     model.metrics.append(duplicated_metric)
     with pytest.raises(
         SemanticManifestValidationException,
-        match=rf"Can't use name `{duplicated_metric.name}` for a metric when it was already used for a metric",
+        match=rf"Can't use name `{duplicated_metric.name}` for a metric when it was already used for another metric",
     ):
         SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(model)
 
