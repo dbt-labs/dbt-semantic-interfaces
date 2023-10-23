@@ -201,24 +201,17 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
         """Checks names of objects that are not nested."""
         issues: List[ValidationIssue] = []
 
-        if semantic_manifest.semantic_models:
-            issues.extend(
-                UniqueAndValidNameRule._validate_top_level_objects_of_type(
-                    semantic_manifest.semantic_models, "semantic model"
-                )
+        issues.extend(
+            UniqueAndValidNameRule._validate_top_level_objects_of_type(
+                semantic_manifest.semantic_models, "semantic model"
             )
+        )
 
-        if semantic_manifest.metrics:
-            issues.extend(
-                UniqueAndValidNameRule._validate_top_level_objects_of_type(semantic_manifest.metrics, "metric")
-            )
+        issues.extend(UniqueAndValidNameRule._validate_top_level_objects_of_type(semantic_manifest.metrics, "metric"))
 
-        if semantic_manifest.saved_queries:
-            issues.extend(
-                UniqueAndValidNameRule._validate_top_level_objects_of_type(
-                    semantic_manifest.saved_queries, "saved query"
-                )
-            )
+        issues.extend(
+            UniqueAndValidNameRule._validate_top_level_objects_of_type(semantic_manifest.saved_queries, "saved query")
+        )
 
         return issues
 
