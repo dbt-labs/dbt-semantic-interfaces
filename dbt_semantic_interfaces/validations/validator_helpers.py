@@ -176,6 +176,7 @@ ValidationContext = Union[
     SemanticModelContext,
     SemanticModelElementContext,
     SavedQueryContext,
+    ValidationIssueContext,
 ]
 
 

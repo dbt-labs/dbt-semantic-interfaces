@@ -7,6 +7,7 @@ from typing import Dict, Generic, List, Optional, Sequence, Tuple, Union
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.protocols import (
     Metric,
+    SavedQuery,
     SemanticManifest,
     SemanticManifestT,
     SemanticModel,
@@ -28,6 +29,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     ValidationContext,
     ValidationError,
     ValidationIssue,
+    ValidationIssueContext,
     validate_safely,
 )
 
@@ -172,7 +174,9 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     @validate_safely(whats_being_done="checking top level elements of a specific type have unique and valid names")
     def _validate_top_level_objects_of_type(
         object_context_tuples: Union[
-            List[Tuple[SemanticModel, SemanticModelContext]], List[Tuple[Metric, MetricContext]]
+            List[Tuple[SemanticModel, SemanticModelContext]],
+            List[Tuple[Metric, MetricContext]],
+            List[Tuple[SavedQuery, ValidationIssueContext]],
         ],
         object_type: str,
     ) -> List[ValidationIssue]:
@@ -231,6 +235,23 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
                 for metric in semantic_manifest.metrics
             ]
             issues.extend(UniqueAndValidNameRule._validate_top_level_objects_of_type(metric_context_tuples, "metric"))
+
+        if semantic_manifest.saved_queries:
+            # TODO: We should clean up this pattern of precompiling object contexts
+            saved_query_context_tuples = [
+                (
+                    saved_query,
+                    ValidationIssueContext(
+                        file_context=FileContext.from_metadata(metadata=saved_query.metadata),
+                        object_type="saved query",
+                        object_name=saved_query.name,
+                    ),
+                )
+                for saved_query in semantic_manifest.saved_queries
+            ]
+            issues.extend(
+                UniqueAndValidNameRule._validate_top_level_objects_of_type(saved_query_context_tuples, "saved query")
+            )
 
         return issues
 

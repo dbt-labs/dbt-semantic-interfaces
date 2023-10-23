@@ -24,6 +24,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     Top level elements include
     - Semantic Models
     - Metrics
+    - Saved Queries
 
     For each top level element type we test for
     - Name validity checking
@@ -114,6 +115,43 @@ def test_top_level_metric_can_have_same_name_as_any_other_top_level_item(  # noq
     SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(
         model_semantic_model
     )
+
+
+def test_saved_query_name_validity(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+):
+    validator = SemanticManifestValidator[PydanticSemanticManifest](
+        [UniqueAndValidNameRule[PydanticSemanticManifest]()]
+    )
+
+    # Shouldn't raise an exception
+    validator.checked_validations(simple_semantic_manifest__with_primary_transforms)
+
+    # Should raise an exception
+    copied_manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    saved_query = copied_manifest.saved_queries[0]
+    saved_query.name = f"@{saved_query.name}"
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf"Invalid name `{saved_query.name}",
+    ):
+        validator.checked_validations(copied_manifest)
+
+
+def test_duplicate_saved_query_name(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    duplicated_saved_query = manifest.saved_queries[0]
+    manifest.saved_queries.append(duplicated_saved_query)
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf"Can't use name `{duplicated_saved_query.name}` for a saved query when it was already used for "
+        "another saved query",
+    ):
+        SemanticManifestValidator[PydanticSemanticManifest](
+            [UniqueAndValidNameRule[PydanticSemanticManifest]()]
+        ).checked_validations(manifest)
 
 
 """
