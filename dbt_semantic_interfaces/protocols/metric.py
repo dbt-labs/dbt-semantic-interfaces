@@ -46,13 +46,13 @@ class MetricInputMeasure(Protocol):
 
     @property
     @abstractmethod
-    def join_to_timespine(self) -> bool:
-        """If the measure should be joined to the timespine."""
+    def time_spine_join(self) -> bool:
+        """If the measure should be joined to the time spine."""
         pass
 
     @property
     @abstractmethod
-    def fill_nulls_with(self) -> Optional[int]:
+    def null_fill_value(self) -> Optional[float]:
         """What null values should be filled with if set."""
         pass
 
@@ -102,7 +102,7 @@ class MetricInput(Protocol):
 
     @property
     @abstractmethod
-    def as_reference(self) -> MetricReference:
+    def metric_reference(self) -> MetricReference:
         """Property accessor to get the MetricReference associated with this metric input."""
         ...
 

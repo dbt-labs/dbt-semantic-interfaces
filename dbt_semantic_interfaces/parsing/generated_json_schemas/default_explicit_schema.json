@@ -211,7 +211,7 @@
                 "expr": {
                     "type": [
                         "string",
-                        "integer",
+                        "number",
                         "boolean"
                     ]
                 },
@@ -244,17 +244,17 @@
                         "alias": {
                             "type": "string"
                         },
-                        "fill_nulls_with": {
-                            "type": "integer"
-                        },
                         "filter": {
                             "$ref": "#/definitions/filter_schema"
                         },
-                        "join_to_timespine": {
-                            "type": "boolean"
-                        },
                         "name": {
                             "type": "string"
+                        },
+                        "null_fill_value": {
+                            "type": "number"
+                        },
+                        "time_spine_join": {
+                            "type": "boolean"
                         }
                     },
                     "type": "object"

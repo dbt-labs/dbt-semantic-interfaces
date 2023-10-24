@@ -28,10 +28,10 @@ class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
     """
 
     name: str
-    filter: Optional[PydanticWhereFilterIntersection]
-    alias: Optional[str]
-    join_to_timespine: bool = False
-    fill_nulls_with: Optional[int] = None
+    filter: Optional[PydanticWhereFilterIntersection] = None
+    alias: Optional[str] = None
+    time_spine_join: bool = False
+    null_fill_value: Optional[float] = None
 
     @classmethod
     def _from_yaml_value(cls, input: PydanticParseableValueType) -> PydanticMetricInputMeasure:
@@ -124,7 +124,7 @@ class PydanticMetricInput(HashableBaseModel):
     offset_to_grain: Optional[TimeGranularity]
 
     @property
-    def as_reference(self) -> MetricReference:
+    def metric_reference(self) -> MetricReference:
         """Property accessor to get the MetricReference associated with this metric input."""
         return MetricReference(element_name=self.name)
 
