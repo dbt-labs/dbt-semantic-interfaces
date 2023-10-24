@@ -49,9 +49,9 @@ class WhereFilterTimeDimensionFactory(ProtocolHint[QueryInterfaceTimeDimensionFa
         """Gets called by Jinja when rendering {{ TimeDimension(...) }}."""
         if descending is not None:
             raise InvalidQuerySyntax("descending is invalid in the where parameter and filter spec")
-        if date_part_name is not None:
-            raise InvalidQuerySyntax("date_part isn't currently supported in the where parameter and filter spec")
         self.time_dimension_call_parameter_sets.append(
-            ParameterSetFactory.create_time_dimension(time_dimension_name, time_granularity_name, entity_path)
+            ParameterSetFactory.create_time_dimension(
+                time_dimension_name, time_granularity_name, entity_path, date_part_name
+            )
         )
         return TimeDimensionStub()
