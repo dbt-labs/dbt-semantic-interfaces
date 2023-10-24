@@ -26,7 +26,7 @@ class PydanticSavedQuery(HashableBaseModel, ModelWithMetadataParsing, ProtocolHi
 
     name: str
     metrics: List[str]
-    group_bys: List[str] = []
+    group_by: List[str] = []
     where: Optional[PydanticWhereFilterIntersection] = None
 
     description: Optional[str] = None

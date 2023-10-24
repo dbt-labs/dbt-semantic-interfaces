@@ -477,7 +477,7 @@
                     },
                     "type": "array"
                 },
-                "group_bys": {
+                "group_by": {
                     "items": {
                         "type": "string"
                     },

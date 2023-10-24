@@ -89,7 +89,7 @@ def test_saved_query_metrics_parsing() -> None:
     assert {"test_metric_a", "test_metric_b", "test_metric_c"} == set(saved_query.metrics)
 
 
-def test_saved_query_group_bys() -> None:
+def test_saved_query_group_by() -> None:
     """Test for parsing group_bys in a saved query."""
     yaml_contents = textwrap.dedent(
         """\
@@ -97,9 +97,9 @@ def test_saved_query_group_bys() -> None:
           name: test_saved_query_group_bys
           metrics:
             - test_metric_a
-          group_bys:
-            - Dimension(test_entity__test_dimension_a)
-            - Dimension(test_entity__test_dimension_b)
+          group_by:
+            - Dimension('test_entity__test_dimension_a')
+            - Dimension('test_entity__test_dimension_b')
 
         """
     )
@@ -109,9 +109,9 @@ def test_saved_query_group_bys() -> None:
 
     assert len(build_result.semantic_manifest.saved_queries) == 1
     saved_query = build_result.semantic_manifest.saved_queries[0]
-    assert len(saved_query.group_bys) == 2
-    assert {"Dimension(test_entity__test_dimension_a)", "Dimension(test_entity__test_dimension_b)"} == set(
-        saved_query.group_bys
+    assert len(saved_query.group_by) == 2
+    assert {"Dimension('test_entity__test_dimension_a')", "Dimension('test_entity__test_dimension_b')"} == set(
+        saved_query.group_by
     )
 
 

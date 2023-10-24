@@ -120,7 +120,7 @@ SIMPLE_METRIC_STRATEGY = builds(
 
 SAVED_QUERY_STRATEGY = builds(
     PydanticSavedQuery,
-    group_bys=from_type(List[str]),
+    group_by=from_type(List[str]),
     where=from_type(List[PydanticWhereFilter]),
     description=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,

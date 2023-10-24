@@ -44,7 +44,7 @@ def test_invalid_metric_in_saved_query(  # noqa: D
             name="Example Saved Query",
             description="Example description.",
             metrics=["invalid_metric"],
-            group_bys=["Dimension('booking__is_instant')"],
+            group_by=["Dimension('booking__is_instant')"],
             where=PydanticWhereFilterIntersection(
                 where_filters=[PydanticWhereFilter(where_sql_template="{{ Dimension('booking__is_instant') }}")],
             ),
@@ -66,7 +66,7 @@ def test_invalid_where_in_saved_query(  # noqa: D
             name="Example Saved Query",
             description="Example description.",
             metrics=["bookings"],
-            group_bys=["Dimension('booking__is_instant')"],
+            group_by=["Dimension('booking__is_instant')"],
             where=PydanticWhereFilterIntersection(
                 where_filters=[PydanticWhereFilter(where_sql_template="{{ invalid_jinja }}")],
             ),
@@ -89,7 +89,7 @@ def test_invalid_group_by_element_in_saved_query(  # noqa: D
             name="Example Saved Query",
             description="Example description.",
             metrics=["bookings"],
-            group_bys=["Dimension('booking__invalid_dimension')"],
+            group_by=["Dimension('booking__invalid_dimension')"],
             where=PydanticWhereFilterIntersection(
                 where_filters=[PydanticWhereFilter(where_sql_template="{{ Dimension('booking__is_instant') }}")],
             ),
@@ -112,7 +112,7 @@ def test_invalid_group_by_format_in_saved_query(  # noqa: D
             name="Example Saved Query",
             description="Example description.",
             metrics=["bookings"],
-            group_bys=["invalid_format"],
+            group_by=["invalid_format"],
             where=PydanticWhereFilterIntersection(
                 where_filters=[PydanticWhereFilter(where_sql_template="{{ Dimension('booking__is_instant') }}")],
             ),

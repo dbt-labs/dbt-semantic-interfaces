@@ -326,7 +326,7 @@ saved_query_schema = {
             "type": "array",
             "items": {"type": "string"},
         },
-        "group_bys": {
+        "group_by": {
             "type": "array",
             "items": {"type": "string"},
         },

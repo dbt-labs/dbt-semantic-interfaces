@@ -38,7 +38,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
     def _check_group_bys(valid_group_by_element_names: Set[str], saved_query: SavedQuery) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
-        for group_by_item in saved_query.group_bys:
+        for group_by_item in saved_query.group_by:
             # TODO: Replace with more appropriate abstractions once available.
             parameter_sets: FilterCallParameterSets
             try:
