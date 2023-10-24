@@ -27,6 +27,7 @@ class WhereFilterDimension(ProtocolHint[QueryInterfaceDimension]):
         self.name = name
         self.entity_path = entity_path
         self.time_granularity_name: Optional[str] = None
+        self.date_part_name: Optional[str] = None
 
     def grain(self, time_granularity: str) -> QueryInterfaceDimension:
         """The time granularity."""
@@ -37,9 +38,10 @@ class WhereFilterDimension(ProtocolHint[QueryInterfaceDimension]):
         """Set the sort order for order-by."""
         raise InvalidQuerySyntax("descending is invalid in the where parameter and filter spec")
 
-    def date_part(self, _date_part: str) -> QueryInterfaceDimension:
+    def date_part(self, date_part_name: str) -> QueryInterfaceDimension:
         """Date part to extract from the dimension."""
-        raise InvalidQuerySyntax("date_part isn't currently supported in the where parameter and filter spec")
+        self.date_part_name = date_part_name
+        return self
 
 
 class WhereFilterDimensionFactory(ProtocolHint[QueryInterfaceDimensionFactory]):

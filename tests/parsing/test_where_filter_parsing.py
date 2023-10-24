@@ -11,11 +11,17 @@ on inputs to parse_obj or parse_raw, as that is what the pydantic models will ge
 """
 
 
+import pytest
+
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
     PydanticWhereFilterIntersection,
 )
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
+    WhereFilterParser,
+)
+from dbt_semantic_interfaces.type_enums.date_part import DatePart
 
 __BOOLEAN_EXPRESSION__ = "1 > 0"
 
@@ -135,3 +141,24 @@ def test_where_filter_intersection_from_partially_deserialized_list_of_strings()
     parsed_model = ModelWithWhereFilterIntersection.parse_obj(obj)
 
     assert parsed_model.where_filter == expected_parsed_output
+
+
+@pytest.mark.parametrize(
+    "where",
+    [
+        "{{ TimeDimension('metric_time', 'YEAR', [], None, 'YEAR') }} > '2023-01-01'",
+        "{{ TimeDimension(time_dimension_name='metric_time', time_granularity_name='YEAR', date_part_name='YEAR') }}"
+        + "> '2023-01-01'",
+    ],
+)
+def test_time_dimension_date_part(where: str) -> None:  # noqa
+    param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+    assert len(param_sets.time_dimension_call_parameter_sets) == 1
+    assert param_sets.time_dimension_call_parameter_sets[0].date_part == DatePart.YEAR
+
+
+def test_dimension_date_part() -> None:  # noqa
+    where = "{{ Dimension('metric_time').grain('DAY').date_part('YEAR') }} > '2023-01-01'"
+    param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+    assert len(param_sets.time_dimension_call_parameter_sets) == 1
+    assert param_sets.time_dimension_call_parameter_sets[0].date_part == DatePart.YEAR

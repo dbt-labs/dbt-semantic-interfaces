@@ -43,17 +43,15 @@ class WhereFilterParser:
             raise ParseWhereFilterException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
 
         """
-        Dimensions that are created with a grain parameter, Dimension(...).grain(...), are
+        Dimensions that are created with a grain or date_part parameter, for instance Dimension(...).grain(...), are
         added to time_dimension_call_parameter_sets otherwise they are add to dimension_call_parameter_sets
         """
         dimension_call_parameter_sets = []
         for dimension in dimension_factory.created:
-            if dimension.time_granularity_name:
+            if dimension.time_granularity_name or dimension.date_part_name:
                 time_dimension_factory.time_dimension_call_parameter_sets.append(
                     ParameterSetFactory.create_time_dimension(
-                        dimension.name,
-                        dimension.time_granularity_name,
-                        dimension.entity_path,
+                        dimension.name, dimension.time_granularity_name, dimension.entity_path, dimension.date_part_name
                     )
                 )
             else:
