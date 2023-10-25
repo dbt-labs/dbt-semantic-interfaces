@@ -16,16 +16,20 @@ from dbt_semantic_interfaces.type_enums.export_destination_type import (
 class PydanticExportConfig(HashableBaseModel, ProtocolHint[ExportConfig]):
     """Pydantic implementation of ExportConfig.
 
-    Note on `schema_name`: `schema` is a BaseModel attribute so we need to alias it here.
-    Use `schema` for YAML definition & JSON, `schema_name` for object attribute.
+    Note on `schema_name`: `schema` is an existing BaseModel attribute, so we need to alias it here.
+    `Field.alias="schema"` enables using the `schema` key in YAML. `Config.allow_population_by_field_name`
+    enables parsing for both `schema` and `schema_name` when deserializing from JSON.
     """
+
+    class Config:
+        allow_population_by_field_name = True
 
     @override
     def _implements_protocol(self) -> ExportConfig:
         return self
 
     export_as: ExportDestinationType
-    schema_name: Optional[str] = Field(serialization_alias="schema", validation_alias="schema_name")
+    schema_name: Optional[str] = Field(alias="schema", default=None)
     alias: Optional[str] = None
 
 
