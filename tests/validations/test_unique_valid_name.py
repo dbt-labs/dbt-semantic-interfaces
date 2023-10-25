@@ -24,13 +24,32 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     Top level elements include
     - Semantic Models
     - Metrics
-    - PydanticMetric Sets
-    - Dimension Sets
 
-    A name for any of these elements must be unique to all other top level elements
-    except metrics. PydanticMetric names only need to be unique in comparison to other metric
-    names.
+    For each top level element type we test for
+    - Name validity checking
+    - Name uniquness checking
 """
+
+
+def test_semantic_model_name_validity(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+):
+    validator = SemanticManifestValidator[PydanticSemanticManifest](
+        [UniqueAndValidNameRule[PydanticSemanticManifest]()]
+    )
+
+    # Shouldn't raise an exception
+    validator.checked_validations(simple_semantic_manifest__with_primary_transforms)
+
+    # Should raise an exception
+    copied_manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    semantic_model = copied_manifest.semantic_models[0]
+    semantic_model.name = f"@{semantic_model.name}"
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf"Invalid name `{semantic_model.name}",
+    ):
+        validator.checked_validations(copied_manifest)
 
 
 def test_duplicate_semantic_model_name(  # noqa: D
@@ -42,11 +61,32 @@ def test_duplicate_semantic_model_name(  # noqa: D
     with pytest.raises(
         SemanticManifestValidationException,
         match=rf"Can't use name `{duplicated_semantic_model.name}` for a semantic model when it was already used for "
-        "a semantic model",
+        "another semantic model",
     ):
         SemanticManifestValidator[PydanticSemanticManifest](
             [UniqueAndValidNameRule[PydanticSemanticManifest]()]
         ).checked_validations(model)
+
+
+def test_metric_name_validity(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+):
+    validator = SemanticManifestValidator[PydanticSemanticManifest](
+        [UniqueAndValidNameRule[PydanticSemanticManifest]()]
+    )
+
+    # Shouldn't raise an exception
+    validator.checked_validations(simple_semantic_manifest__with_primary_transforms)
+
+    # Should raise an exception
+    copied_manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    metric = copied_manifest.metrics[0]
+    metric.name = f"@{metric.name}"
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf"Invalid name `{metric.name}",
+    ):
+        validator.checked_validations(copied_manifest)
 
 
 def test_duplicate_metric_name(  # noqa:D
@@ -57,7 +97,7 @@ def test_duplicate_metric_name(  # noqa:D
     model.metrics.append(duplicated_metric)
     with pytest.raises(
         SemanticManifestValidationException,
-        match=rf"Can't use name `{duplicated_metric.name}` for a metric when it was already used for a metric",
+        match=rf"Can't use name `{duplicated_metric.name}` for a metric when it was already used for another metric",
     ):
         SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(model)
 

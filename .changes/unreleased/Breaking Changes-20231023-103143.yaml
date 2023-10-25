@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Fixes bug where we weren't validating the names of metrics (which may break peoples current metric names)
+time: 2023-10-23T10:31:43.522179-07:00
+custom:
+  Author: QMalcolm
+  Issue: "181"

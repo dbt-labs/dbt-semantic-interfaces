@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import enum
 import re
-from typing import Dict, Generic, List, Optional, Sequence, Tuple
+from typing import Dict, Generic, List, Optional, Sequence, Tuple, Union
 
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.protocols import (
+    Metric,
     SemanticManifest,
     SemanticManifestT,
     SemanticModel,
@@ -168,58 +169,68 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
         return issues
 
     @staticmethod
-    @validate_safely(whats_being_done="checking model top level element names are sufficiently unique")
-    def _validate_top_level_objects(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
-        """Checks names of objects that are not nested."""
-        object_info_tuples = []
-        if semantic_manifest.semantic_models:
-            for semantic_model in semantic_manifest.semantic_models:
-                object_info_tuples.append(
-                    (
-                        semantic_model.name,
-                        "semantic model",
-                        SemanticModelContext(
-                            file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                            semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
-                        ),
-                    )
-                )
-
-        name_to_type: Dict[str, str] = {}
-
+    @validate_safely(whats_being_done="checking top level elements of a specific type have unique and valid names")
+    def _validate_top_level_objects_of_type(
+        object_context_tuples: Union[
+            List[Tuple[SemanticModel, SemanticModelContext]], List[Tuple[Metric, MetricContext]]
+        ],
+        object_type: str,
+    ) -> List[ValidationIssue]:
+        """Validates uniqeness and validaty of top level objects of singular type."""
         issues: List[ValidationIssue] = []
+        object_names = set()
 
-        for name, type_, context in object_info_tuples:
-            if name in name_to_type:
+        for object, context in object_context_tuples:
+            issues += UniqueAndValidNameRule.check_valid_name(name=object.name, context=context)
+            if object.name in object_names:
                 issues.append(
                     ValidationError(
                         context=context,
-                        message=f"Can't use name `{name}` for a {type_} when it was already used for a "
-                        f"{name_to_type[name]}",
+                        message=f"Can't use name `{object.name}` for a {object_type} when it was already "
+                        f"used for another {object_type}",
                     )
                 )
             else:
-                name_to_type[name] = type_
+                object_names.add(object.name)
+        return issues
+
+    @staticmethod
+    @validate_safely(whats_being_done="checking model top level element names are sufficiently unique")
+    def _validate_top_level_objects(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
+        """Checks names of objects that are not nested."""
+        issues: List[ValidationIssue] = []
+
+        if semantic_manifest.semantic_models:
+            # TODO: We should clean up this pattern of precompiling object contexts
+            semantic_model_context_tuples = [
+                (
+                    semantic_model,
+                    SemanticModelContext(
+                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                        semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
+                    ),
+                )
+                for semantic_model in semantic_manifest.semantic_models
+            ]
+            issues.extend(
+                UniqueAndValidNameRule._validate_top_level_objects_of_type(
+                    semantic_model_context_tuples, "semantic model"
+                )
+            )
 
         if semantic_manifest.metrics:
-            metric_names = set()
-            for metric in semantic_manifest.metrics:
-                if metric.name in metric_names:
-                    issues.append(
-                        ValidationError(
-                            context=MetricContext(
-                                file_context=FileContext.from_metadata(metadata=metric.metadata),
-                                metric=MetricModelReference(metric_name=metric.name),
-                            ),
-                            message=f"Can't use name `{metric.name}` for a metric when it was already used for "
-                            "a metric",
-                        )
-                    )
-                else:
-                    metric_names.add(metric.name)
-
-        for name, _, context in object_info_tuples:
-            issues += UniqueAndValidNameRule.check_valid_name(name=name, context=context)
+            # TODO: We should clean up this pattern of precompiling object contexts
+            metric_context_tuples = [
+                (
+                    metric,
+                    MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric.metadata),
+                        metric=MetricModelReference(metric_name=metric.name),
+                    ),
+                )
+                for metric in semantic_manifest.metrics
+            ]
+            issues.extend(UniqueAndValidNameRule._validate_top_level_objects_of_type(metric_context_tuples, "metric"))
 
         return issues
 
