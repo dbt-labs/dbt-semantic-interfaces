@@ -164,7 +164,7 @@ def test_saved_query_exports() -> None:
 
     assert len(build_result.semantic_manifest.saved_queries) == 1
     saved_query = build_result.semantic_manifest.saved_queries[0]
-    assert len(saved_query.exports) == 2
+    assert saved_query.exports and len(saved_query.exports) == 2
     names_to_exports = {export.name: export for export in saved_query.exports}
     assert set(names_to_exports.keys()) == {"test_exports1", "test_exports2"}
 

@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import List, Optional, Protocol, Sequence
+from typing import Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.protocols.export import Export
 from dbt_semantic_interfaces.protocols.metadata import Metadata
@@ -48,6 +48,6 @@ class SavedQuery(Protocol):
 
     @property
     @abstractmethod
-    def exports(self) -> Optional[List[Export]]:
+    def exports(self) -> Optional[Sequence[Export]]:
         """Exports that can run using this saved query."""
         pass
