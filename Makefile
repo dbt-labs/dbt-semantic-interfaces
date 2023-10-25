@@ -1,4 +1,4 @@
-.PHONY: run install-hatch overwrite-pre-commit install test
+.PHONY: run install-hatch overwrite-pre-commit install test lint json_schema
 
 run:
 	export FORMAT_JSON_LOGS="1"
