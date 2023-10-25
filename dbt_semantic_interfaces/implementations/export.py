@@ -21,7 +21,7 @@ class PydanticExportConfig(HashableBaseModel, ProtocolHint[ExportConfig]):
     enables parsing for both `schema` and `schema_name` when deserializing from JSON.
     """
 
-    class Config:
+    class Config:  # noqa: D
         allow_population_by_field_name = True
 
     @override
