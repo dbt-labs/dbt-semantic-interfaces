@@ -139,6 +139,47 @@
             ],
             "type": "object"
         },
+        "export_config_schema": {
+            "$id": "export_config_schema",
+            "additionalProperties": false,
+            "properties": {
+                "alias": {
+                    "type": "string"
+                },
+                "export_as": {
+                    "enum": [
+                        "TABLE",
+                        "VIEW",
+                        "table",
+                        "view"
+                    ]
+                },
+                "schema": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "export_as"
+            ],
+            "type": "object"
+        },
+        "export_schema": {
+            "$id": "export_schema",
+            "additionalProperties": false,
+            "properties": {
+                "config": {
+                    "$ref": "#/definitions/export_config_schema"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name",
+                "config"
+            ],
+            "type": "object"
+        },
         "filter_schema": {
             "$id": "filter_schema",
             "oneOf": [
@@ -429,6 +470,12 @@
             "properties": {
                 "description": {
                     "type": "string"
+                },
+                "exports": {
+                    "items": {
+                        "$ref": "#/definitions/export_schema"
+                    },
+                    "type": "array"
                 },
                 "group_bys": {
                     "items": {
