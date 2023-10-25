@@ -1,0 +1,6 @@
+kind: Features
+body: Add exports configuration to YAML spec.
+time: 2023-10-24T16:28:42.013032-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "189"

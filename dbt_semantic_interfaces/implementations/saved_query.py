@@ -8,6 +8,7 @@ from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
+from dbt_semantic_interfaces.implementations.export import PydanticExport
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
 )
@@ -31,3 +32,4 @@ class PydanticSavedQuery(HashableBaseModel, ModelWithMetadataParsing, ProtocolHi
     description: Optional[str] = None
     metadata: Optional[PydanticMetadata] = None
     label: Optional[str] = None
+    exports: Optional[List[PydanticExport]] = None

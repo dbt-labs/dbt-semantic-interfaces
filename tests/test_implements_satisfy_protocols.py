@@ -14,6 +14,7 @@ from dbt_semantic_interfaces.implementations.elements.measure import (
     PydanticMeasureAggregationParameters,
     PydanticNonAdditiveDimensionParameters,
 )
+from dbt_semantic_interfaces.implementations.export import PydanticExport
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
 )
@@ -124,6 +125,7 @@ SAVED_QUERY_STRATEGY = builds(
     description=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
+    exports=from_type(List[PydanticExport]),
 )
 
 

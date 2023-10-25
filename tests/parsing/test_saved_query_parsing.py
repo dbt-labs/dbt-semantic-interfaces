@@ -4,6 +4,9 @@ from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_semantic_manifest,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
+from dbt_semantic_interfaces.type_enums.export_destination_type import (
+    ExportDestinationType,
+)
 from tests.example_project_configuration import (
     EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
 )
@@ -134,3 +137,43 @@ def test_saved_query_where() -> None:
     assert saved_query.where is not None
     assert len(saved_query.where.where_filters) == 1
     assert where == saved_query.where.where_filters[0].where_sql_template
+
+
+def test_saved_query_exports() -> None:
+    """Test for parsing exports referenced in a saved query."""
+    yaml_contents = textwrap.dedent(
+        """\
+        saved_query:
+          name: test_exports
+          metrics:
+            - test_metric_a
+          exports:
+            - name: test_exports1
+              config:
+                export_as: VIEW
+                schema: my_schema
+                alias: my_view_name
+            - name: test_exports2
+              config:
+                export_as: table
+        """
+    )
+    file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+
+    assert len(build_result.semantic_manifest.saved_queries) == 1
+    saved_query = build_result.semantic_manifest.saved_queries[0]
+    assert saved_query.exports and len(saved_query.exports) == 2
+    names_to_exports = {export.name: export for export in saved_query.exports}
+    assert set(names_to_exports.keys()) == {"test_exports1", "test_exports2"}
+
+    export1_config = names_to_exports["test_exports1"].config
+    assert export1_config.export_as == ExportDestinationType.VIEW
+    assert export1_config.schema_name == "my_schema"
+    assert export1_config.alias == "my_view_name"
+
+    export2_config = names_to_exports["test_exports2"].config
+    assert export2_config.export_as == ExportDestinationType.TABLE
+    assert export2_config.schema_name is None
+    assert export2_config.alias is None

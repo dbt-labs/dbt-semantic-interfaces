@@ -1,4 +1,4 @@
-.PHONY: run install-hatch overwrite-pre-commit install test
+.PHONY: run install-hatch overwrite-pre-commit install test lint json_schema
 
 run:
 	export FORMAT_JSON_LOGS="1"
@@ -18,3 +18,6 @@ test:
 
 lint:
 	hatch run dev-env:pre-commit run --show-diff-on-failure --color=always --all-files
+
+json_schema:
+	hatch run dev-env:python dbt_semantic_interfaces/parsing/generate_json_schema_file.py
