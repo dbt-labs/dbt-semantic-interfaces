@@ -39,6 +39,10 @@ dimension_type_values += [x.lower() for x in dimension_type_values]
 
 time_dimension_type_values = ["TIME", "time"]
 
+export_destination_type_values = ["TABLE", "VIEW"]
+export_destination_type_values += [x.lower() for x in export_destination_type_values]
+
+
 filter_schema = {
     "$id": "filter_schema",
     "oneOf": [
@@ -288,6 +292,29 @@ project_configuration_schema = {
     "required": ["time_spine_table_configurations"],
 }
 
+export_config_schema = {
+    "$id": "export_config_schema",
+    "type": "object",
+    "properties": {
+        "export_as": {"enum": export_destination_type_values},
+        "schema": {"type": "string"},
+        "alias": {"type": "string"},
+    },
+    "required": ["export_as"],
+    "additionalProperties": False,
+}
+
+
+export_schema = {
+    "$id": "export_schema",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "config": {"$ref": "export_config_schema"},
+    },
+    "required": ["name", "config"],
+    "additionalProperties": False,
+}
 
 saved_query_schema = {
     "$id": "saved_query_schema",
@@ -305,6 +332,7 @@ saved_query_schema = {
         },
         "where": {"$ref": "filter_schema"},
         "label": {"type": "string"},
+        "exports": {"type": "array", "items": {"$ref": "export_schema"}},
     },
     "required": ["name", "metrics"],
     "additionalProperties": False,
@@ -355,6 +383,8 @@ schema_store = {
     node_relation_schema["$id"]: node_relation_schema,
     semantic_model_defaults_schema["$id"]: semantic_model_defaults_schema,
     time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
+    export_schema["$id"]: export_schema,
+    export_config_schema["$id"]: export_config_schema,
 }
 
 resources: List[Tuple[str, Resource]] = [(str(k), DRAFT7.create_resource(v)) for k, v in schema_store.items()]

@@ -10,3 +10,9 @@ saved_query:
     - Dimension('listing__capacity_latest')
   where:
     - "{{ Dimension('listing__capacity_latest') }} > 3"
+  exports:
+    - name: bookings
+      config:
+        export_as: table
+        schema: exports_schema
+        alias: bookings_export_table

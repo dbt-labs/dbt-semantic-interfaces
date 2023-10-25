@@ -31,6 +31,7 @@ from dbt_semantic_interfaces.implementations.saved_query import PydanticSavedQue
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.implementations.export import PydanticExport
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.implementations.time_spine_table_configuration import (
     PydanticTimeSpineTableConfiguration,
@@ -124,6 +125,7 @@ SAVED_QUERY_STRATEGY = builds(
     description=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
+    exports=from_type(List[PydanticExport]),
 )
 
 
