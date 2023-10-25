@@ -33,7 +33,7 @@ class ExportConfig(Protocol):
 
     @property
     @abstractmethod
-    def schema(self) -> Optional[str]:
+    def schema_name(self) -> Optional[str]:
         """Schema to write export to. Defaults to deployment schema."""
         pass
 
