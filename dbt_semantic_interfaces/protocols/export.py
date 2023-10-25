@@ -1,7 +1,11 @@
 from __future__ import annotations
-from typing import Protocol, Optional
+
 from abc import abstractmethod
-from dbt_semantic_interfaces.type_enums.export_destination_type import ExportDestinationType
+from typing import Optional, Protocol
+
+from dbt_semantic_interfaces.type_enums.export_destination_type import (
+    ExportDestinationType,
+)
 
 
 class Export(Protocol):

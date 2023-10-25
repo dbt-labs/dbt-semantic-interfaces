@@ -14,6 +14,7 @@ from dbt_semantic_interfaces.implementations.elements.measure import (
     PydanticMeasureAggregationParameters,
     PydanticNonAdditiveDimensionParameters,
 )
+from dbt_semantic_interfaces.implementations.export import PydanticExport
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
 )
@@ -31,7 +32,6 @@ from dbt_semantic_interfaces.implementations.saved_query import PydanticSavedQue
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.implementations.export import PydanticExport
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.implementations.time_spine_table_configuration import (
     PydanticTimeSpineTableConfiguration,

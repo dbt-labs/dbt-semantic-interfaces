@@ -1,8 +1,8 @@
 from abc import abstractmethod
-from typing import Optional, Protocol, Sequence, List
+from typing import List, Optional, Protocol, Sequence
 
-from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.export import Export
+from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 
 

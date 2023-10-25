@@ -4,10 +4,12 @@ from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_semantic_manifest,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
+from dbt_semantic_interfaces.type_enums.export_destination_type import (
+    ExportDestinationType,
+)
 from tests.example_project_configuration import (
     EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
 )
-from dbt_semantic_interfaces.type_enums.export_destination_type import ExportDestinationType
 
 
 def test_saved_query_metadata_parsing() -> None:
