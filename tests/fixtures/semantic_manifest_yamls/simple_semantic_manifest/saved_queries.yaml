@@ -5,7 +5,7 @@ saved_query:
   metrics:
     - bookings
     - instant_bookings
-  group_bys:
+  group_by:
     - TimeDimension('metric_time', 'DAY')
     - Dimension('listing__capacity_latest')
   where:

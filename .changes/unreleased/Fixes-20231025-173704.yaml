@@ -1,0 +1,6 @@
+kind: Fixes
+body: Rename `SavedQuery.group_bys` to `SavedQuery.group_by`
+time: 2023-10-25T17:37:04.840909-07:00
+custom:
+  Author: plypaul
+  Issue: "192"

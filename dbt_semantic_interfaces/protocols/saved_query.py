@@ -31,7 +31,7 @@ class SavedQuery(Protocol):
 
     @property
     @abstractmethod
-    def group_bys(self) -> Sequence[str]:  # noqa: D
+    def group_by(self) -> Sequence[str]:  # noqa: D
         pass
 
     @property
