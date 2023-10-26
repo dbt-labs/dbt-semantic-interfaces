@@ -1,0 +1,6 @@
+kind: Dependencies
+body: Add typing-extensions>=4.0 requirement
+time: 2023-10-26T12:27:48.865653+03:00
+custom:
+  Author: Fatal1ty
+  PR: "194"
