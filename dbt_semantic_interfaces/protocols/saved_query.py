@@ -6,6 +6,26 @@ from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 
 
+class SavedQueryQueryParams(Protocol):
+    """The parameters that will be passed into the MF query."""
+
+    @property
+    @abstractmethod
+    def metrics(self) -> Sequence[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def group_by(self) -> Sequence[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def where(self) -> Optional[WhereFilterIntersection]:
+        """Returns the intersection class containing any where filters specified in the saved query."""
+        pass
+
+
 class SavedQuery(Protocol):
     """Represents a query that the user wants to run repeatedly."""
 
@@ -26,18 +46,8 @@ class SavedQuery(Protocol):
 
     @property
     @abstractmethod
-    def metrics(self) -> Sequence[str]:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
-    def group_by(self) -> Sequence[str]:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
-    def where(self) -> Optional[WhereFilterIntersection]:
-        """Returns the intersection class containing any where filters specified in the saved query."""
+    def query_params(self) -> SavedQueryQueryParams:
+        """Parameters that should be passed into the MF query."""
         pass
 
     @property
@@ -48,6 +58,6 @@ class SavedQuery(Protocol):
 
     @property
     @abstractmethod
-    def exports(self) -> Optional[Sequence[Export]]:
+    def exports(self) -> Sequence[Export]:
         """Exports that can run using this saved query."""
         pass

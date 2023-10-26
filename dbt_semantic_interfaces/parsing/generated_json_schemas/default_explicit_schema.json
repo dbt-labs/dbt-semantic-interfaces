@@ -464,6 +464,31 @@
             ],
             "type": "object"
         },
+        "saved_query_query_params_schema": {
+            "$id": "saved_query_query_params_schema",
+            "additionalProperties": false,
+            "properties": {
+                "group_by": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "metrics": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "where": {
+                    "$ref": "#/definitions/filter_schema"
+                }
+            },
+            "required": [
+                "metrics"
+            ],
+            "type": "object"
+        },
         "saved_query_schema": {
             "$id": "saved_query_schema",
             "additionalProperties": false,
@@ -477,31 +502,19 @@
                     },
                     "type": "array"
                 },
-                "group_by": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
-                },
                 "label": {
                     "type": "string"
-                },
-                "metrics": {
-                    "items": {
-                        "type": "string"
-                    },
-                    "type": "array"
                 },
                 "name": {
                     "type": "string"
                 },
-                "where": {
-                    "$ref": "#/definitions/filter_schema"
+                "query_params": {
+                    "$ref": "#/definitions/saved_query_query_params_schema"
                 }
             },
             "required": [
                 "name",
-                "metrics"
+                "query_params"
             ],
             "type": "object"
         },

@@ -18,7 +18,8 @@ def test_saved_query_metadata_parsing() -> None:
         """\
         saved_query:
             name: metadata_test
-            metrics:
+            query_params:
+              metrics:
                 - test_metric
         """
     )
@@ -34,8 +35,9 @@ def test_saved_query_metadata_parsing() -> None:
     expected_metadata_content = textwrap.dedent(
         """\
         name: metadata_test
-        metrics:
-        - test_metric
+        query_params:
+          metrics:
+          - test_metric
         """
     )
     assert saved_query.metadata.file_slice.content == expected_metadata_content
@@ -52,8 +54,9 @@ def test_saved_query_base_parsing() -> None:
           name: {name}
           description: {description}
           label: {label}
-          metrics:
-            - test_metric
+          query_params:
+              metrics:
+                - test_metric
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -73,10 +76,11 @@ def test_saved_query_metrics_parsing() -> None:
         """\
         saved_query:
           name: test_saved_query_metrics
-          metrics:
-            - test_metric_a
-            - test_metric_b
-            - test_metric_c
+          query_params:
+              metrics:
+                - test_metric_a
+                - test_metric_b
+                - test_metric_c
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -85,8 +89,8 @@ def test_saved_query_metrics_parsing() -> None:
 
     assert len(build_result.semantic_manifest.saved_queries) == 1
     saved_query = build_result.semantic_manifest.saved_queries[0]
-    assert len(saved_query.metrics) == 3
-    assert {"test_metric_a", "test_metric_b", "test_metric_c"} == set(saved_query.metrics)
+    assert len(saved_query.query_params.metrics) == 3
+    assert {"test_metric_a", "test_metric_b", "test_metric_c"} == set(saved_query.query_params.metrics)
 
 
 def test_saved_query_group_by() -> None:
@@ -95,11 +99,12 @@ def test_saved_query_group_by() -> None:
         """\
         saved_query:
           name: test_saved_query_group_bys
-          metrics:
-            - test_metric_a
-          group_by:
-            - Dimension('test_entity__test_dimension_a')
-            - Dimension('test_entity__test_dimension_b')
+          query_params:
+              metrics:
+                - test_metric_a
+              group_by:
+                - Dimension('test_entity__test_dimension_a')
+                - Dimension('test_entity__test_dimension_b')
 
         """
     )
@@ -109,9 +114,9 @@ def test_saved_query_group_by() -> None:
 
     assert len(build_result.semantic_manifest.saved_queries) == 1
     saved_query = build_result.semantic_manifest.saved_queries[0]
-    assert len(saved_query.group_by) == 2
+    assert len(saved_query.query_params.group_by) == 2
     assert {"Dimension('test_entity__test_dimension_a')", "Dimension('test_entity__test_dimension_b')"} == set(
-        saved_query.group_by
+        saved_query.query_params.group_by
     )
 
 
@@ -122,11 +127,11 @@ def test_saved_query_where() -> None:
         f"""\
         saved_query:
           name: test_saved_query_where_clause
-          metrics:
-            - test_metric_a
-          where:
-            - '{where}'
-
+          query_params:
+              metrics:
+                - test_metric_a
+              where:
+                - '{where}'
         """
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
@@ -134,9 +139,9 @@ def test_saved_query_where() -> None:
     build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
     assert len(build_result.semantic_manifest.saved_queries) == 1
     saved_query = build_result.semantic_manifest.saved_queries[0]
-    assert saved_query.where is not None
-    assert len(saved_query.where.where_filters) == 1
-    assert where == saved_query.where.where_filters[0].where_sql_template
+    assert saved_query.query_params.where is not None
+    assert len(saved_query.query_params.where.where_filters) == 1
+    assert where == saved_query.query_params.where.where_filters[0].where_sql_template
 
 
 def test_saved_query_exports() -> None:
@@ -145,8 +150,9 @@ def test_saved_query_exports() -> None:
         """\
         saved_query:
           name: test_exports
-          metrics:
-            - test_metric_a
+          query_params:
+            metrics:
+              - test_metric_a
           exports:
             - name: test_exports1
               config:

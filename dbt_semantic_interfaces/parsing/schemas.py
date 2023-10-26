@@ -316,12 +316,10 @@ export_schema = {
     "additionalProperties": False,
 }
 
-saved_query_schema = {
-    "$id": "saved_query_schema",
+saved_query_query_params_schema = {
+    "$id": "saved_query_query_params_schema",
     "type": "object",
     "properties": {
-        "name": {"type": "string"},
-        "description": {"type": "string"},
         "metrics": {
             "type": "array",
             "items": {"type": "string"},
@@ -331,10 +329,22 @@ saved_query_schema = {
             "items": {"type": "string"},
         },
         "where": {"$ref": "filter_schema"},
+    },
+    "required": ["metrics"],
+    "additionalProperties": False,
+}
+
+saved_query_schema = {
+    "$id": "saved_query_schema",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "description": {"type": "string"},
+        "query_params": {"$ref": "saved_query_query_params_schema"},
         "label": {"type": "string"},
         "exports": {"type": "array", "items": {"$ref": "export_schema"}},
     },
-    "required": ["name", "metrics"],
+    "required": ["name", "query_params"],
     "additionalProperties": False,
 }
 
@@ -385,6 +395,7 @@ schema_store = {
     time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
     export_schema["$id"]: export_schema,
     export_config_schema["$id"]: export_config_schema,
+    saved_query_query_params_schema["$id"]: saved_query_query_params_schema,
 }
 
 resources: List[Tuple[str, Resource]] = [(str(k), DRAFT7.create_resource(v)) for k, v in schema_store.items()]
