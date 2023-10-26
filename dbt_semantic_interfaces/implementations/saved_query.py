@@ -14,7 +14,22 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.protocols import ProtocolHint
-from dbt_semantic_interfaces.protocols.saved_query import SavedQuery
+from dbt_semantic_interfaces.protocols.saved_query import (
+    SavedQuery,
+    SavedQueryQueryParams,
+)
+
+
+class PydanticSavedQueryQueryParams(HashableBaseModel, ProtocolHint[SavedQueryQueryParams]):
+    """Pydantic implementation of SavedQuery."""
+
+    @override
+    def _implements_protocol(self) -> SavedQueryQueryParams:
+        return self
+
+    metrics: List[str]
+    group_by: List[str] = []
+    where: Optional[PydanticWhereFilterIntersection] = None
 
 
 class PydanticSavedQuery(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[SavedQuery]):
@@ -25,11 +40,8 @@ class PydanticSavedQuery(HashableBaseModel, ModelWithMetadataParsing, ProtocolHi
         return self
 
     name: str
-    metrics: List[str]
-    group_by: List[str] = []
-    where: Optional[PydanticWhereFilterIntersection] = None
-
+    query_params: PydanticSavedQueryQueryParams
     description: Optional[str] = None
     metadata: Optional[PydanticMetadata] = None
     label: Optional[str] = None
-    exports: Optional[List[PydanticExport]] = None
+    exports: List[PydanticExport] = []

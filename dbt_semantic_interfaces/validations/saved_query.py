@@ -38,7 +38,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
     def _check_group_bys(valid_group_by_element_names: Set[str], saved_query: SavedQuery) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
-        for group_by_item in saved_query.group_by:
+        for group_by_item in saved_query.query_params.group_by:
             # TODO: Replace with more appropriate abstractions once available.
             parameter_sets: FilterCallParameterSets
             try:
@@ -83,7 +83,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
     @validate_safely("Validate the metrics field in a saved query.")
     def _check_metrics(valid_metric_names: Set[str], saved_query: SavedQuery) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
-        for metric_name in saved_query.metrics:
+        for metric_name in saved_query.query_params.metrics:
             if metric_name not in valid_metric_names:
                 issues.append(
                     ValidationError(
@@ -101,9 +101,9 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
     @validate_safely("Validate the where field in a saved query.")
     def _check_where(saved_query: SavedQuery) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
-        if saved_query.where is None:
+        if saved_query.query_params.where is None:
             return issues
-        for where_filter in saved_query.where.where_filters:
+        for where_filter in saved_query.query_params.where.where_filters:
             try:
                 where_filter.call_parameter_sets
             except Exception as e:
