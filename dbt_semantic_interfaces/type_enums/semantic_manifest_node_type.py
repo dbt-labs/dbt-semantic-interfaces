@@ -1,7 +1,7 @@
 from dbt_semantic_interfaces.enum_extension import ExtendedEnum
 
 
-class NodeType(ExtendedEnum):
+class SemanticManifestNodeType(ExtendedEnum):
     """Currently supported node types."""
 
     METRIC = "metric"

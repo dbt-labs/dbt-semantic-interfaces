@@ -16,7 +16,11 @@ from dbt_semantic_interfaces.references import (
     ElementReference,
     SemanticModelElementReference,
 )
-from dbt_semantic_interfaces.type_enums import EntityType, NodeType, TimeGranularity
+from dbt_semantic_interfaces.type_enums import (
+    EntityType,
+    SemanticManifestNodeType,
+    TimeGranularity,
+)
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     SemanticManifestValidationRule,
@@ -170,7 +174,7 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     @validate_safely(whats_being_done="checking top level elements of a specific type have unique and valid names")
     def _validate_top_level_objects_of_type(
         objects: Union[List[SemanticModel], List[Metric], List[SavedQuery]],
-        object_type: NodeType,
+        object_type: SemanticManifestNodeType,
     ) -> List[ValidationIssue]:
         """Validates uniqeness and validaty of top level objects of singular type."""
         issues: List[ValidationIssue] = []
@@ -203,17 +207,19 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
 
         issues.extend(
             UniqueAndValidNameRule._validate_top_level_objects_of_type(
-                semantic_manifest.semantic_models, NodeType.SEMANTIC_MODEL
+                semantic_manifest.semantic_models, SemanticManifestNodeType.SEMANTIC_MODEL
             )
         )
 
         issues.extend(
-            UniqueAndValidNameRule._validate_top_level_objects_of_type(semantic_manifest.metrics, NodeType.METRIC)
+            UniqueAndValidNameRule._validate_top_level_objects_of_type(
+                semantic_manifest.metrics, SemanticManifestNodeType.METRIC
+            )
         )
 
         issues.extend(
             UniqueAndValidNameRule._validate_top_level_objects_of_type(
-                semantic_manifest.saved_queries, NodeType.SAVED_QUERY
+                semantic_manifest.saved_queries, SemanticManifestNodeType.SAVED_QUERY
             )
         )
 
