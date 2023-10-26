@@ -7,6 +7,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
+from dbt_semantic_interfaces.type_enums import SemanticManifestNodeType
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
     SemanticManifestValidator,
 )
@@ -24,6 +25,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     Top level elements include
     - Semantic Models
     - Metrics
+    - Saved Queries
 
     For each top level element type we test for
     - Name validity checking
@@ -60,8 +62,9 @@ def test_duplicate_semantic_model_name(  # noqa: D
     model.semantic_models.append(duplicated_semantic_model)
     with pytest.raises(
         SemanticManifestValidationException,
-        match=rf"Can't use name `{duplicated_semantic_model.name}` for a semantic model when it was already used for "
-        "another semantic model",
+        match=rf"Can't use name `{duplicated_semantic_model.name}` for a "
+        f"{SemanticManifestNodeType.SEMANTIC_MODEL} when it was "
+        f"already used for another {SemanticManifestNodeType.SEMANTIC_MODEL}",
     ):
         SemanticManifestValidator[PydanticSemanticManifest](
             [UniqueAndValidNameRule[PydanticSemanticManifest]()]
@@ -97,7 +100,9 @@ def test_duplicate_metric_name(  # noqa:D
     model.metrics.append(duplicated_metric)
     with pytest.raises(
         SemanticManifestValidationException,
-        match=rf"Can't use name `{duplicated_metric.name}` for a metric when it was already used for another metric",
+        match=rf"Can't use name `{duplicated_metric.name}` for a "
+        f"{SemanticManifestNodeType.METRIC} when it was already used for "
+        f"another {SemanticManifestNodeType.METRIC}",
     ):
         SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(model)
 
@@ -114,6 +119,44 @@ def test_top_level_metric_can_have_same_name_as_any_other_top_level_item(  # noq
     SemanticManifestValidator[PydanticSemanticManifest]([UniqueAndValidNameRule()]).checked_validations(
         model_semantic_model
     )
+
+
+def test_saved_query_name_validity(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+):
+    validator = SemanticManifestValidator[PydanticSemanticManifest](
+        [UniqueAndValidNameRule[PydanticSemanticManifest]()]
+    )
+
+    # Shouldn't raise an exception
+    validator.checked_validations(simple_semantic_manifest__with_primary_transforms)
+
+    # Should raise an exception
+    copied_manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    saved_query = copied_manifest.saved_queries[0]
+    saved_query.name = f"@{saved_query.name}"
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf"Invalid name `{saved_query.name}",
+    ):
+        validator.checked_validations(copied_manifest)
+
+
+def test_duplicate_saved_query_name(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+    duplicated_saved_query = manifest.saved_queries[0]
+    manifest.saved_queries.append(duplicated_saved_query)
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf"Can't use name `{duplicated_saved_query.name}` for a "
+        f"{SemanticManifestNodeType.SAVED_QUERY} when it was already used "
+        f"for another {SemanticManifestNodeType.SAVED_QUERY}",
+    ):
+        SemanticManifestValidator[PydanticSemanticManifest](
+            [UniqueAndValidNameRule[PydanticSemanticManifest]()]
+        ).checked_validations(manifest)
 
 
 """

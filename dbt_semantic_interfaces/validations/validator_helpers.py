@@ -98,6 +98,18 @@ class FileContext(BaseModel):
         )
 
 
+class ValidationIssueContext(BaseModel):
+    """Generic validation Context."""
+
+    file_context: FileContext
+    object_type: str
+    object_name: str
+
+    def context_str(self) -> str:
+        """Human-readable stringified representation of the context."""
+        return f"with {self.object_type} `{self.object_name}` {self.file_context.context_str()}"
+
+
 class MetricContext(BaseModel):
     """The context class for validation issues involving metrics."""
 
@@ -164,6 +176,7 @@ ValidationContext = Union[
     SemanticModelContext,
     SemanticModelElementContext,
     SavedQueryContext,
+    ValidationIssueContext,
 ]
 
 

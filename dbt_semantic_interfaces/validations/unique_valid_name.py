@@ -7,27 +7,29 @@ from typing import Dict, Generic, List, Optional, Sequence, Tuple, Union
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.protocols import (
     Metric,
+    SavedQuery,
     SemanticManifest,
     SemanticManifestT,
     SemanticModel,
 )
 from dbt_semantic_interfaces.references import (
     ElementReference,
-    MetricModelReference,
     SemanticModelElementReference,
-    SemanticModelReference,
 )
-from dbt_semantic_interfaces.type_enums import EntityType, TimeGranularity
+from dbt_semantic_interfaces.type_enums import (
+    EntityType,
+    SemanticManifestNodeType,
+    TimeGranularity,
+)
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
-    MetricContext,
     SemanticManifestValidationRule,
-    SemanticModelContext,
     SemanticModelElementContext,
     SemanticModelElementType,
     ValidationContext,
     ValidationError,
     ValidationIssue,
+    ValidationIssueContext,
     validate_safely,
 )
 
@@ -171,16 +173,19 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     @staticmethod
     @validate_safely(whats_being_done="checking top level elements of a specific type have unique and valid names")
     def _validate_top_level_objects_of_type(
-        object_context_tuples: Union[
-            List[Tuple[SemanticModel, SemanticModelContext]], List[Tuple[Metric, MetricContext]]
-        ],
-        object_type: str,
+        objects: Union[List[SemanticModel], List[Metric], List[SavedQuery]],
+        object_type: SemanticManifestNodeType,
     ) -> List[ValidationIssue]:
         """Validates uniqeness and validaty of top level objects of singular type."""
         issues: List[ValidationIssue] = []
         object_names = set()
 
-        for object, context in object_context_tuples:
+        for object in objects:
+            context = ValidationIssueContext(
+                file_context=FileContext.from_metadata(object.metadata),
+                object_name=object.name,
+                object_type=object_type.value,
+            )
             issues += UniqueAndValidNameRule.check_valid_name(name=object.name, context=context)
             if object.name in object_names:
                 issues.append(
@@ -200,37 +205,23 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
         """Checks names of objects that are not nested."""
         issues: List[ValidationIssue] = []
 
-        if semantic_manifest.semantic_models:
-            # TODO: We should clean up this pattern of precompiling object contexts
-            semantic_model_context_tuples = [
-                (
-                    semantic_model,
-                    SemanticModelContext(
-                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                        semantic_model=SemanticModelReference(semantic_model_name=semantic_model.name),
-                    ),
-                )
-                for semantic_model in semantic_manifest.semantic_models
-            ]
-            issues.extend(
-                UniqueAndValidNameRule._validate_top_level_objects_of_type(
-                    semantic_model_context_tuples, "semantic model"
-                )
+        issues.extend(
+            UniqueAndValidNameRule._validate_top_level_objects_of_type(
+                semantic_manifest.semantic_models, SemanticManifestNodeType.SEMANTIC_MODEL
             )
+        )
 
-        if semantic_manifest.metrics:
-            # TODO: We should clean up this pattern of precompiling object contexts
-            metric_context_tuples = [
-                (
-                    metric,
-                    MetricContext(
-                        file_context=FileContext.from_metadata(metadata=metric.metadata),
-                        metric=MetricModelReference(metric_name=metric.name),
-                    ),
-                )
-                for metric in semantic_manifest.metrics
-            ]
-            issues.extend(UniqueAndValidNameRule._validate_top_level_objects_of_type(metric_context_tuples, "metric"))
+        issues.extend(
+            UniqueAndValidNameRule._validate_top_level_objects_of_type(
+                semantic_manifest.metrics, SemanticManifestNodeType.METRIC
+            )
+        )
+
+        issues.extend(
+            UniqueAndValidNameRule._validate_top_level_objects_of_type(
+                semantic_manifest.saved_queries, SemanticManifestNodeType.SAVED_QUERY
+            )
+        )
 
         return issues
 
