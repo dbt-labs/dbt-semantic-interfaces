@@ -1,9 +1,12 @@
 import logging
 
+import pytest
+
 from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     FilterCallParameterSets,
+    ParseWhereFilterException,
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
@@ -126,3 +129,11 @@ def test_extract_entity_call_parameter_sets() -> None:  # noqa: D
             ),
         ),
     )
+
+
+def test_invalid_entity_name_error() -> None:
+    """Test to ensure we throw an error if an entity name is invalid."""
+    bad_entity_filter = PydanticWhereFilter(where_sql_template="{{ Entity('order_id__is_food_order' )}}")
+
+    with pytest.raises(ParseWhereFilterException, match="Entity name is in an incorrect format"):
+        bad_entity_filter.call_parameter_sets
