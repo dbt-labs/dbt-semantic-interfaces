@@ -212,6 +212,11 @@ class MetricTypeParams(Protocol):
     def conversion_type_params(self) -> Optional[ConversionTypeParams]:  # noqa: D
         pass
 
+    @property
+    @abstractmethod
+    def conversion_type_params_or_error(self) -> ConversionTypeParams:  # noqa: D
+        pass
+
 
 class Metric(Protocol):
     """Describes a metric."""
@@ -269,10 +274,4 @@ class Metric(Protocol):
     @abstractmethod
     def label(self) -> Optional[str]:
         """Returns a string representing a human readable label for the metric."""
-        pass
-
-    @property
-    @abstractmethod
-    def conversion_params(self) -> ConversionTypeParams:
-        """Accessor for conversion type params, enforces that it's set."""
         pass

@@ -17,7 +17,11 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
-from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
+from dbt_semantic_interfaces.type_enums import (
+    ConversionCalculationType,
+    MetricType,
+    TimeGranularity,
+)
 
 
 class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
@@ -134,6 +138,26 @@ class PydanticMetricInput(HashableBaseModel):
         return MetricReference(element_name=self.alias or self.name)
 
 
+class PydanticConversionTypeParams(HashableBaseModel):
+    """Type params to provide context for conversion metrics properties."""
+
+    base_measure: PydanticMetricInputMeasure
+    conversion_measure: PydanticMetricInputMeasure
+    entity: str
+    calculation: ConversionCalculationType = ConversionCalculationType.CONVERSION_RATE
+    window: Optional[PydanticMetricTimeWindow]
+
+    @property
+    def base_measure_reference(self) -> MeasureReference:
+        """Return the measure reference associated with the base measure."""
+        return self.base_measure.measure_reference
+
+    @property
+    def conversion_measure_reference(self) -> MeasureReference:
+        """Return the measure reference associated with the conversion measure."""
+        return self.conversion_measure.measure_reference
+
+
 class PydanticMetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
@@ -144,8 +168,15 @@ class PydanticMetricTypeParams(HashableBaseModel):
     window: Optional[PydanticMetricTimeWindow]
     grain_to_date: Optional[TimeGranularity]
     metrics: Optional[List[PydanticMetricInput]]
+    conversion_type_params: Optional[PydanticConversionTypeParams]
 
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
+
+    @property
+    def conversion_type_params_or_error(self) -> PydanticConversionTypeParams:  # noqa: D
+        if self.conversion_type_params is None:
+            raise ValueError("Expected conversion_type_params to be not None.")
+        return self.conversion_type_params
 
 
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
@@ -172,7 +203,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     @property
     def input_metrics(self) -> Sequence[PydanticMetricInput]:
         """Return the associated input metrics for this metric."""
-        if self.type is MetricType.SIMPLE or self.type is MetricType.CUMULATIVE:
+        if self.type is MetricType.SIMPLE or self.type is MetricType.CUMULATIVE or self.type is MetricType.CONVERSION:
             return ()
         elif self.type is MetricType.DERIVED:
             assert self.type_params.metrics is not None, f"{MetricType.DERIVED} should have type_params.metrics set"
