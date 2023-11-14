@@ -6,7 +6,11 @@ from typing import Optional, Protocol, Sequence
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
-from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
+from dbt_semantic_interfaces.type_enums import (
+    ConversionCalculationType,
+    MetricType,
+    TimeGranularity,
+)
 
 
 class MetricInputMeasure(Protocol):
@@ -113,6 +117,52 @@ class MetricInput(Protocol):
         pass
 
 
+class ConversionTypeParams(Protocol):
+    """Type params to provide context for conversion metrics properties."""
+
+    @property
+    @abstractmethod
+    def base_measure(self) -> MetricInputMeasure:
+        """Measure used to calculate the base event."""
+        pass
+
+    @property
+    @abstractmethod
+    def conversion_measure(self) -> MetricInputMeasure:
+        """Measure used to calculate the conversion event."""
+        pass
+
+    @property
+    @abstractmethod
+    def entity(self) -> str:
+        """Specified join entity."""
+        pass
+
+    @property
+    @abstractmethod
+    def calculation(self) -> ConversionCalculationType:
+        """Type of conversion metric calculation."""
+        pass
+
+    @property
+    @abstractmethod
+    def window(self) -> Optional[MetricTimeWindow]:
+        """Maximum time range for finding successing conversion events."""
+        pass
+
+    @property
+    @abstractmethod
+    def base_measure_reference(self) -> MeasureReference:
+        """Return the measure reference associated with the base measure."""
+        pass
+
+    @property
+    @abstractmethod
+    def conversion_measure_reference(self) -> MeasureReference:
+        """Return the measure reference associated with the conversion measure."""
+        pass
+
+
 class MetricTypeParams(Protocol):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
@@ -155,6 +205,11 @@ class MetricTypeParams(Protocol):
     @property
     @abstractmethod
     def metrics(self) -> Optional[Sequence[MetricInput]]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def conversion_type_params(self) -> Optional[ConversionTypeParams]:  # noqa: D
         pass
 
 
@@ -214,4 +269,10 @@ class Metric(Protocol):
     @abstractmethod
     def label(self) -> Optional[str]:
         """Returns a string representing a human readable label for the metric."""
+        pass
+
+    @property
+    @abstractmethod
+    def conversion_params(self) -> ConversionTypeParams:
+        """Accessor for conversion type params, enforces that it's set."""
         pass
