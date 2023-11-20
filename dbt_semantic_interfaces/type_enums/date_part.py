@@ -54,4 +54,4 @@ class DatePart(ExtendedEnum):
     @property
     def compatible_granularities(self) -> List[TimeGranularity]:
         """Granularities that can be queried with this date part."""
-        return [granularity for granularity in TimeGranularity if granularity.to_int() >= self.to_int()]
+        return [granularity for granularity in TimeGranularity if granularity.to_int() <= self.to_int()]
