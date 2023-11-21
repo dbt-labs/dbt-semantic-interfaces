@@ -11,8 +11,6 @@
 # In each subsection folders are ordered first by depth, then alphabetically.
 # This should make it easy to add new rules without breaking existing ones.
 
-# Global rule:
-*           @dotnet/docs
 
 # Parsing, validations, and protocols
 /dbt_semantic_interfaces/**  @dbt-labs/metricflow-admins @QMalcolm @graciegoheen
