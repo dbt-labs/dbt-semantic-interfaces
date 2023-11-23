@@ -5,7 +5,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Callable, ClassVar, Generator, Generic, Type, TypeVar
 
-from pydantic import BaseModel, ConfigDict, root_validator
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.parsing.yaml_loader import (
@@ -55,7 +55,7 @@ class ModelWithMetadataParsing(BaseModel):
 
     __METADATA_KEY__: ClassVar[str] = "metadata"
 
-    @root_validator(pre=True)
+    @model_validator(mode="before")
     @classmethod
     def extract_metadata_from_parsing_context(cls, values: PydanticParseableValueType) -> PydanticParseableValueType:
         """Takes info from parsing context and converts it to a Metadata model object.
