@@ -20,7 +20,7 @@ from typing import (
 )
 
 import click
-from pydantic import BaseModel, Extra
+from pydantic import BaseModel, ConfigDict
 
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
 from dbt_semantic_interfaces.protocols import Metadata, SemanticManifestT, SemanticModel
@@ -72,11 +72,7 @@ class FileContext(BaseModel):
 
     file_name: Optional[str] = None
     line_number: Optional[int] = None
-
-    class Config:
-        """Pydantic class configuration options."""
-
-        extra = Extra.forbid
+    model_config = ConfigDict(extra="forbid")
 
     def context_str(self) -> str:
         """Human-readable stringified representation of the context."""

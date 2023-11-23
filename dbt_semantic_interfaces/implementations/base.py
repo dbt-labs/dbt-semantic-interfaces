@@ -5,7 +5,7 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Callable, ClassVar, Generator, Generic, Type, TypeVar
 
-from pydantic import BaseModel, root_validator
+from pydantic import BaseModel, ConfigDict, root_validator
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.parsing.yaml_loader import (
@@ -27,10 +27,7 @@ class HashableBaseModel(BaseModel):
 class FrozenBaseModel(HashableBaseModel):
     """Similar to HashableBaseModel but faux immutable."""
 
-    class Config:
-        """Pydantic feature."""
-
-        allow_mutation = False
+    model_config = ConfigDict(frozen=True)
 
     def to_pretty_json(self) -> str:
         """Convert to a pretty JSON representation."""

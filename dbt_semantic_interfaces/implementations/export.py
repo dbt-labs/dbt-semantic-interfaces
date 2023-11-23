@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import Field
+from pydantic import ConfigDict, Field
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
@@ -21,8 +21,7 @@ class PydanticExportConfig(HashableBaseModel, ProtocolHint[ExportConfig]):
     enables parsing for both `schema` and `schema_name` when deserializing from JSON.
     """
 
-    class Config:  # noqa: D
-        allow_population_by_field_name = True
+    model_config = ConfigDict(populate_by_name=True)
 
     @override
     def _implements_protocol(self) -> ExportConfig:
