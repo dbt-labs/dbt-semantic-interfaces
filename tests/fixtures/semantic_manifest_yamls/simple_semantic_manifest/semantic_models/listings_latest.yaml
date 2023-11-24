@@ -12,7 +12,7 @@ semantic_model:
 
   measures:
     - name: listings
-      expr: 1
+      expr: "1"
       agg: sum
     - name: largest_listing
       expr: capacity

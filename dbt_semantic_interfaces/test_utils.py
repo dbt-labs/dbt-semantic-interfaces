@@ -76,6 +76,7 @@ def base_semantic_manifest_file() -> YamlConfigFile:
     This is useful to seed a simple error-free semantic manifest, which can easily be extended with YAML inputs
     containing specific validation triggers.
     """
+    # TODO: check if expr: 1 was intended to be expr: "1". If not, adjust code to handle both cases
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -92,7 +93,7 @@ def base_semantic_manifest_file() -> YamlConfigFile:
             - name: num_sample_rows
               agg: sum
               agg_time_dimension: ds
-              expr: 1
+              expr: "1"
               create_metric: true
           dimensions:
             - name: ds

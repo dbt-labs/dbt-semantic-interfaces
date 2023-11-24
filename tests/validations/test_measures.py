@@ -65,6 +65,7 @@ def test_metric_missing_measure() -> None:
 
 
 def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
+    # TODO: check if expr: 1 was intended to be expr: "1". If not, adjust code to handle both cases
     yaml_contents_1 = textwrap.dedent(
         """\
         semantic_model:
@@ -80,7 +81,7 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
           measures:
             - name: num_sample_rows
               agg: sum
-              expr: 1
+              expr: "1"
               create_metric: true
           dimensions:
             - name: ds
@@ -106,6 +107,7 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
 
     assert found_issue is False
 
+    # TODO: check if expr: 1 was intended to be expr: "1". If not, adjust code to handle both cases
     yaml_contents_2 = textwrap.dedent(
         """\
         semantic_model:
@@ -121,7 +123,7 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
           measures:
             - name: num_sample_rows
               agg: sum
-              expr: 1
+              expr: "1"
               create_metric: true
           dimensions:
             - name: ds
@@ -233,6 +235,7 @@ def test_invalid_non_additive_dimension_properties() -> None:
 
 def test_count_measure_missing_expr() -> None:
     """Tests that all measures with COUNT agg should have expr provided."""
+    # TODO: check if expr: 1 was intended to be expr: "1". If not, adjust code to handle both cases
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -248,7 +251,7 @@ def test_count_measure_missing_expr() -> None:
           measures:
             - name: num_sample_rows
               agg: sum
-              expr: 1
+              expr: "1"
               create_metric: true
             - name: bad_measure
               agg: count
@@ -286,6 +289,7 @@ def test_count_measure_missing_expr() -> None:
 
 def test_count_measure_with_distinct_expr() -> None:
     """Tests that measures with COUNT agg can NOT use the DISTINCT keyword."""
+    # TODO: check if expr: 1 was intended to be expr: "1". If not, adjust code to handle both cases
     yaml_contents = textwrap.dedent(
         """\
         semantic_model:
@@ -301,7 +305,7 @@ def test_count_measure_with_distinct_expr() -> None:
           measures:
             - name: num_sample_rows
               agg: sum
-              expr: 1
+              expr: "1"
               create_metric: true
             - name: distinct_count
               agg: count
