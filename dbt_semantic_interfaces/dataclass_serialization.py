@@ -320,13 +320,13 @@ class DataClassTypeToPydanticTypeConverter:  # noqa: D
 
     def to_pydantic_type(self, dataclass_type: Type[SerializableDataclass]) -> Type[BaseModel]:  # noqa: D
         if dataclass_type not in self._dataclass_type_to_pydantic_type:
-            self._dataclass_type_to_pydantic_type[
+            self._dataclass_type_to_pydantic_type[dataclass_type] = self._convert_dataclass_type_to_pydantic_type(
                 dataclass_type
-            ] = DataClassTypeToPydanticTypeConverter._convert_dataclass_type_to_pydantic_type(dataclass_type)
+            )
         return self._dataclass_type_to_pydantic_type[dataclass_type]
 
-    @staticmethod
     def _convert_dataclass_type_to_pydantic_type(
+        self,
         dataclass_type: Type,
     ) -> Type[BaseModel]:  # noqa: D
         logger.debug(f"Converting {dataclass_type.__name__} to a pydantic class")
@@ -339,7 +339,7 @@ class DataClassTypeToPydanticTypeConverter:  # noqa: D
         fields_for_pydantic_model: Dict[str, Tuple[Type, AnyValueType]] = {}
         logger.debug(f"Need to add: {pformat_big_objects(field_dict.keys())}")
         for field_name, field_definition in field_dict.items():
-            field_definition = DataClassTypeToPydanticTypeConverter._convert_nested_fields(field_definition)
+            field_definition = self._convert_nested_fields(field_definition)
             fields_for_pydantic_model[field_name] = field_definition.as_pydantic_field_tuple()
             logger.debug(f"Adding {field_name} with type {field_definition.annotated_field_type}")
 
@@ -352,8 +352,7 @@ class DataClassTypeToPydanticTypeConverter:  # noqa: D
         logger.debug(f"Finished converting {dataclass_type.__name__} to a pydantic class")
         return pydantic_model
 
-    @staticmethod
-    def _convert_nested_fields(field_definition: FieldDefinition) -> FieldDefinition:
+    def _convert_nested_fields(self, field_definition: FieldDefinition) -> FieldDefinition:
         """Recursively converts a given field definition into a fully serializable type specification.
 
         The initial set of FieldDefinitions sourced from the dataclass might contain arbitrarily
@@ -365,7 +364,7 @@ class DataClassTypeToPydanticTypeConverter:  # noqa: D
             raise RuntimeError(f"Unsupported type: {field_definition.annotated_field_type}")
         elif _is_optional_type(field_definition.annotated_field_type):
             optional_field_type_parameter = _get_type_parameter_for_optional(field_definition.annotated_field_type)
-            converted_field_definition = DataClassTypeToPydanticTypeConverter._convert_nested_fields(
+            converted_field_definition = self._convert_nested_fields(
                 FieldDefinition(field_type=optional_field_type_parameter)
             )
             return FieldDefinition(  # type: ignore[arg-type]
@@ -376,7 +375,7 @@ class DataClassTypeToPydanticTypeConverter:  # noqa: D
             tuple_field_type_parameter = _get_type_parameter_for_sequence_like_tuple_type(
                 field_definition.annotated_field_type
             )
-            converted_field_definition = DataClassTypeToPydanticTypeConverter._convert_nested_fields(
+            converted_field_definition = self._convert_nested_fields(
                 FieldDefinition(field_type=tuple_field_type_parameter)
             )
             return FieldDefinition(
@@ -385,9 +384,7 @@ class DataClassTypeToPydanticTypeConverter:  # noqa: D
             )
         elif issubclass(field_definition.annotated_field_type, SerializableDataclass):
             return FieldDefinition(
-                field_type=DataClassTypeToPydanticTypeConverter._convert_dataclass_type_to_pydantic_type(
-                    field_definition.annotated_field_type
-                ),
+                field_type=self.to_pydantic_type(field_definition.annotated_field_type),
                 default_value=field_definition.default_value,
             )
         else:
