@@ -7,7 +7,7 @@ In addition, due to the migration from WhereFilter to WhereFilterIntersection ty
 various conversion operations we will need to perform on semantic manifests defined out in the world.
 
 This module tests the various combinations we might encounter in the wild, with a particular focus
-on inputs to parse_obj or parse_raw, as that is what the pydantic models will generally encounter.
+on inputs to model_validate or parse_raw, as that is what the pydantic models will generally encounter.
 """
 
 
@@ -46,7 +46,7 @@ def test_partially_deserialized_object_string_parsing() -> None:
     """Tests parsing a where filter specified as a string within partially deserialized json object."""
     obj = {"where_filter": __BOOLEAN_EXPRESSION__}
 
-    parsed_model = ModelWithWhereFilter.parse_obj(obj)
+    parsed_model = ModelWithWhereFilter.model_validate(obj)
 
     assert parsed_model.where_filter == PydanticWhereFilter(where_sql_template=__BOOLEAN_EXPRESSION__)
 
@@ -55,7 +55,7 @@ def test_partially_deserialized_object_parsing() -> None:
     """Tests parsing a where filter that was serialized and then json decoded, but not fully parsed."""
     obj = {"where_filter": {"where_sql_template": __BOOLEAN_EXPRESSION__}}
 
-    parsed_model = ModelWithWhereFilter.parse_obj(obj)
+    parsed_model = ModelWithWhereFilter.model_validate(obj)
 
     assert parsed_model.where_filter == PydanticWhereFilter(where_sql_template=__BOOLEAN_EXPRESSION__)
 
@@ -68,7 +68,7 @@ def test_injected_object_parsing() -> None:
     """
     obj = {"where_filter": PydanticWhereFilter(where_sql_template=__BOOLEAN_EXPRESSION__)}
 
-    parsed_model = ModelWithWhereFilter.parse_obj(obj)
+    parsed_model = ModelWithWhereFilter.model_validate(obj)
 
     assert parsed_model.where_filter == PydanticWhereFilter(where_sql_template=__BOOLEAN_EXPRESSION__)
 
@@ -96,7 +96,7 @@ def test_conversion_from_partially_deserialized_where_filter_string() -> None:
         where_filters=[PydanticWhereFilter(where_sql_template=__BOOLEAN_EXPRESSION__)]
     )
 
-    parsed_model = ModelWithWhereFilterIntersection.parse_obj(obj)
+    parsed_model = ModelWithWhereFilterIntersection.model_validate(obj)
 
     assert parsed_model.where_filter == expected_conversion_output
 
@@ -108,7 +108,7 @@ def test_conversion_from_partially_deserialized_where_filter_object() -> None:
         where_filters=[PydanticWhereFilter(where_sql_template=__BOOLEAN_EXPRESSION__)]
     )
 
-    parsed_model = ModelWithWhereFilterIntersection.parse_obj(obj)
+    parsed_model = ModelWithWhereFilterIntersection.model_validate(obj)
 
     assert parsed_model.where_filter == expected_conversion_output
 
@@ -120,7 +120,7 @@ def test_conversion_from_injected_where_filter_object() -> None:
         where_filters=[PydanticWhereFilter(where_sql_template=__BOOLEAN_EXPRESSION__)]
     )
 
-    parsed_model = ModelWithWhereFilterIntersection.parse_obj(obj)
+    parsed_model = ModelWithWhereFilterIntersection.model_validate(obj)
 
     assert parsed_model.where_filter == expected_conversion_output
 
@@ -138,7 +138,7 @@ def test_where_filter_intersection_from_partially_deserialized_list_of_strings()
         ]
     )
 
-    parsed_model = ModelWithWhereFilterIntersection.parse_obj(obj)
+    parsed_model = ModelWithWhereFilterIntersection.model_validate(obj)
 
     assert parsed_model.where_filter == expected_parsed_output
 

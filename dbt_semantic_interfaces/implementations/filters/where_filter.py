@@ -64,7 +64,7 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
 
     @classmethod
     def __get_validators__(cls) -> Generator[Callable[[PydanticParseableValueType], Self], None, None]:
-        """Pydantic magic method for allowing handling of arbitrary input on parse_obj invocation.
+        """Pydantic magic method for allowing handling of arbitrary input on model_validate invocation.
 
         This class requires more subtle handling of input deserialized object types (dicts), and so it cannot
         extend the common interface via _from_yaml_values.
