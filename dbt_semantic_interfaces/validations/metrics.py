@@ -48,7 +48,7 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 try:
                     window_str = f"{metric.type_params.window.count} {metric.type_params.window.granularity.value}"
                     # TODO: Should not call an implementation class.
-                    PydanticMetricTimeWindow.parse(window_str)
+                    PydanticMetricTimeWindow.model_validate(window_str)
                 except ParsingException as e:
                     issues.append(
                         ValidationError(

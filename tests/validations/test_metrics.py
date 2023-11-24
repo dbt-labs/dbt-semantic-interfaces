@@ -273,7 +273,7 @@ def test_derived_metric() -> None:  # noqa: D
                         expr="random_metric / random_metric3",
                         metrics=[
                             PydanticMetricInput(
-                                name="random_metric", offset_window=PydanticMetricTimeWindow.parse("3 weeks")
+                                name="random_metric", offset_window=PydanticMetricTimeWindow.model_validate("3 weeks")
                             ),
                             PydanticMetricInput(
                                 name="random_metric", offset_to_grain=TimeGranularity.MONTH, alias="random_metric3"
@@ -289,7 +289,7 @@ def test_derived_metric() -> None:  # noqa: D
                         metrics=[
                             PydanticMetricInput(
                                 name="random_metric",
-                                offset_window=PydanticMetricTimeWindow.parse("3 weeks"),
+                                offset_window=PydanticMetricTimeWindow.model_validate("3 weeks"),
                                 offset_to_grain=TimeGranularity.MONTH,
                             )
                         ],

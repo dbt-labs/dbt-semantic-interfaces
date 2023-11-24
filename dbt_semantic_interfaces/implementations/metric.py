@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 from pydantic import Field
 
@@ -38,7 +38,7 @@ class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
     fill_nulls_with: Optional[int] = None
 
     @classmethod
-    def _from_yaml_value(cls, input: PydanticParseableValueType) -> PydanticMetricInputMeasure:
+    def _from_yaml_value(cls, input: PydanticParseableValueType) -> Dict[str, Any]:
         """Parses a MetricInputMeasure from a string (name only) or object (struct spec) input.
 
         For user input cases, the original YAML spec for a PydanticMetric included measure(s) specified as string names
@@ -46,7 +46,7 @@ class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
         base name for this object.
         """
         if isinstance(input, str):
-            return PydanticMetricInputMeasure(name=input)
+            return {"name": input}
         else:
             raise ValueError(
                 f"MetricInputMeasure inputs from model configs are expected to be of either type string or "
@@ -71,26 +71,22 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
     granularity: TimeGranularity
 
     @classmethod
-    def _from_yaml_value(cls, input: PydanticParseableValueType) -> PydanticMetricTimeWindow:
+    def _from_yaml_value(cls, input: PydanticParseableValueType) -> Dict[str, Any]:
         """Parses a MetricTimeWindow from a string input found in a user provided model specification.
 
         The MetricTimeWindow is always expected to be provided as a string in user-defined YAML configs.
+
+        Output of the form: (<time unit count>, <time granularity>, <error message>) - error message is None if window
+        is formatted properly
         """
-        if isinstance(input, str):
-            return PydanticMetricTimeWindow.parse(input)
-        else:
+        if not isinstance(input, str):
             raise ValueError(
                 f"MetricTimeWindow inputs from model configs are expected to always be of type string, but got "
                 f"type {type(input)} with value: {input}"
             )
 
-    @staticmethod
-    def parse(window: str) -> PydanticMetricTimeWindow:
-        """Returns window values if parsing succeeds, None otherwise.
+        window = input
 
-        Output of the form: (<time unit count>, <time granularity>, <error message>) - error message is None if window
-        is formatted properly
-        """
         parts = window.split(" ")
         if len(parts) != 2:
             raise ParsingException(
@@ -112,10 +108,10 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         if not count.isdigit():
             raise ParsingException(f"Invalid count ({count}) in cumulative metric window string: ({window})")
 
-        return PydanticMetricTimeWindow(
-            count=int(count),
-            granularity=TimeGranularity(granularity),
-        )
+        return {
+            "count": int(count),
+            "granularity": TimeGranularity(granularity),
+        }
 
 
 class PydanticConstantPropertyInput(HashableBaseModel):

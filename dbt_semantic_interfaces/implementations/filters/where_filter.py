@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import Callable, Generator, List, Tuple
+from typing import Any, Dict, List, Tuple
 
-from typing_extensions import Self
+from pydantic import model_validator
 
 from dbt_semantic_interfaces.call_parameter_sets import (
     FilterCallParameterSets,
@@ -34,17 +34,14 @@ class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
     where_sql_template: str
 
     @classmethod
-    def _from_yaml_value(
-        cls,
-        input: PydanticParseableValueType,
-    ) -> PydanticWhereFilter:
+    def _from_yaml_value(cls, input: PydanticParseableValueType) -> Dict[str, Any]:
         """Parses a WhereFilter from a string found in a user-provided model specification.
 
         User-provided constraint strings are SQL snippets conforming to the expectations of SQL WHERE clauses,
         and as such we parse them using our standard parse method below.
         """
         if isinstance(input, str):
-            return PydanticWhereFilter(where_sql_template=input)
+            return {"where_sql_template": input}
         else:
             raise ValueError(f"Expected input to be of type string, but got type {type(input)} with value: {input}")
 
@@ -62,17 +59,9 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
 
     where_filters: List[PydanticWhereFilter]
 
+    @model_validator(mode="before")
     @classmethod
-    def __get_validators__(cls) -> Generator[Callable[[PydanticParseableValueType], Self], None, None]:
-        """Pydantic magic method for allowing handling of arbitrary input on model_validate invocation.
-
-        This class requires more subtle handling of input deserialized object types (dicts), and so it cannot
-        extend the common interface via _from_yaml_values.
-        """
-        yield cls._convert_legacy_and_yaml_input
-
-    @classmethod
-    def _convert_legacy_and_yaml_input(cls, input: PydanticParseableValueType) -> Self:
+    def _convert_legacy_and_yaml_input(cls, input: PydanticParseableValueType) -> Dict[str, Any]:
         """Specifies raw input conversion rules to ensure serialized semantic manifests will parse correctly.
 
         The original spec for where filters relied on a raw WhereFilter object, but this has now been updated to
@@ -101,13 +90,13 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
         is_legacy_where_filter = isinstance(input, str) or isinstance(input, PydanticWhereFilter) or has_legacy_keys
 
         if is_legacy_where_filter:
-            return cls(where_filters=[input])
+            return {"where_filters": [input]}
         elif isinstance(input, list):
-            return cls(where_filters=input)
+            return {"where_filters": input}
         elif isinstance(input, dict):
-            return cls(**input)
-        elif isinstance(input, cls):
             return input
+        elif isinstance(input, cls):
+            return input.model_dump()
         else:
             raise ValueError(
                 f"Expected input to be of type string, list, PydanticWhereFilter, PydanticWhereFilterIntersection, "
