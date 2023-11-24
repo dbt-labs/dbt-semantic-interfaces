@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from importlib_metadata import version
-from pydantic import validator
+from pydantic import field_validator
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import (
@@ -33,7 +33,7 @@ class PydanticProjectConfiguration(HashableBaseModel, ModelWithMetadataParsing, 
     metadata: Optional[PydanticMetadata] = None
     dsi_package_version: PydanticSemanticVersion = UNKNOWN_VERSION_SENTINEL
 
-    @validator("dsi_package_version", always=True)
+    @field_validator("dsi_package_version")
     @classmethod
     def __create_default_dsi_package_version(cls, value: Optional[PydanticSemanticVersion]) -> PydanticSemanticVersion:
         """Returns the version of the dbt_semantic_interfaces package that generated this manifest."""
