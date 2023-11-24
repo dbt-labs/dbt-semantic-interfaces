@@ -81,7 +81,7 @@ def test_serialize_deserialize_operations() -> None:
     base_obj = ModelWithWhereFilter(where_filter=PydanticWhereFilter(where_sql_template=__BOOLEAN_EXPRESSION__))
 
     serialized = base_obj.model_dump_json()
-    deserialized = ModelWithWhereFilter.parse_raw(serialized)
+    deserialized = ModelWithWhereFilter.model_validate_json(serialized)
 
     assert deserialized == base_obj
 
