@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import List, Optional
 
 from importlib_metadata import version
-from pydantic import field_validator
+from pydantic import ConfigDict, field_validator
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import (
@@ -29,6 +29,8 @@ class PydanticProjectConfiguration(HashableBaseModel, ModelWithMetadataParsing, 
     def _implements_protocol(self) -> ProjectConfiguration:
         return self
 
+    model_config = ConfigDict(validate_default=True)
+
     time_spine_table_configurations: List[PydanticTimeSpineTableConfiguration]
     metadata: Optional[PydanticMetadata] = None
     dsi_package_version: PydanticSemanticVersion = UNKNOWN_VERSION_SENTINEL
@@ -39,4 +41,4 @@ class PydanticProjectConfiguration(HashableBaseModel, ModelWithMetadataParsing, 
         """Returns the version of the dbt_semantic_interfaces package that generated this manifest."""
         if value is not None and value != UNKNOWN_VERSION_SENTINEL:
             return value
-        return PydanticSemanticVersion.create_from_string(version("dbt_semantic_interfaces"))
+        return PydanticSemanticVersion.model_validate(version("dbt_semantic_interfaces"))

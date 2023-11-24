@@ -19,6 +19,6 @@ def test_interfaces_version_matches() -> None:
 
     # get the actual installed version
     installed_version = version("dbt_semantic_interfaces")
-    assert semantic_manifest.project_configuration.dsi_package_version == PydanticSemanticVersion.create_from_string(
+    assert semantic_manifest.project_configuration.dsi_package_version == PydanticSemanticVersion.model_validate(
         installed_version
     )
