@@ -117,6 +117,23 @@ class MetricInput(Protocol):
         pass
 
 
+class ConstantPropertyInput(Protocol):
+    """Provides the constant property values for conversion metrics.
+
+    The specified property will be a reference of a dimension/entity.
+    """
+
+    @property
+    @abstractmethod
+    def base_property(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def conversion_property(self) -> str:  # noqa: D
+        pass
+
+
 class ConversionTypeParams(Protocol):
     """Type params to provide context for conversion metrics properties."""
 
@@ -160,6 +177,12 @@ class ConversionTypeParams(Protocol):
     @abstractmethod
     def conversion_measure_reference(self) -> MeasureReference:
         """Return the measure reference associated with the conversion measure."""
+        pass
+
+    @property
+    @abstractmethod
+    def constant_properties(self) -> Optional[Sequence[ConstantPropertyInput]]:
+        """Return the list of defined constant properties."""
         pass
 
 

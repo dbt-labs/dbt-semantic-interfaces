@@ -118,6 +118,13 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         )
 
 
+class PydanticConstantPropertyInput(HashableBaseModel):
+    """Input of a constant property used in conversion metrics."""
+
+    base_property: str
+    conversion_property: str
+
+
 class PydanticMetricInput(HashableBaseModel):
     """Provides a pointer to a metric along with the additional properties used on that metric."""
 
@@ -146,6 +153,7 @@ class PydanticConversionTypeParams(HashableBaseModel):
     entity: str
     calculation: ConversionCalculationType = ConversionCalculationType.CONVERSION_RATE
     window: Optional[PydanticMetricTimeWindow]
+    constant_properties: Optional[List[PydanticConstantPropertyInput]]
 
     @property
     def base_measure_reference(self) -> MeasureReference:
