@@ -200,6 +200,18 @@ def test_metric_protocol_derived(metric: PydanticMetric) -> None:  # noqa: D
     assert isinstance(metric, RuntimeCheckableMetric)
 
 
+@given(
+    builds(
+        PydanticMetric,
+        type=just(MetricType.CONVERSION),
+        type_params=builds(PydanticMetricTypeParams, metrics=lists(builds(PydanticMetricInput))),
+        expr=builds(str),
+    )
+)
+def test_metric_protocol_conversion(metric: PydanticMetric) -> None:  # noqa: D
+    assert isinstance(metric, RuntimeCheckableMetric)
+
+
 @runtime_checkable
 class RuntimeCheckableEntity(EntityProtocol, Protocol):
     """We don't want runtime_checkable versions of protocols in the package, but we want them for tests."""
