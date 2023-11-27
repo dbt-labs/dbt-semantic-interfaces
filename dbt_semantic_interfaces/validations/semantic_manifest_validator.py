@@ -24,6 +24,7 @@ from dbt_semantic_interfaces.validations.measures import (
     SemanticModelMeasuresUniqueRule,
 )
 from dbt_semantic_interfaces.validations.metrics import (
+    ConversionMetricRule,
     CumulativeMetricRule,
     DerivedMetricRule,
     WhereFiltersAreParseable,
@@ -89,6 +90,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         MetricLabelsRule[SemanticManifestT](),
         SemanticModelLabelsRule[SemanticManifestT](),
         EntityLabelsRule[SemanticManifestT](),
+        ConversionMetricRule[SemanticManifestT](),
     )
 
     def __init__(
