@@ -11,6 +11,8 @@ from dbt_semantic_interfaces.protocols.measure import (  # noqa:F401
 )
 from dbt_semantic_interfaces.protocols.metadata import FileSlice, Metadata  # noqa:F401
 from dbt_semantic_interfaces.protocols.metric import (  # noqa:F401
+    ConstantPropertyInput,
+    ConversionTypeParams,
     Metric,
     MetricInput,
     MetricInputMeasure,

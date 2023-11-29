@@ -13,7 +13,11 @@ from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_semantic_manifest,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
-from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
+from dbt_semantic_interfaces.type_enums import (
+    ConversionCalculationType,
+    MetricType,
+    TimeGranularity,
+)
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
@@ -407,6 +411,84 @@ def test_derived_metric_input_parsing() -> None:
         filter=PydanticWhereFilterIntersection(
             where_filters=[PydanticWhereFilter(where_sql_template="input_metric < 10")]
         ),
+    )
+
+
+def test_conversion_metric_parsing() -> None:
+    """Test for parsing a conversion metric."""
+    yaml_contents = textwrap.dedent(
+        """\
+        metric:
+          name: conversion_metric
+          type: conversion
+          type_params:
+              conversion_type_params:
+                base_measure: opportunity
+                conversion_measure: conversions
+                window: 7 days
+                entity: user
+        """
+    )
+    file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+
+    assert len(build_result.semantic_manifest.metrics) == 1
+    metric = build_result.semantic_manifest.metrics[0]
+    assert metric.name == "conversion_metric"
+    assert metric.type is MetricType.CONVERSION
+    assert metric.type_params
+    assert metric.type_params.conversion_type_params
+    assert metric.type_params.conversion_type_params.base_measure == PydanticMetricInputMeasure(name="opportunity")
+    assert metric.type_params.conversion_type_params.conversion_measure == PydanticMetricInputMeasure(
+        name="conversions"
+    )
+    assert metric.type_params.conversion_type_params.window == PydanticMetricTimeWindow(
+        count=7, granularity=TimeGranularity.DAY
+    )
+    assert metric.type_params.conversion_type_params.entity == "user"
+    assert metric.type_params.conversion_type_params.calculation == ConversionCalculationType.CONVERSION_RATE
+
+
+def test_conversion_metric_parsing_with_constant_properties() -> None:
+    """Test for parsing a conversion metric with specified constant properties."""
+    yaml_contents = textwrap.dedent(
+        """\
+        metric:
+          name: conversion_metric
+          type: conversion
+          type_params:
+              conversion_type_params:
+                base_measure: opportunity
+                conversion_measure: conversions
+                entity: user
+                calculation: conversions
+                constant_properties:
+                    - base_property: base_session_id
+                      conversion_property: conversion_session_id
+        """
+    )
+    file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+
+    assert len(build_result.semantic_manifest.metrics) == 1
+    metric = build_result.semantic_manifest.metrics[0]
+    assert metric.name == "conversion_metric"
+    assert metric.type is MetricType.CONVERSION
+    assert metric.type_params
+    assert metric.type_params.conversion_type_params
+    assert metric.type_params.conversion_type_params.base_measure == PydanticMetricInputMeasure(name="opportunity")
+    assert metric.type_params.conversion_type_params.conversion_measure == PydanticMetricInputMeasure(
+        name="conversions"
+    )
+    assert metric.type_params.conversion_type_params.window is None
+    assert metric.type_params.conversion_type_params.entity == "user"
+    assert metric.type_params.conversion_type_params.calculation == ConversionCalculationType.CONVERSIONS
+    assert metric.type_params.conversion_type_params.constant_properties
+    assert metric.type_params.conversion_type_params.constant_properties[0].base_property == "base_session_id"
+    assert (
+        metric.type_params.conversion_type_params.constant_properties[0].conversion_property == "conversion_session_id"
     )
 
 

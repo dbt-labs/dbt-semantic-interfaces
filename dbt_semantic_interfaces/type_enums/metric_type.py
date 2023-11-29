@@ -8,3 +8,4 @@ class MetricType(ExtendedEnum):
     RATIO = "ratio"
     CUMULATIVE = "cumulative"
     DERIVED = "derived"
+    CONVERSION = "conversion"

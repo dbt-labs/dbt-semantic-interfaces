@@ -9,8 +9,11 @@ TRANSFORM_OBJECT_NAME_PATTERN = "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$"
 
 
 # Enums
-metric_types_enum_values = ["SIMPLE", "RATIO", "CUMULATIVE", "DERIVED"]
+metric_types_enum_values = ["SIMPLE", "RATIO", "CUMULATIVE", "DERIVED", "CONVERSION"]
 metric_types_enum_values += [x.lower() for x in metric_types_enum_values]
+
+calculation_types_enum_values = ["CONVERSIONS", "CONVERSION_RATE"]
+calculation_types_enum_values += [x.lower() for x in calculation_types_enum_values]
 
 entity_type_enum_values = ["PRIMARY", "UNIQUE", "FOREIGN", "NATURAL"]
 entity_type_enum_values += [x.lower() for x in entity_type_enum_values]
@@ -85,6 +88,32 @@ metric_input_schema = {
     "additionalProperties": False,
 }
 
+conversion_type_params_schema = {
+    "$id": "conversion_type_params_schema",
+    "type": "object",
+    "properties": {
+        "base_measure": {"$ref": "metric_input_measure_schema"},
+        "conversion_measure": {"$ref": "metric_input_measure_schema"},
+        "calculation": {"enum": calculation_types_enum_values},
+        "entity": {"type": "string"},
+        "window": {"type": "string"},
+        "constant_properties": {"type": "array", "items": {"$ref": "constant_property_input_schema"}},
+    },
+    "additionalProperties": False,
+    "required": ["base_measure", "conversion_measure", "entity"],
+}
+
+constant_property_input_schema = {
+    "$id": "constant_property_input_schema",
+    "type": "object",
+    "properties": {
+        "base_property": {"type": "string"},
+        "conversion_property": {"type": "string"},
+    },
+    "additionalProperties": False,
+    "required": ["base_property", "conversion_property"],
+}
+
 metric_type_params_schema = {
     "$id": "metric_type_params",
     "type": "object",
@@ -99,6 +128,7 @@ metric_type_params_schema = {
             "type": "array",
             "items": {"$ref": "metric_input_schema"},
         },
+        "conversion_type_params": {"$ref": "conversion_type_params_schema"},
     },
     "additionalProperties": False,
 }
@@ -382,6 +412,8 @@ schema_store = {
     filter_schema["$id"]: filter_schema,
     metric_input_measure_schema["$id"]: metric_input_measure_schema,
     metric_type_params_schema["$id"]: metric_type_params_schema,
+    conversion_type_params_schema["$id"]: conversion_type_params_schema,
+    constant_property_input_schema["$id"]: constant_property_input_schema,
     entity_schema["$id"]: entity_schema,
     measure_schema["$id"]: measure_schema,
     dimension_schema["$id"]: dimension_schema,
