@@ -118,9 +118,13 @@ class MetricInput(Protocol):
 
 
 class ConstantPropertyInput(Protocol):
-    """Provides the constant property values for conversion metrics.
+    """Provides the constant property set for conversion metrics.
 
-    The specified property will be a reference of a dimension/entity.
+    Constant properties are additional elements linking a base event to a conversion event.
+    The specified properties will typically be a reference to a dimension or entity, and will be used
+    to join the base event to the final conversion event. Typical constant properties are things like
+    session keys (for services where conversions are measured within a user session), or secondary entities
+    (like a user/application pair for an app platform or a user/shop pair for a retail/online storefront platform).
     """
 
     @property
@@ -164,19 +168,7 @@ class ConversionTypeParams(Protocol):
     @property
     @abstractmethod
     def window(self) -> Optional[MetricTimeWindow]:
-        """Maximum time range for finding successing conversion events."""
-        pass
-
-    @property
-    @abstractmethod
-    def base_measure_reference(self) -> MeasureReference:
-        """Return the measure reference associated with the base measure."""
-        pass
-
-    @property
-    @abstractmethod
-    def conversion_measure_reference(self) -> MeasureReference:
-        """Return the measure reference associated with the conversion measure."""
+        """Maximum time range for finding successive conversion events."""
         pass
 
     @property
@@ -233,11 +225,6 @@ class MetricTypeParams(Protocol):
     @property
     @abstractmethod
     def conversion_type_params(self) -> Optional[ConversionTypeParams]:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
-    def conversion_type_params_or_error(self) -> ConversionTypeParams:  # noqa: D
         pass
 
 
