@@ -155,16 +155,6 @@ class PydanticConversionTypeParams(HashableBaseModel):
     window: Optional[PydanticMetricTimeWindow]
     constant_properties: Optional[List[PydanticConstantPropertyInput]]
 
-    @property
-    def base_measure_reference(self) -> MeasureReference:
-        """Return the measure reference associated with the base measure."""
-        return self.base_measure.measure_reference
-
-    @property
-    def conversion_measure_reference(self) -> MeasureReference:
-        """Return the measure reference associated with the conversion measure."""
-        return self.conversion_measure.measure_reference
-
 
 class PydanticMetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
@@ -179,12 +169,6 @@ class PydanticMetricTypeParams(HashableBaseModel):
     conversion_type_params: Optional[PydanticConversionTypeParams]
 
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
-
-    @property
-    def conversion_type_params_or_error(self) -> PydanticConversionTypeParams:  # noqa: D
-        if self.conversion_type_params is None:
-            raise ValueError("Expected conversion_type_params to be not None.")
-        return self.conversion_type_params
 
 
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):

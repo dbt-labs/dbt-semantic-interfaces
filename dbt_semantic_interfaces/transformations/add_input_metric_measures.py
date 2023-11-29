@@ -43,8 +43,10 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
                         AddInputMetricMeasuresRule._get_measures_for_metric(semantic_manifest, input_metric.name)
                     )
             elif matched_metric.type is MetricType.CONVERSION:
-                measures.add(matched_metric.type_params.conversion_type_params_or_error.base_measure)
-                measures.add(matched_metric.type_params.conversion_type_params_or_error.conversion_measure)
+                conversion_type_params = matched_metric.type_params.conversion_type_params
+                assert conversion_type_params, "Conversion metric should have conversion_type_params."
+                measures.add(conversion_type_params.base_measure)
+                measures.add(conversion_type_params.conversion_measure)
             else:
                 assert_values_exhausted(matched_metric.type)
         else:
