@@ -1,15 +1,17 @@
 import traceback
-from typing import Generic, List, Sequence
+from typing import Generic, List, Optional, Sequence
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.metric import PydanticMetricTimeWindow
 from dbt_semantic_interfaces.protocols import (
+    ConversionTypeParams,
     Metric,
     SemanticManifest,
     SemanticManifestT,
+    SemanticModel,
 )
-from dbt_semantic_interfaces.references import MetricModelReference
-from dbt_semantic_interfaces.type_enums import MetricType
+from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
+from dbt_semantic_interfaces.type_enums import AggregationType, MetricType
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
@@ -260,4 +262,212 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
 
         for metric in semantic_manifest.metrics or []:
             issues += WhereFiltersAreParseable._validate_metric(metric)
+        return issues
+
+
+class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """Checks that conversion metrics are configured properly."""
+
+    @staticmethod
+    @validate_safely(whats_being_done="checking that the params of metric are valid if it is a conversion metric")
+    def _validate_type_params(metric: Metric, conversion_type_params: ConversionTypeParams) -> List[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        window = conversion_type_params.window
+        if window:
+            try:
+                window_str = f"{window.count} {window.granularity.value}"
+                PydanticMetricTimeWindow.parse(window_str)
+            except ParsingException as e:
+                issues.append(
+                    ValidationError(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric.metadata),
+                            metric=MetricModelReference(metric_name=metric.name),
+                        ),
+                        message="".join(traceback.format_exception_only(type(e), value=e)),
+                        extra_detail="".join(traceback.format_tb(e.__traceback__)),
+                    )
+                )
+        return issues
+
+    @staticmethod
+    @validate_safely(whats_being_done="checks that the entity exists in the base/conversion semantic model")
+    def _validate_entity_exists(
+        metric: Metric, entity: str, base_semantic_model: SemanticModel, conversion_semantic_model: SemanticModel
+    ) -> List[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        if entity not in {entity.name for entity in base_semantic_model.entities}:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric.metadata),
+                        metric=MetricModelReference(metric_name=metric.name),
+                    ),
+                    message=f"Entity: {entity} not found in base semantic model: {base_semantic_model.name}.",
+                )
+            )
+        if entity not in {entity.name for entity in conversion_semantic_model.entities}:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric.metadata),
+                        metric=MetricModelReference(metric_name=metric.name),
+                    ),
+                    message=f"Entity: {entity} not found in "
+                    f"conversion semantic model: {conversion_semantic_model.name}.",
+                )
+            )
+        return issues
+
+    @staticmethod
+    @validate_safely(whats_being_done="checks that the provided measures are valid for conversion metrics")
+    def _validate_measures(
+        metric: Metric, base_semantic_model: SemanticModel, conversion_semantic_model: SemanticModel
+    ) -> List[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        def _validate_measure(measure_reference: MeasureReference, semantic_model: SemanticModel) -> None:
+            measure = None
+            for model_measure in semantic_model.measures:
+                if model_measure.reference == measure_reference:
+                    measure = model_measure
+                    break
+
+            assert measure, f"Measure '{model_measure.name}' wasn't found in semantic model '{semantic_model.name}'"
+
+            if (
+                measure.agg != AggregationType.COUNT
+                and measure.agg != AggregationType.COUNT_DISTINCT
+                and (measure.agg != AggregationType.SUM or measure.expr != "1")
+            ):
+                issues.append(
+                    ValidationError(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric.metadata),
+                            metric=MetricModelReference(metric_name=metric.name),
+                        ),
+                        message=f"For conversion metrics, the measure must be COUNT/SUM(1)/COUNT_DISTINCT. "
+                        f"Measure: {measure.name} is agg type: {measure.agg}",
+                    )
+                )
+
+        conversion_type_params = metric.type_params.conversion_type_params
+        assert (
+            conversion_type_params is not None
+        ), "For a conversion metric, type_params.conversion_type_params must exist."
+        _validate_measure(
+            measure_reference=conversion_type_params.base_measure.measure_reference,
+            semantic_model=base_semantic_model,
+        )
+        _validate_measure(
+            measure_reference=conversion_type_params.conversion_measure.measure_reference,
+            semantic_model=conversion_semantic_model,
+        )
+        return issues
+
+    @staticmethod
+    @validate_safely(whats_being_done="checks that the provided constant properties are valid")
+    def _validate_constant_properties(
+        metric: Metric, base_semantic_model: SemanticModel, conversion_semantic_model: SemanticModel
+    ) -> List[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        def _elements_in_model(references: List[str], semantic_model: SemanticModel) -> None:
+            linkable_elements = [entity.name for entity in semantic_model.entities] + [
+                dimension.name for dimension in semantic_model.dimensions
+            ]
+            for reference in references:
+                if reference not in linkable_elements:
+                    issues.append(
+                        ValidationError(
+                            context=MetricContext(
+                                file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                metric=MetricModelReference(metric_name=metric.name),
+                            ),
+                            message=f"The provided constant property: {reference}, "
+                            f"cannot be found in semantic model {semantic_model.name}",
+                        )
+                    )
+
+        conversion_type_params = metric.type_params.conversion_type_params
+        assert (
+            conversion_type_params is not None
+        ), "For a conversion metric, type_params.conversion_type_params must exist."
+        constant_properties = conversion_type_params.constant_properties or []
+        base_properties = []
+        conversion_properties = []
+        for constant_property in constant_properties:
+            base_properties.append(constant_property.base_property)
+            conversion_properties.append(constant_property.conversion_property)
+
+        _elements_in_model(references=base_properties, semantic_model=base_semantic_model)
+        _elements_in_model(references=conversion_properties, semantic_model=conversion_semantic_model)
+        return issues
+
+    @staticmethod
+    def _get_semantic_model_from_measure(
+        measure_reference: MeasureReference, semantic_manifest: SemanticManifest
+    ) -> Optional[SemanticModel]:
+        """Retrieve the semantic model from a given measure reference."""
+        semantic_model = None
+        for model in semantic_manifest.semantic_models:
+            if measure_reference in {measure.reference for measure in model.measures}:
+                semantic_model = model
+                break
+        return semantic_model
+
+    @staticmethod
+    @validate_safely(whats_being_done="running manifest validation ensuring conversion metrics are valid")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+
+        for metric in semantic_manifest.metrics or []:
+            if metric.type == MetricType.CONVERSION:
+                # Validates that the measure exists and corresponds to a semantic model
+                assert (
+                    metric.type_params.conversion_type_params is not None
+                ), "For a conversion metric, type_params.conversion_type_params must exist."
+
+                base_semantic_model = ConversionMetricRule._get_semantic_model_from_measure(
+                    measure_reference=metric.type_params.conversion_type_params.base_measure.measure_reference,
+                    semantic_manifest=semantic_manifest,
+                )
+                conversion_semantic_model = ConversionMetricRule._get_semantic_model_from_measure(
+                    measure_reference=metric.type_params.conversion_type_params.conversion_measure.measure_reference,
+                    semantic_manifest=semantic_manifest,
+                )
+                if base_semantic_model is None or conversion_semantic_model is None:
+                    # If measure's don't exist, stop this metric's validation as it will fail later validations
+                    issues.append(
+                        ValidationError(
+                            context=MetricContext(
+                                file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                metric=MetricModelReference(metric_name=metric.name),
+                            ),
+                            message=f"For metric '{metric.name}', conversion measures specified was not found.",
+                        )
+                    )
+                    continue
+
+                issues += ConversionMetricRule._validate_entity_exists(
+                    metric=metric,
+                    entity=metric.type_params.conversion_type_params.entity,
+                    base_semantic_model=base_semantic_model,
+                    conversion_semantic_model=conversion_semantic_model,
+                )
+                issues += ConversionMetricRule._validate_measures(
+                    metric=metric,
+                    base_semantic_model=base_semantic_model,
+                    conversion_semantic_model=conversion_semantic_model,
+                )
+                issues += ConversionMetricRule._validate_type_params(
+                    metric=metric, conversion_type_params=metric.type_params.conversion_type_params
+                )
+                issues += ConversionMetricRule._validate_constant_properties(
+                    metric=metric,
+                    base_semantic_model=base_semantic_model,
+                    conversion_semantic_model=conversion_semantic_model,
+                )
         return issues
