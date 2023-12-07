@@ -13,6 +13,8 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
 )
 from dbt_semantic_interfaces.implementations.metric import (
+    PydanticConstantPropertyInput,
+    PydanticConversionTypeParams,
     PydanticMetricInput,
     PydanticMetricInputMeasure,
     PydanticMetricTimeWindow,
@@ -39,6 +41,7 @@ from dbt_semantic_interfaces.type_enums import (
     TimeGranularity,
 )
 from dbt_semantic_interfaces.validations.metrics import (
+    ConversionMetricRule,
     DerivedMetricRule,
     WhereFiltersAreParseable,
 )
@@ -421,3 +424,128 @@ def test_where_filter_validations_bad_input_metric_filter(  # noqa: D
         match=f"trying to parse filter for input metric `{input_metric.name}` on metric `{metric.name}`",
     ):
         validator.checked_validations(manifest)
+
+
+def test_conversion_metrics() -> None:  # noqa: D
+    base_measure_name = "base_measure"
+    conversion_measure_name = "conversion_measure"
+    entity = "entity"
+    invalid_entity = "bad"
+    invalid_measure = "invalid_measure"
+    window = PydanticMetricTimeWindow.parse("7 days")
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([ConversionMetricRule()])
+    result = validator.validate_semantic_manifest(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="base",
+                    measures=[
+                        PydanticMeasure(
+                            name=base_measure_name, agg=AggregationType.COUNT, agg_time_dimension="ds", expr="1"
+                        ),
+                        PydanticMeasure(name=invalid_measure, agg=AggregationType.MAX, agg_time_dimension="ds"),
+                    ],
+                    dimensions=[
+                        PydanticDimension(
+                            name="ds",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                    ],
+                    entities=[
+                        PydanticEntity(name=entity, type=EntityType.PRIMARY),
+                    ],
+                ),
+                semantic_model_with_guaranteed_meta(
+                    name="conversion",
+                    measures=[
+                        PydanticMeasure(
+                            name=conversion_measure_name, agg=AggregationType.COUNT, agg_time_dimension="ds", expr="1"
+                        )
+                    ],
+                    dimensions=[
+                        PydanticDimension(
+                            name="ds",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                    ],
+                    entities=[
+                        PydanticEntity(name=entity, type=EntityType.PRIMARY),
+                    ],
+                ),
+            ],
+            metrics=[
+                metric_with_guaranteed_meta(
+                    name="proper_metric",
+                    type=MetricType.CONVERSION,
+                    type_params=PydanticMetricTypeParams(
+                        conversion_type_params=PydanticConversionTypeParams(
+                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
+                            conversion_measure=PydanticMetricInputMeasure(name=conversion_measure_name),
+                            window=window,
+                            entity=entity,
+                        )
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="bad_measure_metric",
+                    type=MetricType.CONVERSION,
+                    type_params=PydanticMetricTypeParams(
+                        conversion_type_params=PydanticConversionTypeParams(
+                            base_measure=PydanticMetricInputMeasure(name=invalid_measure),
+                            conversion_measure=PydanticMetricInputMeasure(name=conversion_measure_name),
+                            window=window,
+                            entity=entity,
+                        )
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="entity_doesnt_exist",
+                    type=MetricType.CONVERSION,
+                    type_params=PydanticMetricTypeParams(
+                        conversion_type_params=PydanticConversionTypeParams(
+                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
+                            conversion_measure=PydanticMetricInputMeasure(name=conversion_measure_name),
+                            window=window,
+                            entity=invalid_entity,
+                        )
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="constant_property_doesnt_exist",
+                    type=MetricType.CONVERSION,
+                    type_params=PydanticMetricTypeParams(
+                        conversion_type_params=PydanticConversionTypeParams(
+                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
+                            conversion_measure=PydanticMetricInputMeasure(name=conversion_measure_name),
+                            window=window,
+                            entity=entity,
+                            constant_properties=[
+                                PydanticConstantPropertyInput(base_property="bad_dim", conversion_property="bad_dim2")
+                            ],
+                        )
+                    ),
+                ),
+            ],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+
+    build_issues = result.errors
+    assert len(build_issues) == 5
+    expected_substr1 = f"{invalid_entity} not found in base semantic model"
+    expected_substr2 = f"{invalid_entity} not found in conversion semantic model"
+    expected_substr3 = "the measure must be COUNT/SUM(1)/COUNT_DISTINCT"
+    expected_substr4 = "The provided constant property: bad_dim, cannot be found"
+    expected_substr5 = "The provided constant property: bad_dim2, cannot be found"
+    missing_error_strings = set()
+    for expected_str in [expected_substr1, expected_substr2, expected_substr3, expected_substr4, expected_substr5]:
+        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
+            missing_error_strings.add(expected_str)
+    assert len(missing_error_strings) == 0, "Failed to match one or more expected errors: "
+    f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"

@@ -20,6 +20,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.implementations.metric import (
+    PydanticConversionTypeParams,
     PydanticMetric,
     PydanticMetricInput,
     PydanticMetricInputMeasure,
@@ -197,6 +198,26 @@ def test_metric_protocol_ratio(metric: PydanticMetric) -> None:  # noqa: D
     )
 )
 def test_metric_protocol_derived(metric: PydanticMetric) -> None:  # noqa: D
+    assert isinstance(metric, RuntimeCheckableMetric)
+
+
+@given(
+    builds(
+        PydanticMetric,
+        type=just(MetricType.CONVERSION),
+        type_params=builds(
+            PydanticMetricTypeParams,
+            conversion_type_params=builds(
+                PydanticConversionTypeParams,
+                base_measure=builds(PydanticMetricInputMeasure),
+                conversion_measure=builds(PydanticMetricInputMeasure),
+                entity=builds(str),
+            ),
+        ),
+        expr=builds(str),
+    )
+)
+def test_metric_protocol_conversion(metric: PydanticMetric) -> None:  # noqa: D
     assert isinstance(metric, RuntimeCheckableMetric)
 
 
