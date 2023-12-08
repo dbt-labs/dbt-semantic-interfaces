@@ -432,7 +432,7 @@ def test_conversion_metrics() -> None:  # noqa: D
     entity = "entity"
     invalid_entity = "bad"
     invalid_measure = "invalid_measure"
-    window = PydanticMetricTimeWindow.parse("7 days")
+    window = PydanticMetricTimeWindow.model_validate("7 days")
     validator = SemanticManifestValidator[PydanticSemanticManifest]([ConversionMetricRule()])
     result = validator.validate_semantic_manifest(
         PydanticSemanticManifest(

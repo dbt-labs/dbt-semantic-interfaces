@@ -277,7 +277,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         if window:
             try:
                 window_str = f"{window.count} {window.granularity.value}"
-                PydanticMetricTimeWindow.parse(window_str)
+                PydanticMetricTimeWindow.model_validate(window_str)
             except ParsingException as e:
                 issues.append(
                     ValidationError(
