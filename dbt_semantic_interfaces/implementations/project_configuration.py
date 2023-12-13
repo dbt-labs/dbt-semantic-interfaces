@@ -3,7 +3,12 @@ from __future__ import annotations
 from typing import List, Optional
 
 from importlib_metadata import version
-from pydantic import validator
+
+try:
+    from pydantic.v1 import validator  # pydantic v2
+except ModuleNotFoundError:
+    from pydantic import validator  # pydantic v1
+
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import (

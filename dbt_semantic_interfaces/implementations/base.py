@@ -5,7 +5,10 @@ import os
 from abc import ABC, abstractmethod
 from typing import Any, Callable, ClassVar, Generator, Generic, Type, TypeVar
 
-from pydantic import BaseModel, root_validator
+try:
+    from pydantic.v1 import BaseModel, root_validator  # pydantic v2
+except ModuleNotFoundError:
+    from pydantic import BaseModel, root_validator  # pydantic v1
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.parsing.yaml_loader import (

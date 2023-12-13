@@ -19,8 +19,16 @@ from typing import (
     get_type_hints,
 )
 
-import pydantic
-from pydantic import BaseModel
+try:
+    import pydantic.v1 as pydantic
+except (ImportError, ModuleNotFoundError):
+    import pydantic
+
+try:
+    from pydantic.v1 import BaseModel  # pydantic v2
+except ModuleNotFoundError:
+    from pydantic import BaseModel  # pydantic v1
+
 from typing_extensions import TypeAlias
 
 from dbt_semantic_interfaces.pretty_print import pformat_big_objects

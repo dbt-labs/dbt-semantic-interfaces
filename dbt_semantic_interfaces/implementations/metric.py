@@ -2,7 +2,10 @@ from __future__ import annotations
 
 from typing import List, Optional, Sequence
 
-from pydantic import Field
+try:
+    from pydantic.v1 import Field  # pydantic v2
+except ModuleNotFoundError:
+    from pydantic import Field  # pydantic v1
 
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.errors import ParsingException

@@ -1,0 +1,7 @@
+kind: Dependencies
+body: Relax Pydantic dependency to allow DSI to be installed in environments alongside
+  Pydantic v1 or v2
+time: 2023-12-13T11:30:16.376387Z
+custom:
+  Author: bernardcooke53
+  PR: "227"

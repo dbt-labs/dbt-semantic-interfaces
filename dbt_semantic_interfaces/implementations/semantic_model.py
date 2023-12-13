@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Sequence
 
-from pydantic import validator
+try:
+    from pydantic.v1 import validator  # pydantic v2
+except ModuleNotFoundError:
+    from pydantic import validator  # pydantic v1
+
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import (

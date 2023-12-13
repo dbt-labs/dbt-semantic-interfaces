@@ -20,7 +20,11 @@ from typing import (
 )
 
 import click
-from pydantic import BaseModel, Extra
+
+try:
+    from pydantic.v1 import BaseModel, Extra  # pydantic v2
+except ModuleNotFoundError:
+    from pydantic import BaseModel, Extra  # pydantic v1
 
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
 from dbt_semantic_interfaces.protocols import Metadata, SemanticManifestT, SemanticModel

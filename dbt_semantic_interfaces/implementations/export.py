@@ -2,7 +2,11 @@ from __future__ import annotations
 
 from typing import Optional
 
-from pydantic import Field
+try:
+    from pydantic.v1 import Field  # pydantic v2
+except ModuleNotFoundError:
+    from pydantic import Field  # pydantic v1
+
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
