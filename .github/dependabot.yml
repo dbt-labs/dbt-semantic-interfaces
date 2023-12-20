@@ -6,17 +6,15 @@ updates:
     schedule:
       interval: "weekly"
     rebase-strategy: "disabled"
-    groups:
-      all-dependencies:
-        # Dependabot uses a lot of heuristic matching, so it's not clear if we can separate prod from dev
-        exclude-patterns:
-          # We need to manually maintain all of our dbt and internal MetricFlow sub-package dependencies
-          - "dbt-*"
-          - "metricflow*"
-          # Manually exclude annoying-to-update dev dependencies
-          - "ruff"
-          - "pre-commit"
-          - "black"
+    ignore:
+      # Ignore all updates to dbt and metricflow packages for internal builds
+      - dependency-name: "dbt-*"
+      - dependency-name: "metricflow*"
+      # Manually exclude annoying-to-update dev dependencies
+      - dependency-name: "ruff"
+      - dependency-name: "pre-commit"
+      - dependency-name: "black"
+      - dependency-name: "mypy"
 
   # GitHub actions dependencies
   - package-ecosystem: "github-actions"
