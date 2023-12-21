@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Any, List, Optional, Sequence
 
-from pydantic import validator
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import (
@@ -25,6 +24,7 @@ from dbt_semantic_interfaces.references import (
     SemanticModelReference,
     TimeDimensionReference,
 )
+from pydantic_shim import validator
 
 
 class NodeRelation(HashableBaseModel):
