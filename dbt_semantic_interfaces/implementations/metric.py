@@ -2,8 +2,6 @@ from __future__ import annotations
 
 from typing import List, Optional, Sequence
 
-from pydantic import Field
-
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.base import (
@@ -22,6 +20,7 @@ from dbt_semantic_interfaces.type_enums import (
     MetricType,
     TimeGranularity,
 )
+from pydantic_shim import Field
 
 
 class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):
