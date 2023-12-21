@@ -1,0 +1,6 @@
+kind: Dependencies
+body: Add support for pydantic 2 (and continue support for pydantic 1)
+time: 2023-12-21T13:04:18.792592-08:00
+custom:
+  Author: QMalcolm bernardcooke53 esciara
+  PR: "134"
