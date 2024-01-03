@@ -19,11 +19,10 @@ from typing import (
     get_type_hints,
 )
 
-import pydantic
-from pydantic import BaseModel
 from typing_extensions import TypeAlias
 
 from dbt_semantic_interfaces.pretty_print import pformat_big_objects
+from pydantic_shim import BaseModel, create_model
 
 logger = logging.getLogger(__name__)
 
@@ -347,7 +346,7 @@ class DataClassTypeToPydanticTypeConverter:  # noqa: D
         logger.debug(
             f"Creating Pydantic model {class_name} with fields:\n{pformat_big_objects(fields_for_pydantic_model)}"
         )
-        pydantic_model = pydantic.create_model(class_name, **fields_for_pydantic_model)  # type: ignore
+        pydantic_model = create_model(class_name, **fields_for_pydantic_model)  # type: ignore
         logger.debug(f"Finished creating Pydantic model {class_name}")
         logger.debug(f"Finished converting {dataclass_type.__name__} to a pydantic class")
         return pydantic_model

@@ -16,5 +16,8 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - uses: ./.github/actions/setup-python-env
+      # This step is necessary so long as we're allowing Pydantic 1 and Pydantic 2 via shimming
+      - name: Force Pydantic 1
+        run: hatch run dev-env:pip install "pydantic~=1.10"
       - name: Run Pre-commit Hooks
         run: hatch run dev-env:pre-commit run --show-diff-on-failure --color=always --all-files
