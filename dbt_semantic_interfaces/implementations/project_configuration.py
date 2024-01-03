@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import List, Optional
 
 from importlib_metadata import version
-from pydantic import validator
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import (
@@ -20,6 +19,7 @@ from dbt_semantic_interfaces.implementations.time_spine_table_configuration impo
 )
 from dbt_semantic_interfaces.protocols import ProtocolHint
 from dbt_semantic_interfaces.protocols.project_configuration import ProjectConfiguration
+from pydantic_shim import validator
 
 
 class PydanticProjectConfiguration(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[ProjectConfiguration]):

@@ -11,11 +11,12 @@ on:
 
 jobs:
   pytest:
-    name: Run Tests / Python ${{ matrix.python-version }}
+    name: Run Tests / Python ${{ matrix.python-version }} / Pydantic ~= ${{ matrix.pydantic-version }}
 
     strategy:
       matrix:
         python-version: ["3.8", "3.9", "3.10", "3.11"]
+        pydantic-version: ["1.10", "2.0"]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,5 +27,7 @@ jobs:
       - name: Install Hatch
         shell: bash
         run: pip3 install hatch
+      - name: Set pydantic Version ~= ${{ matrix.pydantic-version }}
+        run: hatch run dev-env:pip install "pydantic~=${{ matrix.pydantic-version }}"
       - name: Run Python Tests
         run: hatch run dev-env:pytest tests
