@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Ensure the pydantic shim is included in the wheel distribution
+time: 2024-01-04T12:08:17.850576-08:00
+custom:
+  Author: QMalcolm
+  Issue: "241"
