@@ -24,7 +24,7 @@ from dbt_semantic_interfaces.references import (
     SemanticModelReference,
     TimeDimensionReference,
 )
-from pydantic_shim import validator
+from dsi_pydantic_shim import validator
 
 
 class NodeRelation(HashableBaseModel):
