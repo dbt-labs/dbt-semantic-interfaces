@@ -19,7 +19,7 @@ from dbt_semantic_interfaces.implementations.time_spine_table_configuration impo
 )
 from dbt_semantic_interfaces.protocols import ProtocolHint
 from dbt_semantic_interfaces.protocols.project_configuration import ProjectConfiguration
-from pydantic_shim import validator
+from dsi_pydantic_shim import validator
 
 
 class PydanticProjectConfiguration(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[ProjectConfiguration]):
