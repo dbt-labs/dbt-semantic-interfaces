@@ -22,7 +22,7 @@ from typing import (
 from typing_extensions import TypeAlias
 
 from dbt_semantic_interfaces.pretty_print import pformat_big_objects
-from pydantic_shim import BaseModel, create_model
+from dsi_pydantic_shim import BaseModel, create_model
 
 logger = logging.getLogger(__name__)
 

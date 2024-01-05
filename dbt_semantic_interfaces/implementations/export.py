@@ -10,7 +10,7 @@ from dbt_semantic_interfaces.protocols.export import Export, ExportConfig
 from dbt_semantic_interfaces.type_enums.export_destination_type import (
     ExportDestinationType,
 )
-from pydantic_shim import Field
+from dsi_pydantic_shim import Field
 
 
 class PydanticExportConfig(HashableBaseModel, ProtocolHint[ExportConfig]):
