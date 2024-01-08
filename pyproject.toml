@@ -47,6 +47,9 @@ exclude = [
   "/tests",
 ]
 
+[tool.hatch.build.targets.wheel]
+packages = ["dbt_semantic_interfaces", "dsi_pydantic_shim.py"]
+
 [tool.hatch.envs.dev-env.scripts]
 all = ["pre-commit run --all-files"]
 

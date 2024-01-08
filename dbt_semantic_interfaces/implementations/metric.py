@@ -20,7 +20,7 @@ from dbt_semantic_interfaces.type_enums import (
     MetricType,
     TimeGranularity,
 )
-from pydantic_shim import Field
+from dsi_pydantic_shim import Field
 
 
 class PydanticMetricInputMeasure(PydanticCustomInputParser, HashableBaseModel):

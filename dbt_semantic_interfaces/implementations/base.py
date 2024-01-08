@@ -10,7 +10,7 @@ from dbt_semantic_interfaces.parsing.yaml_loader import (
     PARSING_CONTEXT_KEY,
     ParsingContext,
 )
-from pydantic_shim import BaseModel, root_validator
+from dsi_pydantic_shim import BaseModel, root_validator
 
 # Type alias for the implicit "Any" type used as input and output for Pydantic's parsing API
 PydanticParseableValueType = Any  # type: ignore[misc]
