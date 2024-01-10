@@ -1,0 +1,6 @@
+kind: Docs
+body: Ensured license information gets displayed in pypi
+time: 2024-01-08T19:32:57.6875672-03:00
+custom:
+  Author: matialm
+  Issue: "245"
