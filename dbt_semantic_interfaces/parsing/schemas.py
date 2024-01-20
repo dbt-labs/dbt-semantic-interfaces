@@ -252,6 +252,15 @@ dimension_schema = {
     "required": ["name", "type"],
 }
 
+metric_config_schema = {
+    "$id": "metric_config_schema",
+    "type": "object",
+    "properties": {
+        "meta": {"type": "object", "propertyNames": {"type": "string"}},
+    },
+    "additionalProperties": False,
+}
+
 # Top level object schemas
 metric_schema = {
     "$id": "metric_schema",
@@ -266,6 +275,7 @@ metric_schema = {
         "filter": {"$ref": "filter_schema"},
         "description": {"type": "string"},
         "label": {"type": "string"},
+        "config": {"$ref": "metric_config_schema"},
     },
     "additionalProperties": False,
     "required": ["name", "type", "type_params"],
@@ -378,6 +388,15 @@ saved_query_schema = {
     "additionalProperties": False,
 }
 
+semantic_model_config_schema = {
+    "$id": "semantic_model_config_schema",
+    "type": "object",
+    "properties": {
+        "meta": {"type": "object", "propertyNames": {"type": "string"}},
+    },
+    "additionalProperties": False,
+}
+
 semantic_model_schema = {
     "$id": "semantic_model_schema",
     "type": "object",
@@ -396,6 +415,7 @@ semantic_model_schema = {
         "dimensions": {"type": "array", "items": {"$ref": "dimension_schema"}},
         "description": {"type": "string"},
         "label": {"type": "string"},
+        "config": {"$ref": "semantic_model_config_schema"},
     },
     "additionalProperties": False,
     "required": ["name"],
@@ -428,6 +448,8 @@ schema_store = {
     export_schema["$id"]: export_schema,
     export_config_schema["$id"]: export_config_schema,
     saved_query_query_params_schema["$id"]: saved_query_query_params_schema,
+    semantic_model_config_schema["$id"]: semantic_model_config_schema,
+    metric_config_schema["$id"]: metric_config_schema,
 }
 
 resources: List[Tuple[str, Resource]] = [(str(k), DRAFT7.create_resource(v)) for k, v in schema_store.items()]

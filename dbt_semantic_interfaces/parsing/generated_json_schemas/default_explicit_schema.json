@@ -328,6 +328,19 @@
             ],
             "type": "object"
         },
+        "metric_config_schema": {
+            "$id": "metric_config_schema",
+            "additionalProperties": false,
+            "properties": {
+                "meta": {
+                    "propertyNames": {
+                        "type": "string"
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
         "metric_input_measure_schema": {
             "$id": "metric_input_measure_schema",
             "oneOf": [
@@ -383,6 +396,9 @@
             "$id": "metric_schema",
             "additionalProperties": false,
             "properties": {
+                "config": {
+                    "$ref": "#/definitions/metric_config_schema"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -578,6 +594,19 @@
             ],
             "type": "object"
         },
+        "semantic_model_config_schema": {
+            "$id": "semantic_model_config_schema",
+            "additionalProperties": false,
+            "properties": {
+                "meta": {
+                    "propertyNames": {
+                        "type": "string"
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
         "semantic_model_defaults_schema": {
             "$id": "semantic_model_defaults_schema",
             "additionalProperties": false,
@@ -593,6 +622,9 @@
             "$id": "semantic_model_schema",
             "additionalProperties": false,
             "properties": {
+                "config": {
+                    "$ref": "#/definitions/semantic_model_config_schema"
+                },
                 "defaults": {
                     "$ref": "#/definitions/semantic_model_defaults_schema"
                 },
