@@ -1,0 +1,6 @@
+kind: Features
+body: Expose meta on Metric/SemanticModel
+time: 2024-01-20T00:03:29.80055-05:00
+custom:
+  Author: WilliamDee
+  Issue: "251"
