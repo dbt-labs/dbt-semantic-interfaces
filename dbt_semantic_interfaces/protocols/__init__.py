@@ -27,6 +27,7 @@ from dbt_semantic_interfaces.protocols.semantic_manifest import (  # noqa:F401
 )
 from dbt_semantic_interfaces.protocols.semantic_model import (  # noqa:F401
     SemanticModel,
+    SemanticModelConfig,
     SemanticModelDefaults,
     SemanticModelT,
 )
