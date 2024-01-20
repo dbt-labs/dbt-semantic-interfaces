@@ -22,6 +22,7 @@ from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticConversionTypeParams,
     PydanticMetric,
+    PydanticMetricConfig,
     PydanticMetricInput,
     PydanticMetricInputMeasure,
     PydanticMetricTypeParams,
@@ -117,6 +118,7 @@ SIMPLE_METRIC_STRATEGY = builds(
     filter=builds(PydanticWhereFilter) | none(),
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
+    config=builds(PydanticMetricConfig),
 )
 
 SAVED_QUERY_STRATEGY = builds(

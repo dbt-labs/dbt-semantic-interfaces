@@ -28,6 +28,9 @@ def test_base_semantic_model_parsing() -> None:
           node_relation:
             alias: source_table
             schema_name: some_schema
+          config:
+            meta:
+              test_metadata: random
         """
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
