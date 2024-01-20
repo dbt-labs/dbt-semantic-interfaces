@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
+
+from typing_extensions import override
 
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.errors import ParsingException
@@ -14,6 +16,8 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
+from dbt_semantic_interfaces.protocols import ProtocolHint
+from dbt_semantic_interfaces.protocols.metric import MetricConfig
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
     ConversionCalculationType,
@@ -170,6 +174,14 @@ class PydanticMetricTypeParams(HashableBaseModel):
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
 
 
+class PydanticMetricConfig(HashableBaseModel, ProtocolHint[MetricConfig]):  # noqa: D
+    @override
+    def _implements_protocol(self) -> MetricConfig:  # noqa: D
+        return self
+
+    meta: Dict[str, Any] = Field(default_factory=dict)
+
+
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a metric."""
 
@@ -180,6 +192,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
     filter: Optional[PydanticWhereFilterIntersection]
     metadata: Optional[PydanticMetadata]
     label: Optional[str] = None
+    config: Optional[PydanticMetricConfig]
 
     @property
     def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:
