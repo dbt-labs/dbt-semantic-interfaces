@@ -1,0 +1,6 @@
+kind: Fixes
+body: Referencing entities in where filter causes an error.
+time: 2024-01-29T11:00:34.690723-08:00
+custom:
+  Author: plypaul
+  Issue: "256"
