@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import textwrap
+import traceback
 from typing import Callable, Generator, List, Tuple
 
 from typing_extensions import Self
@@ -16,7 +18,6 @@ from dbt_semantic_interfaces.implementations.base import (
 from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
     WhereFilterParser,
 )
-from dbt_semantic_interfaces.pretty_print import pformat_big_objects
 
 
 class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
@@ -126,10 +127,14 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
                 invalid_filter_expressions.append((where_filter.where_sql_template, e))
 
         if invalid_filter_expressions:
-            raise ParseWhereFilterException(
-                f"Encountered one or more errors when parsing the set of filter expressions "
-                f"{pformat_big_objects(self.where_filters)}! Invalid expressions: \n "
-                f"{pformat_big_objects(invalid_filter_expressions)}"
-            )
+            lines = ["Encountered error(s) while parsing:\n"]
+            for where_sql_template, exception in invalid_filter_expressions:
+                lines.append("Filter:")
+                lines.append(textwrap.indent(where_sql_template, prefix="    "))
+                lines.append("Error Message:")
+                lines.append(textwrap.indent(str(exception), prefix="    "))
+                lines.append("Traceback:")
+                lines.append(textwrap.indent("".join(traceback.format_tb(exception.__traceback__)), prefix="  "))
+            raise ParseWhereFilterException("\n".join(lines))
 
         return filter_parameter_sets

@@ -13,9 +13,6 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
     PydanticWhereFilterIntersection,
 )
-from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
-    ParameterSetFactory,
-)
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -145,9 +142,9 @@ def test_metric_time_in_dimension_call_error() -> None:  # noqa: D
 
 def test_invalid_entity_name_error() -> None:
     """Test to ensure we throw an error if an entity name is invalid."""
-    bad_entity_filter = PydanticWhereFilter(where_sql_template="{{ Entity('order_id__is_food_order' )}}")
+    bad_entity_filter = PydanticWhereFilter(where_sql_template="{{ Entity('is_food_order__day' )}}")
 
-    with pytest.raises(ParseWhereFilterException, match="Entity name is in an incorrect format"):
+    with pytest.raises(ParseWhereFilterException, match="Name is in an incorrect format"):
         bad_entity_filter.call_parameter_sets
 
 
@@ -198,7 +195,7 @@ def test_where_filter_intersection_error_collection() -> None:
         where_sql_template="{{ TimeDimension('order_id__order_time__month', 'week') }} > '2020-01-01'"
     )
     valid_dimension = PydanticWhereFilter(where_sql_template=" {Dimension('customer__has_delivery_address')} ")
-    entity_format_error = PydanticWhereFilter(where_sql_template="{{ Entity('order_id__is_food_order') }}")
+    entity_format_error = PydanticWhereFilter(where_sql_template="{{ Entity('order_id__is_food_order__day') }}")
     filter_intersection = PydanticWhereFilterIntersection(
         where_filters=[metric_time_in_dimension_error, valid_dimension, entity_format_error]
     )
@@ -208,12 +205,13 @@ def test_where_filter_intersection_error_collection() -> None:
 
     error_string = str(exc_info.value)
     # These are a little too implementation-specific, but it demonstrates that we are collecting the errors we find.
-    assert ParameterSetFactory._exception_message_for_incorrect_format("order_id__order_time__month") in error_string
-    assert "Entity name is in an incorrect format: 'order_id__is_food_order'" in error_string
-    # We cannot simply scan for name because the error message contains the filter list, so we assert against the error
     assert (
-        ParameterSetFactory._exception_message_for_incorrect_format("customer__has_delivery_address")
-        not in error_string
+        "Name is in an incorrect format: 'order_id__is_food_order__day'. It should not contain a time grain "
+        "suffix." in error_string
+    )
+    assert (
+        "Name is in an incorrect format: 'order_id__order_time__month'. It should be of the form: "
+        "<primary entity name>__<dimension_name>" in error_string
     )
 
 
