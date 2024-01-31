@@ -13,6 +13,7 @@ on inputs to parse_obj or parse_raw, as that is what the pydantic models will ge
 
 import pytest
 
+from dbt_semantic_interfaces.call_parameter_sets import EntityCallParameterSet
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
@@ -21,6 +22,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
     WhereFilterParser,
 )
+from dbt_semantic_interfaces.references import EntityReference
 from dbt_semantic_interfaces.type_enums.date_part import DatePart
 
 __BOOLEAN_EXPRESSION__ = "1 > 0"
@@ -162,3 +164,26 @@ def test_dimension_date_part() -> None:  # noqa
     param_sets = WhereFilterParser.parse_call_parameter_sets(where)
     assert len(param_sets.time_dimension_call_parameter_sets) == 1
     assert param_sets.time_dimension_call_parameter_sets[0].date_part == DatePart.YEAR
+
+
+def test_entity_without_primary_entity_prefix() -> None:  # noqa
+    where = "{{ Entity('non_primary_entity') }} = '1'"
+    param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+    assert len(param_sets.entity_call_parameter_sets) == 1
+    assert param_sets.entity_call_parameter_sets[0] == EntityCallParameterSet(
+        entity_path=(),
+        entity_reference=EntityReference(element_name="non_primary_entity"),
+    )
+
+
+def test_entity() -> None:  # noqa
+    where = "{{ Entity('entity_1__entity_2', entity_path=['entity_0']) }} = '1'"
+    param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+    assert len(param_sets.entity_call_parameter_sets) == 1
+    assert param_sets.entity_call_parameter_sets[0] == EntityCallParameterSet(
+        entity_path=(
+            EntityReference(element_name="entity_0"),
+            EntityReference(element_name="entity_1"),
+        ),
+        entity_reference=EntityReference(element_name="entity_2"),
+    )
