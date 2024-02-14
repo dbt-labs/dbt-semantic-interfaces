@@ -1,0 +1,6 @@
+kind: Dependencies
+body: Increase test coverage to include Python 3.12
+time: 2024-02-13T20:37:07.912021-08:00
+custom:
+  Author: tlento
+  PR: "257"
