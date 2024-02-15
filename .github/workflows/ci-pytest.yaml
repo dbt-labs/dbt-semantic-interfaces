@@ -20,13 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v4
+      - name: Set up Python ${{ matrix.python-version }} env
+        uses: ./.github/actions/setup-python-env
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Hatch
-        shell: bash
-        run: pip3 install hatch
       - name: Set pydantic Version ~= ${{ matrix.pydantic-version }}
         run: hatch run dev-env:pip install "pydantic~=${{ matrix.pydantic-version }}"
       - name: Run Python Tests

@@ -1,13 +1,17 @@
 name: Setup Python env
 description: Install Python & Hatch
+inputs:
+  python-version:
+    description: Python version number to install
+    required: true
 
 runs:
   using: "composite"
   steps:
-  - name: Set up Python 3.9
+  - name: Set up Python ${{ inputs.python-version }}
     uses: actions/setup-python@v4
     with:
-      python-version: "3.9"
+      python-version: ${{ inputs.python-version }}
 
   - name: Install Hatch
     shell: bash

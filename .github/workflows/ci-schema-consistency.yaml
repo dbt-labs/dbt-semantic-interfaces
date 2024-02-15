@@ -15,15 +15,18 @@ on:
 jobs:
   json-schema-consistency-check:
     name: Schema Consistency Check
+    strategy:
+      matrix:
+        python-version: ["3.8", "3.12"]
     runs-on: ubuntu-latest
     steps:
       - name: Check-out the repo
         uses: actions/checkout@v3
 
-      - name: Set up Python 3.9
+      - name: Set up Python ${{ matrix.python-version }} env
         uses: ./.github/actions/setup-python-env
         with:
-          python-version: "3.9"
+          python-version: ${{ matrix.python-version }}
 
       - name: Generate JSON Schema
         run: make json_schema
