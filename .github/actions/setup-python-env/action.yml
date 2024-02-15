@@ -4,15 +4,42 @@ inputs:
   python-version:
     description: Python version number to install
     required: true
+  additional-cache-key:
+    description: |
+      An additional cache key that can be specified to differentiate workflows that install a different set of packages.
+    required: false
+    default: "default"
 
 runs:
   using: "composite"
   steps:
+  - name: Set Linux Release Environment Variable
+    shell: bash
+    run: echo "LINUX_RELEASE=$(lsb_release -rs)" >> $GITHUB_ENV
   - name: Set up Python ${{ inputs.python-version }}
     uses: actions/setup-python@v4
     with:
       python-version: ${{ inputs.python-version }}
-
+  - uses: actions/cache@v3
+    with:
+      # Save pip cache.
+      # Save Hatch environments.
+      # Save the package cache for Hatch.
+      # Save pre-commit environments.
+      path: |
+        ${{ env.pythonLocation }}
+        ~/.cache/pip
+        ~/.local/share/hatch
+        ~/.cache/hatch
+        ~/.cache/pre-commit
+      # >- means combine all lines to a single line
+      # The cache key can be any string. The format used here is just for readability.
+      key: >-
+        python_location: "${{ env.pythonLocation }}"
+        AND pyproject_hash: "${{ hashFiles('pyproject.toml') }}"
+        AND precommit_config_hash: "${{ hashFiles('.pre-commit-config.yaml') }}"
+        AND linux_release: "${{ env.LINUX_RELEASE }}"
+        AND additional_cache_key: "${{ inputs.additional-cache-key }}"
   - name: Install Hatch
     shell: bash
     run: pip3 install hatch
