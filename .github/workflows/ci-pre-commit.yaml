@@ -22,6 +22,7 @@ jobs:
         uses: ./.github/actions/setup-python-env
         with:
           python-version: ${{ matrix.python-version }}
+          additional-cache-key: "pydantic~=1.10"
       # This step is necessary so long as we're allowing Pydantic 1 and Pydantic 2 via shimming
       - name: Force Pydantic 1
         run: hatch run dev-env:pip install "pydantic~=1.10"

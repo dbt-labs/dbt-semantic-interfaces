@@ -24,6 +24,7 @@ jobs:
         uses: ./.github/actions/setup-python-env
         with:
           python-version: ${{ matrix.python-version }}
+          additional-cache-key: "pydantic~=${{ matrix.pydantic-version }}"
       - name: Set pydantic Version ~= ${{ matrix.pydantic-version }}
         run: hatch run dev-env:pip install "pydantic~=${{ matrix.pydantic-version }}"
       - name: Run Python Tests
