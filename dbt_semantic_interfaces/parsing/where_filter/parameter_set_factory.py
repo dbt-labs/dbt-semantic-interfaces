@@ -26,7 +26,7 @@ class ParameterSetFactory:
     @staticmethod
     def _exception_message_for_incorrect_format(element_name: str) -> str:
         return (
-            f"Name is in an incorrect format: '{element_name}'. It should be of the form: "
+            f"Name is in an incorrect format: {repr(element_name)}. It should be of the form: "
             f"<primary entity name>__<dimension_name>"
         )
 
@@ -87,14 +87,17 @@ class ParameterSetFactory:
     @staticmethod
     def create_entity(entity_name: str, entity_path: Sequence[str] = ()) -> EntityCallParameterSet:
         """Gets called by Jinja when rendering {{ Entity(...) }}."""
-        group_by_item_name = DunderedNameFormatter.parse_name(entity_name)
-        if len(group_by_item_name.entity_links) > 0 or group_by_item_name.time_granularity is not None:
+        structured_dundered_name = DunderedNameFormatter.parse_name(entity_name)
+        if structured_dundered_name.time_granularity is not None:
             raise ParseWhereFilterException(
-                f"Entity name is in an incorrect format: '{entity_name}'. "
-                f"It should not contain any dunders (double underscores, or __)."
+                f"Name is in an incorrect format: {repr(entity_name)}. " f"It should not contain a time grain suffix."
             )
 
+        additional_entity_path_elements = tuple(
+            EntityReference(element_name=entity_path_item) for entity_path_item in entity_path
+        )
+
         return EntityCallParameterSet(
-            entity_path=tuple(EntityReference(element_name=arg) for arg in entity_path),
-            entity_reference=EntityReference(element_name=entity_name),
+            entity_path=additional_entity_path_elements + structured_dundered_name.entity_links,
+            entity_reference=EntityReference(element_name=structured_dundered_name.element_name),
         )
