@@ -14,6 +14,7 @@ from dbt_semantic_interfaces.protocols.metric import (  # noqa:F401
     ConstantPropertyInput,
     ConversionTypeParams,
     Metric,
+    MetricConfig,
     MetricInput,
     MetricInputMeasure,
     MetricTimeWindow,

@@ -16,8 +16,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
-from dbt_semantic_interfaces.protocols import ProtocolHint
-from dbt_semantic_interfaces.protocols.metric import MetricConfig
+from dbt_semantic_interfaces.protocols import MetricConfig, ProtocolHint
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
     ConversionCalculationType,
