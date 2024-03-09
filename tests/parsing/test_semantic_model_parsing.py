@@ -48,7 +48,7 @@ def test_semantic_model_metadata_parsing() -> None:
           name: metadata_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
         """
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
@@ -65,7 +65,7 @@ def test_semantic_model_metadata_parsing() -> None:
         name: metadata_test
         node_relation:
           alias: source_table
-          schema_name: some_schema
+          schema: some_schema
         """
     )
     assert semantic_model.metadata.file_slice.content == expected_metadata_content
@@ -79,7 +79,7 @@ def test_semantic_model_node_relation_parsing() -> None:
           name: sql_table_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -128,7 +128,7 @@ def test_semantic_model_entity_parsing() -> None:
           name: entity_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           entities:
             - name: example_entity
               type: primary
@@ -158,7 +158,7 @@ def test_semantic_model_entity_metadata_parsing() -> None:
           name: entity_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           entities:
             - name: example_entity
               type: primary
@@ -226,7 +226,7 @@ def test_semantic_model_measure_parsing() -> None:
           name: measure_parsing_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           measures:
             - name: example_measure
               agg: count_distinct
@@ -255,7 +255,7 @@ def test_semantic_model_measure_metadata_parsing() -> None:
           name: measure_metadata_parsing_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           measures:
             - name: example_measure_with_metadata
               agg: count_distinct
@@ -291,7 +291,7 @@ def test_semantic_model_create_metric_measure_parsing() -> None:
           name: measure_parsing_create_metric_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           measures:
             - name: example_measure
               agg: count_distinct
@@ -317,7 +317,7 @@ def test_semantic_model_categorical_dimension_parsing() -> None:
           name: dimension_parsing_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           dimensions:
             - name: example_categorical_dimension
               type: categorical
@@ -345,7 +345,7 @@ def test_semantic_model_partition_dimension_parsing() -> None:
           name: dimension_parsing_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           dimensions:
             - name: example_categorical_dimension
               type: categorical
@@ -371,7 +371,7 @@ def test_semantic_model_time_dimension_parsing() -> None:
           name: dimension_parsing_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           dimensions:
             - name: example_time_dimension
               type: time
@@ -400,7 +400,7 @@ def test_semantic_model_primary_time_dimension_parsing() -> None:
           name: dimension_parsing_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           dimensions:
             - name: example_time_dimension
               type: time
@@ -459,7 +459,7 @@ def test_semantic_model_dimension_metadata_parsing() -> None:
           name: dimension_parsing_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           dimensions:
             - name: example_categorical_dimension
               type: categorical
@@ -495,7 +495,7 @@ def test_semantic_model_dimension_validity_params_parsing() -> None:
           name: scd_parsing_test
           node_relation:
             alias: source_table
-            schema_name: some_schema
+            schema: some_schema
           dimensions:
             - name: start_time_dimension
               type: time

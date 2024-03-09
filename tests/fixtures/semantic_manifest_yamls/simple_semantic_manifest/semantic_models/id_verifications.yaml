@@ -4,7 +4,7 @@ semantic_model:
   description: id_verifications
 
   node_relation:
-    schema_name: $source_schema
+    schema: $source_schema
     alias: fct_id_verifications
 
   defaults:

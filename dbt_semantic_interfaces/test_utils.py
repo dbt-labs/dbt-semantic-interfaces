@@ -81,7 +81,7 @@ def base_semantic_manifest_file() -> YamlConfigFile:
         semantic_model:
           name: sample_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: source_table
           entities:
             - name: example_entity

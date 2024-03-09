@@ -31,7 +31,7 @@ def test_validity_window_configuration() -> None:
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           primary_entity: some_primary_entity
           entities:
@@ -76,7 +76,7 @@ def test_validity_window_must_have_a_start() -> None:
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           entities:
             - name: scd_key
@@ -110,7 +110,7 @@ def test_validity_window_must_have_an_end() -> None:
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           entities:
             - name: scd_key
@@ -147,7 +147,7 @@ def test_validity_window_uses_two_dimensions() -> None:
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           entities:
             - name: scd_key
@@ -184,7 +184,7 @@ def test_two_dimension_validity_windows_must_not_overload_start_and_end() -> Non
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           entities:
             - name: scd_key
@@ -225,7 +225,7 @@ def test_multiple_validity_windows_are_invalid() -> None:
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           entities:
             - name: scd_key
@@ -277,7 +277,7 @@ def test_empty_validity_windows_are_invalid() -> None:
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           entities:
             - name: scd_key
@@ -321,7 +321,7 @@ def test_measures_are_prevented() -> None:
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           entities:
             - name: scd_key
@@ -368,7 +368,7 @@ def test_validity_window_must_have_a_natural_key() -> None:
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           entities:
             - name: scd_key
@@ -413,7 +413,7 @@ def test_validity_window_does_not_use_primary_key() -> None:
         semantic_model:
           name: scd_semantic_model
           node_relation:
-            schema_name: some_schema
+            schema: some_schema
             alias: scd_table
           entities:
             - name: scd_primary_key

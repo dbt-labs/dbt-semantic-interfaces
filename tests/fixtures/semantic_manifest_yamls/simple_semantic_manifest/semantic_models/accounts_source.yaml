@@ -5,7 +5,7 @@ semantic_model:
   label: Accounts Source
 
   node_relation:
-    schema_name: $source_schema
+    schema: $source_schema
     alias: fct_accounts
 
   defaults:
