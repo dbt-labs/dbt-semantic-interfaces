@@ -91,6 +91,9 @@ def test_base_metric_parsing() -> None:
           type: {metric_type.value}
           description: {description}
           label: {label}
+          config:
+              meta:
+                random: metadata
           type_params:
             measure:
               name: metadata_test_measure

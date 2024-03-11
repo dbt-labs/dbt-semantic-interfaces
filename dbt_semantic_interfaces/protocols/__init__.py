@@ -14,6 +14,7 @@ from dbt_semantic_interfaces.protocols.metric import (  # noqa:F401
     ConstantPropertyInput,
     ConversionTypeParams,
     Metric,
+    MetricConfig,
     MetricInput,
     MetricInputMeasure,
     MetricTimeWindow,
@@ -27,6 +28,7 @@ from dbt_semantic_interfaces.protocols.semantic_manifest import (  # noqa:F401
 )
 from dbt_semantic_interfaces.protocols.semantic_model import (  # noqa:F401
     SemanticModel,
+    SemanticModelConfig,
     SemanticModelDefaults,
     SemanticModelT,
 )

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence
 
 from typing_extensions import override
 
@@ -15,6 +15,7 @@ from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.protocols import (
     ProtocolHint,
     SemanticModel,
+    SemanticModelConfig,
     SemanticModelDefaults,
 )
 from dbt_semantic_interfaces.references import (
@@ -24,7 +25,7 @@ from dbt_semantic_interfaces.references import (
     SemanticModelReference,
     TimeDimensionReference,
 )
-from dsi_pydantic_shim import validator
+from dsi_pydantic_shim import Field, validator
 
 
 class NodeRelation(HashableBaseModel):
@@ -76,6 +77,14 @@ class PydanticSemanticModelDefaults(HashableBaseModel, ProtocolHint[SemanticMode
     agg_time_dimension: Optional[str]
 
 
+class PydanticSemanticModelConfig(HashableBaseModel, ProtocolHint[SemanticModelConfig]):  # noqa: D
+    @override
+    def _implements_protocol(self) -> SemanticModelConfig:  # noqa: D
+        return self
+
+    meta: Dict[str, Any] = Field(default_factory=dict)
+
+
 class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[SemanticModel]):
     """Describes a semantic model."""
 
@@ -95,6 +104,7 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
     label: Optional[str] = None
 
     metadata: Optional[PydanticMetadata]
+    config: Optional[PydanticSemanticModelConfig]
 
     @property
     def entity_references(self) -> List[LinkableElementReference]:  # noqa: D
