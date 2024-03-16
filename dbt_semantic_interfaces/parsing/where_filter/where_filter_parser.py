@@ -16,6 +16,7 @@ from dbt_semantic_interfaces.parsing.where_filter.where_filter_dimension import 
 )
 from dbt_semantic_interfaces.parsing.where_filter.where_filter_entity import (
     WhereFilterEntityFactory,
+    WhereFilterMetricFactory,
 )
 from dbt_semantic_interfaces.parsing.where_filter.where_filter_time_dimension import (
     WhereFilterTimeDimensionFactory,
@@ -31,6 +32,7 @@ class WhereFilterParser:
         time_dimension_factory = WhereFilterTimeDimensionFactory()
         dimension_factory = WhereFilterDimensionFactory()
         entity_factory = WhereFilterEntityFactory()
+        metric_factory = WhereFilterMetricFactory()
 
         try:
             # the string that the sandbox renders is unused
@@ -38,6 +40,7 @@ class WhereFilterParser:
                 Dimension=dimension_factory.create,
                 TimeDimension=time_dimension_factory.create,
                 Entity=entity_factory.create,
+                Metric=metric_factory.create,
             )
         except (UndefinedError, TemplateSyntaxError, SecurityError) as e:
             raise ParseWhereFilterException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
@@ -63,4 +66,5 @@ class WhereFilterParser:
             dimension_call_parameter_sets=tuple(dimension_call_parameter_sets),
             time_dimension_call_parameter_sets=tuple(time_dimension_factory.time_dimension_call_parameter_sets),
             entity_call_parameter_sets=tuple(entity_factory.entity_call_parameter_sets),
+            metric_call_parameter_sets=tuple(metric_factory.metric_call_parameter_sets),
         )

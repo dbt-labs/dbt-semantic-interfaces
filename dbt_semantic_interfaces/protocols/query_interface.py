@@ -85,3 +85,15 @@ class QueryInterfaceEntityFactory(Protocol):
     def create(self, entity_name: str, entity_path: Sequence[str] = ()) -> QueryInterfaceEntity:
         """Create an Entity."""
         pass
+
+
+class QueryInterfaceMetricFactory(Protocol):
+    """Creates an Metric for the query interface.
+
+    Represented as the Metric constructor in the Jinja sandbox.
+    """
+
+    @abstractmethod
+    def create(self, metric_name: str, group_by: Sequence[str] = ()) -> QueryInterfaceMetric:
+        """Create a Metric."""
+        pass

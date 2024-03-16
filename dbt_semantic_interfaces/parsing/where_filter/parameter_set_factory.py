@@ -3,6 +3,7 @@ from typing import Optional, Sequence
 from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
+    MetricCallParameterSet,
     ParseWhereFilterException,
     TimeDimensionCallParameterSet,
 )
@@ -14,6 +15,8 @@ from dbt_semantic_interfaces.naming.keywords import (
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
+    LinkableElementReference,
+    MetricReference,
     TimeDimensionReference,
 )
 from dbt_semantic_interfaces.type_enums import TimeGranularity
@@ -100,4 +103,12 @@ class ParameterSetFactory:
         return EntityCallParameterSet(
             entity_path=additional_entity_path_elements + structured_dundered_name.entity_links,
             entity_reference=EntityReference(element_name=structured_dundered_name.element_name),
+        )
+
+    @staticmethod
+    def create_metric(metric_name: str, group_by: Sequence[str] = ()) -> MetricCallParameterSet:
+        """Gets called by Jinja when rendering {{ Metric(...) }}."""
+        return MetricCallParameterSet(
+            metric_reference=MetricReference(element_name=metric_name),
+            group_by=tuple([LinkableElementReference(element_name=group_by_name) for group_by_name in group_by]),
         )
