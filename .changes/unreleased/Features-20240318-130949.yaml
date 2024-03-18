@@ -1,0 +1,6 @@
+kind: Features
+body: Allow metrics in filters.
+time: 2024-03-18T13:09:49.730653-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "273"
