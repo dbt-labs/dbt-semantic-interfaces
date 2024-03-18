@@ -135,3 +135,26 @@ def test_invalid_group_by_format_in_saved_query(  # noqa: D
         manifest_validator.validate_semantic_manifest(manifest),
         "An error occurred while trying to parse a group-by in saved query",
     )
+
+
+def test_metric_filter_in_saved_query(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = copy.deepcopy(simple_semantic_manifest__with_primary_transforms)
+    manifest.saved_queries = [
+        PydanticSavedQuery(
+            name="Example Saved Query",
+            description="Example description.",
+            query_params=PydanticSavedQueryQueryParams(
+                metrics=["listings"],
+                where=PydanticWhereFilterIntersection(
+                    where_filters=[
+                        PydanticWhereFilter(where_sql_template="{{ Metric('bookings', ['listings']) }} > 2")
+                    ],
+                ),
+            ),
+        ),
+    ]
+
+    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([SavedQueryRule()])
+    manifest_validator.validate_semantic_manifest(manifest),

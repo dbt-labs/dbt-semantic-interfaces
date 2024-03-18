@@ -10,10 +10,12 @@ This module tests the various combinations we might encounter in the wild, with 
 on inputs to parse_obj or parse_raw, as that is what the pydantic models will generally encounter.
 """
 
-
 import pytest
 
-from dbt_semantic_interfaces.call_parameter_sets import EntityCallParameterSet
+from dbt_semantic_interfaces.call_parameter_sets import (
+    EntityCallParameterSet,
+    MetricCallParameterSet,
+)
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
@@ -22,7 +24,11 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
     WhereFilterParser,
 )
-from dbt_semantic_interfaces.references import EntityReference
+from dbt_semantic_interfaces.references import (
+    EntityReference,
+    LinkableElementReference,
+    MetricReference,
+)
 from dbt_semantic_interfaces.type_enums.date_part import DatePart
 
 __BOOLEAN_EXPRESSION__ = "1 > 0"
@@ -186,4 +192,23 @@ def test_entity() -> None:  # noqa
             EntityReference(element_name="entity_1"),
         ),
         entity_reference=EntityReference(element_name="entity_2"),
+    )
+
+
+def test_metric() -> None:  # noqa
+    where = "{{ Metric('metric', group_by=['dimension']) }} = 10"
+    param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+    assert len(param_sets.metric_call_parameter_sets) == 1
+    assert param_sets.metric_call_parameter_sets[0] == MetricCallParameterSet(
+        group_by=(LinkableElementReference(element_name="dimension"),),
+        metric_reference=MetricReference(element_name="metric"),
+    )
+
+    # Without kwarg syntax
+    where = "{{ Metric('metric', ['dimension']) }} = 10"
+    param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+    assert len(param_sets.metric_call_parameter_sets) == 1
+    assert param_sets.metric_call_parameter_sets[0] == MetricCallParameterSet(
+        group_by=(LinkableElementReference(element_name="dimension"),),
+        metric_reference=MetricReference(element_name="metric"),
     )

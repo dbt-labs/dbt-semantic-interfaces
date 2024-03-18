@@ -108,6 +108,8 @@ class ParameterSetFactory:
     @staticmethod
     def create_metric(metric_name: str, group_by: Sequence[str] = ()) -> MetricCallParameterSet:
         """Gets called by Jinja when rendering {{ Metric(...) }}."""
+        if not group_by:
+            raise ParseWhereFilterException("`group_by` parameter is required for Metric in where filter.")
         return MetricCallParameterSet(
             metric_reference=MetricReference(element_name=metric_name),
             group_by=tuple([LinkableElementReference(element_name=group_by_name) for group_by_name in group_by]),
