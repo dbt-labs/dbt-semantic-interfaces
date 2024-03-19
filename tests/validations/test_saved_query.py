@@ -137,7 +137,7 @@ def test_invalid_group_by_format_in_saved_query(  # noqa: D
     )
 
 
-def test_metric_filter_in_saved_query(  # noqa: D
+def test_metric_filter_error(  # noqa: D
     simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     manifest = copy.deepcopy(simple_semantic_manifest__with_primary_transforms)
@@ -148,13 +148,38 @@ def test_metric_filter_in_saved_query(  # noqa: D
             query_params=PydanticSavedQueryQueryParams(
                 metrics=["listings"],
                 where=PydanticWhereFilterIntersection(
-                    where_filters=[
-                        PydanticWhereFilter(where_sql_template="{{ Metric('bookings', ['listings']) }} > 2")
-                    ],
+                    where_filters=[PydanticWhereFilter(where_sql_template="{{ Metric('bookings') }} > 2")],
                 ),
             ),
         ),
     ]
 
     manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([SavedQueryRule()])
-    manifest_validator.validate_semantic_manifest(manifest),
+    check_only_one_error_with_message(
+        manifest_validator.validate_semantic_manifest(manifest),
+        "An error occurred while trying to parse a filter in saved query",
+    )
+
+
+def test_metric_filter_success(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = copy.deepcopy(simple_semantic_manifest__with_primary_transforms)
+    manifest.saved_queries = [
+        PydanticSavedQuery(
+            name="Example Saved Query",
+            description="Example description.",
+            query_params=PydanticSavedQueryQueryParams(
+                metrics=["listings"],
+                where=PydanticWhereFilterIntersection(
+                    where_filters=[PydanticWhereFilter(where_sql_template="{{ Metric('bookings', ['listing']) }} > 2")],
+                ),
+            ),
+        ),
+    ]
+
+    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([SavedQueryRule()])
+    results = manifest_validator.validate_semantic_manifest(manifest)
+    assert len(results.warnings) == 0
+    assert len(results.errors) == 0
+    assert len(results.future_errors) == 0

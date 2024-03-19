@@ -64,6 +64,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
                 [x.entity_reference.element_name for x in parameter_sets.entity_call_parameter_sets]
                 + [x.dimension_reference.element_name for x in parameter_sets.dimension_call_parameter_sets]
                 + [x.time_dimension_reference.element_name for x in parameter_sets.time_dimension_call_parameter_sets]
+                + [x.metric_reference.element_name for x in parameter_sets.metric_call_parameter_sets]
             )
 
             if len(element_names_in_group_by) != 1 or element_names_in_group_by[0] not in valid_group_by_element_names:
@@ -129,7 +130,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
         valid_metric_names = {metric.name for metric in semantic_manifest.metrics}
-        valid_group_by_element_names = {METRIC_TIME_ELEMENT_NAME}
+        valid_group_by_element_names = valid_metric_names.union({METRIC_TIME_ELEMENT_NAME})
         for semantic_model in semantic_manifest.semantic_models:
             for dimension in semantic_model.dimensions:
                 valid_group_by_element_names.add(dimension.name)
@@ -146,5 +147,4 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
                 saved_query=saved_query,
             )
             issues += SavedQueryRule._check_where(saved_query=saved_query)
-
         return issues
