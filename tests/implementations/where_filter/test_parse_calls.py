@@ -6,6 +6,7 @@ from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     FilterCallParameterSets,
+    MetricCallParameterSet,
     ParseWhereFilterException,
     TimeDimensionCallParameterSet,
 )
@@ -16,6 +17,8 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
+    LinkableElementReference,
+    MetricReference,
     TimeDimensionReference,
 )
 from dbt_semantic_interfaces.type_enums import TimeGranularity
@@ -130,6 +133,41 @@ def test_extract_entity_call_parameter_sets() -> None:  # noqa: D
             ),
         ),
     )
+
+
+def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
+    parse_result = PydanticWhereFilter(
+        where_sql_template=("{{ Metric('bookings', group_by=['listing']) }} > 2")
+    ).call_parameter_sets
+
+    assert parse_result == FilterCallParameterSets(
+        dimension_call_parameter_sets=(),
+        entity_call_parameter_sets=(),
+        metric_call_parameter_sets=(
+            MetricCallParameterSet(
+                metric_reference=MetricReference("bookings"),
+                group_by=(LinkableElementReference("listing"),),
+            ),
+        ),
+    )
+
+    parse_result = PydanticWhereFilter(
+        where_sql_template=("{{ Metric('bookings', group_by=['listing', 'metric_time']) }} > 2")
+    ).call_parameter_sets
+
+    assert parse_result == FilterCallParameterSets(
+        dimension_call_parameter_sets=(),
+        entity_call_parameter_sets=(),
+        metric_call_parameter_sets=(
+            MetricCallParameterSet(
+                metric_reference=MetricReference("bookings"),
+                group_by=(LinkableElementReference("listing"), LinkableElementReference("metric_time")),
+            ),
+        ),
+    )
+
+    with pytest.raises(ParseWhereFilterException):
+        PydanticWhereFilter(where_sql_template=("{{ Metric('bookings') }} > 2")).call_parameter_sets
 
 
 def test_metric_time_in_dimension_call_error() -> None:  # noqa: D

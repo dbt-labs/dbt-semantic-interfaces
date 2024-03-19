@@ -362,6 +362,7 @@ def test_constraint_list_metric_parsing() -> None:
           filter:
             - "{{ dimension('some_dimension') }} IN ('value1', 'value2')"
             - "1 > 0"
+            - "{{ metric('some_metric', group_by=['some_entity']) }} > 1"
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -376,6 +377,7 @@ def test_constraint_list_metric_parsing() -> None:
         where_filters=[
             PydanticWhereFilter(where_sql_template="{{ dimension('some_dimension') }} IN ('value1', 'value2')"),
             PydanticWhereFilter(where_sql_template="1 > 0"),
+            PydanticWhereFilter(where_sql_template="{{ metric('some_metric', group_by=['some_entity']) }} > 1"),
         ]
     )
 
