@@ -12,14 +12,14 @@ class ElementReference(SerializableDataclass):
     element_name: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class LinkableElementReference(ElementReference):
     """Used when we need to refer to a dimension or entity, but other attributes are unknown."""
 
     pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class MeasureReference(ElementReference):
     """Used when we need to refer to a measure.
 
@@ -29,7 +29,7 @@ class MeasureReference(ElementReference):
     pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class DimensionReference(LinkableElementReference):  # noqa: D
     pass
 
@@ -38,12 +38,12 @@ class DimensionReference(LinkableElementReference):  # noqa: D
         return TimeDimensionReference(element_name=self.element_name)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class EntityReference(LinkableElementReference):  # noqa: D
     pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class TimeDimensionReference(DimensionReference):  # noqa: D
     pass
 
@@ -51,7 +51,7 @@ class TimeDimensionReference(DimensionReference):  # noqa: D
         return DimensionReference(element_name=self.element_name)
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class MetricReference(ElementReference):  # noqa: D
     pass
 
@@ -66,14 +66,14 @@ class ModelReference(SerializableDataclass):
     pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class SemanticModelReference(ModelReference):
     """A reference to a semantic model definition in the model."""
 
     semantic_model_name: str
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class SemanticModelElementReference(ModelReference):
     """A reference to an element definition in a semantic model definition in the model.
 
@@ -101,7 +101,7 @@ class SemanticModelElementReference(ModelReference):
         return self.semantic_model_name == ref.semantic_model_name
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class MetricModelReference(ModelReference):
     """A reference to a metric definition in the model."""
 
