@@ -66,7 +66,7 @@ class ModelReference(SerializableDataclass):
     pass
 
 
-@dataclass(frozen=True)
+@dataclass(frozen=True, order=True)
 class SemanticModelReference(ModelReference):
     """A reference to a semantic model definition in the model."""
 
@@ -106,3 +106,10 @@ class MetricModelReference(ModelReference):
     """A reference to a metric definition in the model."""
 
     metric_name: str
+
+
+@dataclass(frozen=True, order=True)
+class SavedQueryReference:
+    """A reference to a saved query in the semantic manifest."""
+
+    saved_query_name: str
