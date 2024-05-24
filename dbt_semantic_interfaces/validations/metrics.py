@@ -181,8 +181,8 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
                                     file_context=FileContext.from_metadata(metadata=metric.metadata),
                                     metric=MetricModelReference(metric_name=metric.name),
                                 ),
-                                message=f"Input metric '{name}' is not used in expr: '{metric.type_params.expr}' "
-                                f"for derived metric '{metric.name}'. Please update the expr or remove the input metric.",
+                                message=f"Input metric '{name}' is not used in expr: '{metric.type_params.expr}' for "
+                                f"derived metric '{metric.name}'. Please update the expr or remove the input metric.",
                             )
                         )
 
