@@ -64,7 +64,7 @@ class StructuredDunderedName:
     def dundered_name(self) -> str:
         """Return the full name form. e.g. ds or listing__ds__month."""
         items = [entity_reference.element_name for entity_reference in self.entity_links] + [self.element_name]
-        if self.time_granularity and self.time_granularity != TimeGranularity.DAY:
+        if self.time_granularity:
             items.append(self.time_granularity.value)
         return DUNDER.join(items)
 

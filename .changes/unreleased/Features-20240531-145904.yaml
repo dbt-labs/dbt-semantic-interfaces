@@ -1,0 +1,6 @@
+kind: Features
+body: Add sub-daily TimeGranularity options.
+time: 2024-05-31T14:59:04.804239-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "280"

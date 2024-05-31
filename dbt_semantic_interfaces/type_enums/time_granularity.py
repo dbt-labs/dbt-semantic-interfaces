@@ -13,6 +13,12 @@ class TimeGranularity(ExtendedEnum):
 
     # Names are used in parameters to DATE_TRUNC, so don't change them.
     # Values are used to convert user supplied strings to enums.
+    NANOSECOND = "nanosecond"
+    MICROSECOND = "microsecond"
+    MILLISECOND = "millisecond"
+    SECOND = "second"
+    MINUTE = "minute"
+    HOUR = "hour"
     DAY = "day"
     WEEK = "week"
     MONTH = "month"
@@ -21,6 +27,18 @@ class TimeGranularity(ExtendedEnum):
 
     def to_int(self) -> int:
         """Convert to an int so that the size of the granularity can be easily compared."""
+        if self is TimeGranularity.NANOSECOND:
+            return 4
+        elif self is TimeGranularity.MICROSECOND:
+            return 5
+        elif self is TimeGranularity.MILLISECOND:
+            return 6
+        elif self is TimeGranularity.SECOND:
+            return 7
+        elif self is TimeGranularity.MINUTE:
+            return 8
+        elif self is TimeGranularity.HOUR:
+            return 9
         if self is TimeGranularity.DAY:
             return 10
         elif self is TimeGranularity.WEEK:
