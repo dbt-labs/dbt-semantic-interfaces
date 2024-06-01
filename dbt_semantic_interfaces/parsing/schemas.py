@@ -4,6 +4,7 @@ from referencing import Registry, Resource
 from referencing.jsonschema import DRAFT7
 
 from dbt_semantic_interfaces.parsing.schema_validator import SchemaValidator
+from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 TRANSFORM_OBJECT_NAME_PATTERN = "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$"
 
@@ -34,8 +35,9 @@ aggregation_type_values += [x.lower() for x in aggregation_type_values]
 window_aggregation_type_values = ["MIN", "MAX"]
 window_aggregation_type_values += [x.lower() for x in window_aggregation_type_values]
 
-time_granularity_values = ["DAY", "WEEK", "MONTH", "QUARTER", "YEAR"]
-time_granularity_values += [x.lower() for x in time_granularity_values]
+time_granularity_values: List[str] = []
+for time_granularity in TimeGranularity:
+    time_granularity_values += [time_granularity.name, time_granularity.value]
 
 dimension_type_values = ["CATEGORICAL", "TIME"]
 dimension_type_values += [x.lower() for x in dimension_type_values]
