@@ -1,4 +1,4 @@
-from typing import Optional, Sequence
+from typing import Optional, Sequence, Union
 
 from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
@@ -12,6 +12,7 @@ from dbt_semantic_interfaces.naming.keywords import (
     METRIC_TIME_ELEMENT_NAME,
     is_metric_time_name,
 )
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_stubs import EntityStub
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -106,7 +107,7 @@ class ParameterSetFactory:
         )
 
     @staticmethod
-    def create_metric(metric_name: str, group_by: Sequence[str] = ()) -> MetricCallParameterSet:
+    def create_metric(metric_name: str, group_by: Sequence[Union[str, EntityStub]] = ()) -> MetricCallParameterSet:
         """Gets called by Jinja when rendering {{ Metric(...) }}."""
         if not group_by:
             raise ParseWhereFilterException(
@@ -115,5 +116,15 @@ class ParameterSetFactory:
             )
         return MetricCallParameterSet(
             metric_reference=MetricReference(element_name=metric_name),
-            group_by=tuple([LinkableElementReference(element_name=group_by_name) for group_by_name in group_by]),
+            group_by=tuple(
+                [
+                    LinkableElementReference(
+                        # TODO: add entity_links
+                        group_by_item
+                        if isinstance(group_by_item, str)
+                        else group_by_item.element_name
+                    )
+                    for group_by_item in group_by
+                ]
+            ),
         )
