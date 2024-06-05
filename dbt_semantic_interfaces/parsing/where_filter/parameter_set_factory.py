@@ -12,7 +12,9 @@ from dbt_semantic_interfaces.naming.keywords import (
     METRIC_TIME_ELEMENT_NAME,
     is_metric_time_name,
 )
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_stubs import EntityStub
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_objects import (
+    WhereFilterEntity,
+)
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -107,7 +109,9 @@ class ParameterSetFactory:
         )
 
     @staticmethod
-    def create_metric(metric_name: str, group_by: Sequence[Union[str, EntityStub]] = ()) -> MetricCallParameterSet:
+    def create_metric(
+        metric_name: str, group_by: Sequence[Union[str, WhereFilterEntity]] = ()
+    ) -> MetricCallParameterSet:
         """Gets called by Jinja when rendering {{ Metric(...) }}."""
         if not group_by:
             raise ParseWhereFilterException(

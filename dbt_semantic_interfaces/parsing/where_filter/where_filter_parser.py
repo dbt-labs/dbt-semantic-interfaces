@@ -11,14 +11,10 @@ from dbt_semantic_interfaces.call_parameter_sets import (
 from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
     ParameterSetFactory,
 )
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_dimension import (
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_factories import (
     WhereFilterDimensionFactory,
-)
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_entity import (
     WhereFilterEntityFactory,
     WhereFilterMetricFactory,
-)
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_time_dimension import (
     WhereFilterTimeDimensionFactory,
 )
 
