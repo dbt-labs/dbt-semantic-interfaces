@@ -13,4 +13,4 @@
 
 
 # Parsing, validations, and protocols
-/dbt_semantic_interfaces/**  @dbt-labs/metricflow-admins @QMalcolm @graciegoheen @dbt-labs/semantic-layer
+/dbt_semantic_interfaces/**  @dbt-labs/metricflow-admins @QMalcolm @graciegoheen
