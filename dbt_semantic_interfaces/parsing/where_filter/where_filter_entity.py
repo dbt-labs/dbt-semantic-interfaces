@@ -12,25 +12,13 @@ from dbt_semantic_interfaces.errors import InvalidQuerySyntax
 from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
     ParameterSetFactory,
 )
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_stubs import EntityStub
 from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.protocols.query_interface import (
-    QueryInterfaceEntity,
     QueryInterfaceEntityFactory,
     QueryInterfaceMetric,
     QueryInterfaceMetricFactory,
 )
-
-
-class EntityStub(ProtocolHint[QueryInterfaceEntity]):
-    """An Entity implementation that just satisfies the protocol.
-
-    QueryInterfaceEntity currently has no methods and the parameter set is created in the factory.
-    So, there is nothing to do here.
-    """
-
-    @override
-    def _implements_protocol(self) -> QueryInterfaceEntity:
-        return self
 
 
 class MetricStub(ProtocolHint[QueryInterfaceMetric]):
@@ -60,7 +48,7 @@ class WhereFilterEntityFactory(ProtocolHint[QueryInterfaceEntityFactory]):
     def create(self, entity_name: str, entity_path: Sequence[str] = ()) -> EntityStub:
         """Gets called by Jinja when rendering {{ Entity(...) }}."""
         self.entity_call_parameter_sets.append(ParameterSetFactory.create_entity(entity_name, entity_path))
-        return EntityStub()
+        return EntityStub(element_name=entity_name, entity_links=entity_path)
 
 
 class WhereFilterMetricFactory(ProtocolHint[QueryInterfaceMetricFactory]):
