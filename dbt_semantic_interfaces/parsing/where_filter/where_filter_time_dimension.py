@@ -9,23 +9,14 @@ from dbt_semantic_interfaces.errors import InvalidQuerySyntax
 from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
     ParameterSetFactory,
 )
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_stubs import (
+    TimeDimensionStub,
+)
 from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.protocols.query_interface import (
-    QueryInterfaceTimeDimension,
     QueryInterfaceTimeDimensionFactory,
 )
-
-
-class TimeDimensionStub(ProtocolHint[QueryInterfaceTimeDimension]):
-    """A TimeDimension implementation that just satisfies the protocol.
-
-    QueryInterfaceTimeDimension currently has no methods and the parameter set is created in the factory.
-    So, there is nothing to do here.
-    """
-
-    @override
-    def _implements_protocol(self) -> QueryInterfaceTimeDimension:
-        return self
+from dbt_semantic_interfaces.type_enums import DatePart, TimeGranularity
 
 
 class WhereFilterTimeDimensionFactory(ProtocolHint[QueryInterfaceTimeDimensionFactory]):
@@ -51,7 +42,15 @@ class WhereFilterTimeDimensionFactory(ProtocolHint[QueryInterfaceTimeDimensionFa
             raise InvalidQuerySyntax("descending is invalid in the where parameter and filter spec")
         self.time_dimension_call_parameter_sets.append(
             ParameterSetFactory.create_time_dimension(
-                time_dimension_name, time_granularity_name, entity_path, date_part_name
+                time_dimension_name=time_dimension_name,
+                time_granularity_name=time_granularity_name,
+                entity_path=entity_path,
+                date_part_name=date_part_name,
             )
         )
-        return TimeDimensionStub()
+        return TimeDimensionStub(
+            element_name=time_dimension_name,
+            time_granularity=TimeGranularity(time_granularity_name.lower()) if time_granularity_name else None,
+            entity_path=entity_path,
+            date_part=DatePart(date_part_name.lower()) if date_part_name else None,
+        )

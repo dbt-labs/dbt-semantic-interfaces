@@ -8,31 +8,18 @@ from dbt_semantic_interfaces.call_parameter_sets import (
     EntityCallParameterSet,
     MetricCallParameterSet,
 )
-from dbt_semantic_interfaces.errors import InvalidQuerySyntax
 from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
     ParameterSetFactory,
 )
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_stubs import EntityStub
+from dbt_semantic_interfaces.parsing.where_filter.where_filter_stubs import (
+    EntityStub,
+    MetricStub,
+)
 from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.protocols.query_interface import (
     QueryInterfaceEntityFactory,
-    QueryInterfaceMetric,
     QueryInterfaceMetricFactory,
 )
-
-
-class MetricStub(ProtocolHint[QueryInterfaceMetric]):
-    """A Metric implementation that just satisfies the protocol.
-
-    QueryInterfaceMetric currently has no methods and the parameter set is created in the factory.
-    """
-
-    @override
-    def _implements_protocol(self) -> QueryInterfaceMetric:
-        return self
-
-    def descending(self, _is_descending: bool) -> QueryInterfaceMetric:  # noqa: D
-        raise InvalidQuerySyntax("descending is invalid in the where parameter and filter spec")
 
 
 class WhereFilterEntityFactory(ProtocolHint[QueryInterfaceEntityFactory]):
