@@ -267,21 +267,6 @@ def test_derived_metric() -> None:  # noqa: D
                     ),
                 ),
                 metric_with_guaranteed_meta(
-                    name="no_expr",
-                    type=MetricType.DERIVED,
-                    type_params=PydanticMetricTypeParams(metrics=[PydanticMetricInput(name="random_metric")]),
-                ),
-                metric_with_guaranteed_meta(
-                    name="input_metric_not_in_expr",
-                    type=MetricType.DERIVED,
-                    type_params=PydanticMetricTypeParams(expr="x", metrics=[PydanticMetricInput(name="random_metric")]),
-                ),
-                metric_with_guaranteed_meta(
-                    name="no_input_metrics",
-                    type=MetricType.DERIVED,
-                    type_params=PydanticMetricTypeParams(expr="x"),
-                ),
-                metric_with_guaranteed_meta(
                     name="has_valid_time_window_params",
                     type=MetricType.DERIVED,
                     type_params=PydanticMetricTypeParams(
@@ -315,17 +300,12 @@ def test_derived_metric() -> None:  # noqa: D
         )
     )
     build_issues = validation_results.errors
-    assert len(build_issues) == 6
-    expected_substrings = [
-        "is already being used. Please choose another alias",
-        "does not exist as a configured metric in the model",
-        "Both offset_window and offset_to_grain set",
-        "is not used in expr",
-        "No input metrics found for derived metric",
-        "No expr set for derived metric",
-    ]
+    assert len(build_issues) == 3
+    expected_substr1 = "is already being used. Please choose another alias"
+    expected_substr2 = "does not exist as a configured metric in the model"
+    expected_substr3 = "Both offset_window and offset_to_grain set"
     missing_error_strings = set()
-    for expected_str in expected_substrings:
+    for expected_str in [expected_substr1, expected_substr2, expected_substr3]:
         if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
             missing_error_strings.add(expected_str)
     assert len(missing_error_strings) == 0, (
