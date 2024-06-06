@@ -20,6 +20,10 @@ from dbt_semantic_interfaces.parsing.where_filter.where_filter_objects import (
 from dbt_semantic_interfaces.type_enums import DatePart, TimeGranularity
 
 
+# Rename these factories: RenderedWhereFilterEntityFactory (MF) vs. ParsedWhereFilterParser (DSI)
+# Add protocols back. Rename them to: WhereFilterEntity (JinjaWhereFilterEntity? Can we reuse them in the JDBC interface & saved queries?),
+# JinjaEntityFactory (do we even need a protocol for this? I guess to make sure the create() method is aligned?)
+# Can we use an ABC instead of a protocol? Something that lets me add functional methods to the base class to avoid duplication.
 class WhereFilterEntityFactory:
     """Executes in the Jinja sandbox to produce parameter sets and append them to a list."""
 
