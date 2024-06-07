@@ -34,7 +34,19 @@ aggregation_type_values += [x.lower() for x in aggregation_type_values]
 window_aggregation_type_values = ["MIN", "MAX"]
 window_aggregation_type_values += [x.lower() for x in window_aggregation_type_values]
 
-time_granularity_values = ["DAY", "WEEK", "MONTH", "QUARTER", "YEAR"]
+time_granularity_values = [
+    "NANOSECOND",
+    "MICROSECOND",
+    "MILLISECOND",
+    "SECOND",
+    "MINUTE",
+    "HOUR",
+    "DAY",
+    "WEEK",
+    "MONTH",
+    "QUARTER",
+    "YEAR",
+]
 time_granularity_values += [x.lower() for x in time_granularity_values]
 
 dimension_type_values = ["CATEGORICAL", "TIME"]
