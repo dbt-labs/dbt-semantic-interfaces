@@ -1,0 +1,6 @@
+kind: Features
+body: Enable sub-daily granularity in YAML wherever TimeGranularity is supported.
+time: 2024-06-06T19:01:54.71895-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "818"
