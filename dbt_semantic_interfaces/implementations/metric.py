@@ -174,8 +174,8 @@ class PydanticMetricTypeParams(HashableBaseModel):
     numerator: Optional[PydanticMetricInput]
     denominator: Optional[PydanticMetricInput]
     expr: Optional[str]
-    window: Optional[PydanticMetricTimeWindow]  # warn if set
-    grain_to_date: Optional[TimeGranularity]  # warn if set
+    window: Optional[PydanticMetricTimeWindow]
+    grain_to_date: Optional[TimeGranularity]
     metrics: Optional[List[PydanticMetricInput]]
     conversion_type_params: Optional[PydanticConversionTypeParams]
     cumulative_type_params: Optional[PydanticCumulativeTypeParams]
