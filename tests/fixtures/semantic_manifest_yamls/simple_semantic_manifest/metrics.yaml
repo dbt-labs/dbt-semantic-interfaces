@@ -174,7 +174,9 @@ metric:
   type_params:
     measure:
       name: bookers
-    window: 2 days
+    cumulative_type_params:
+      window: 2 days
+      period_agg: average
 ---
 metric:
   name: "revenue_mtd"
@@ -183,7 +185,8 @@ metric:
   type_params:
     measure:
       name: txn_revenue
-    grain_to_date: month
+    cumulative_type_params:
+      grain_to_date: month
 ---
 metric:
   name: booking_fees
