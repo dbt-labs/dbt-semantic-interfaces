@@ -1,0 +1,7 @@
+kind: Features
+body: Add period_agg for cumulative metrics and move cumulative type params into a
+  nested object.
+time: 2024-06-10T13:03:44.983419-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "289"
