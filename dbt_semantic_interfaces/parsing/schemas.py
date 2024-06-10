@@ -57,6 +57,9 @@ time_dimension_type_values = ["TIME", "time"]
 export_destination_type_values = ["TABLE", "VIEW"]
 export_destination_type_values += [x.lower() for x in export_destination_type_values]
 
+period_agg_values = ["START", "END", "AVERAGE"]
+period_agg_values += [x.lower() for x in period_agg_values]
+
 
 filter_schema = {
     "$id": "filter_schema",
@@ -115,6 +118,18 @@ conversion_type_params_schema = {
     "required": ["base_measure", "conversion_measure", "entity"],
 }
 
+cumulative_type_params_schema = {
+    "$id": "cumulative_type_params_schema",
+    "type": "object",
+    "properties": {
+        "window": {"type": "string"},
+        "grain_to_date": {"enum": time_granularity_values},
+        "period_agg": {"enum": period_agg_values},
+    },
+    "additionalProperties": False,
+    "required": [],
+}
+
 constant_property_input_schema = {
     "$id": "constant_property_input_schema",
     "type": "object",
@@ -141,6 +156,7 @@ metric_type_params_schema = {
             "items": {"$ref": "metric_input_schema"},
         },
         "conversion_type_params": {"$ref": "conversion_type_params_schema"},
+        "cumulative_type_params": {"$ref": "cumulative_type_params_schema"},
     },
     "additionalProperties": False,
 }
@@ -445,6 +461,7 @@ schema_store = {
     metric_input_measure_schema["$id"]: metric_input_measure_schema,
     metric_type_params_schema["$id"]: metric_type_params_schema,
     conversion_type_params_schema["$id"]: conversion_type_params_schema,
+    cumulative_type_params_schema["$id"]: cumulative_type_params_schema,
     constant_property_input_schema["$id"]: constant_property_input_schema,
     entity_schema["$id"]: entity_schema,
     measure_schema["$id"]: measure_schema,

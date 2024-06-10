@@ -9,6 +9,7 @@ from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
     ConversionCalculationType,
     MetricType,
+    PeriodAggregation,
     TimeGranularity,
 )
 
@@ -178,6 +179,25 @@ class ConversionTypeParams(Protocol):
         pass
 
 
+class CumulativeTypeParams(Protocol):
+    """Type params to provide context for cumulative metric properties."""
+
+    @property
+    @abstractmethod
+    def window(self) -> Optional[MetricTimeWindow]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def grain_to_date(self) -> Optional[TimeGranularity]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def period_agg(self) -> Optional[PeriodAggregation]:  # noqa: D
+        pass
+
+
 class MetricTypeParams(Protocol):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
@@ -225,6 +245,11 @@ class MetricTypeParams(Protocol):
     @property
     @abstractmethod
     def conversion_type_params(self) -> Optional[ConversionTypeParams]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def cumulative_type_params(self) -> Optional[CumulativeTypeParams]:  # noqa: D
         pass
 
 

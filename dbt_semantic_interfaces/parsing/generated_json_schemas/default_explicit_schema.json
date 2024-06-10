@@ -72,6 +72,53 @@
             ],
             "type": "object"
         },
+        "cumulative_type_params_schema": {
+            "$id": "cumulative_type_params_schema",
+            "additionalProperties": false,
+            "properties": {
+                "grain_to_date": {
+                    "enum": [
+                        "NANOSECOND",
+                        "MICROSECOND",
+                        "MILLISECOND",
+                        "SECOND",
+                        "MINUTE",
+                        "HOUR",
+                        "DAY",
+                        "WEEK",
+                        "MONTH",
+                        "QUARTER",
+                        "YEAR",
+                        "nanosecond",
+                        "microsecond",
+                        "millisecond",
+                        "second",
+                        "minute",
+                        "hour",
+                        "day",
+                        "week",
+                        "month",
+                        "quarter",
+                        "year"
+                    ]
+                },
+                "period_agg": {
+                    "enum": [
+                        "START",
+                        "END",
+                        "AVERAGE",
+                        "start",
+                        "end",
+                        "average"
+                    ]
+                },
+                "window": {
+                    "type": "string"
+                }
+            },
+            "required": [],
+            "type": "object"
+        },
         "dimension_schema": {
             "$id": "dimension_schema",
             "additionalProperties": false,
@@ -455,6 +502,9 @@
             "properties": {
                 "conversion_type_params": {
                     "$ref": "#/definitions/conversion_type_params_schema"
+                },
+                "cumulative_type_params": {
+                    "$ref": "#/definitions/cumulative_type_params_schema"
                 },
                 "denominator": {
                     "$ref": "#/definitions/metric_input_measure_schema"
