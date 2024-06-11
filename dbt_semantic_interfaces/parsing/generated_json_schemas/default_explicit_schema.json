@@ -104,11 +104,11 @@
                 },
                 "period_agg": {
                     "enum": [
-                        "START",
-                        "END",
+                        "FIRST",
+                        "LAST",
                         "AVERAGE",
-                        "start",
-                        "end",
+                        "first",
+                        "last",
                         "average"
                     ]
                 },

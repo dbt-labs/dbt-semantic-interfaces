@@ -588,7 +588,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
                     type_params=PydanticMetricTypeParams(
                         measure=PydanticMetricInputMeasure(name=measure_name),
                         window=PydanticMetricTimeWindow(count=1, granularity=TimeGranularity.WEEK),
-                        cumulative_type_params=PydanticCumulativeTypeParams(period_agg=PeriodAggregation.END),
+                        cumulative_type_params=PydanticCumulativeTypeParams(period_agg=PeriodAggregation.LAST),
                     ),
                 ),
                 metric_with_guaranteed_meta(
@@ -628,7 +628,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
                         grain_to_date=TimeGranularity.MONTH,
                         cumulative_type_params=PydanticCumulativeTypeParams(
                             window=PydanticMetricTimeWindow(count=1, granularity=TimeGranularity.WEEK),
-                            period_agg=PeriodAggregation.START,
+                            period_agg=PeriodAggregation.FIRST,
                         ),
                     ),
                 ),
@@ -661,7 +661,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
                     type=MetricType.CUMULATIVE,
                     type_params=PydanticMetricTypeParams(
                         measure=PydanticMetricInputMeasure(name=measure_name),
-                        cumulative_type_params=PydanticCumulativeTypeParams(period_agg=PeriodAggregation.START),
+                        cumulative_type_params=PydanticCumulativeTypeParams(period_agg=PeriodAggregation.FIRST),
                     ),
                 ),
             ],

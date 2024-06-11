@@ -57,7 +57,7 @@ time_dimension_type_values = ["TIME", "time"]
 export_destination_type_values = ["TABLE", "VIEW"]
 export_destination_type_values += [x.lower() for x in export_destination_type_values]
 
-period_agg_values = ["START", "END", "AVERAGE"]
+period_agg_values = ["FIRST", "LAST", "AVERAGE"]
 period_agg_values += [x.lower() for x in period_agg_values]
 
 
