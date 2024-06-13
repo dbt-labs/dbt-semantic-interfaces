@@ -674,8 +674,8 @@ def test_cumulative_metrics() -> None:  # noqa: D
         print(issue.message)
     assert len(build_issues) == 8
     expected_substr1 = "Both window and grain_to_date set for cumulative metric. Please set one or the other."
-    expected_substr2 = "`window` set twice in cumulative metric"
-    expected_substr3 = "`grain_to_date` set twice in cumulative metric"
+    expected_substr2 = "Got differing values for `window`"
+    expected_substr3 = "Got differing values for `grain_to_date`"
     expected_substr4 = "Cumulative `type_params.window` field has been moved and will soon be deprecated."
     expected_substr5 = "Cumulative `type_params.grain_to_date` field has been moved and will soon be deprecated."
     missing_error_strings = set()

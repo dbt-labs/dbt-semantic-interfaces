@@ -40,8 +40,9 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
             )
 
             for field in ("window", "grain_to_date"):
+                type_params_field_value = getattr(metric.type_params, field)
                 # Warn that the old type_params structure has been deprecated.
-                if getattr(metric.type_params, field):
+                if type_params_field_value:
                     issues.append(
                         ValidationWarning(
                             context=metric_context,
@@ -51,18 +52,26 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                             ),
                         )
                     )
-                # Warn that window or grain_to_date is duplicated.
+                # Warn that window or grain_to_date is mismatched across params.
+                cumulative_type_params_field_value = (
+                    getattr(metric.type_params.cumulative_type_params, field)
+                    if metric.type_params.cumulative_type_params
+                    else None
+                )
                 if (
-                    getattr(metric.type_params, field)
-                    and metric.type_params.cumulative_type_params
-                    and getattr(metric.type_params.cumulative_type_params, field)
+                    type_params_field_value
+                    and cumulative_type_params_field_value
+                    and cumulative_type_params_field_value != type_params_field_value
                 ):
                     issues.append(
                         ValidationError(
                             context=metric_context,
                             message=(
-                                f"`{field}` set twice in cumulative metric '{metric.name}'. "
-                                "Please remove it from `type_params`."
+                                f"Got differing values for `{field}` on cumulative metric '{metric.name}'. In "
+                                f"`type_params.{field}`, got '{type_params_field_value}'. In "
+                                f"`type_params.cumulative_type_params.{field}`, got "
+                                f"'{cumulative_type_params_field_value}'. Please remove the value from "
+                                f"`type_params.{field}`."
                             ),
                         )
                     )
