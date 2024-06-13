@@ -164,7 +164,7 @@ class PydanticCumulativeTypeParams(HashableBaseModel):
 
     window: Optional[PydanticMetricTimeWindow]
     grain_to_date: Optional[TimeGranularity]
-    period_agg: Optional[PeriodAggregation]
+    period_agg: PeriodAggregation = PeriodAggregation.FIRST
 
 
 class PydanticMetricTypeParams(HashableBaseModel):
