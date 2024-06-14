@@ -325,3 +325,14 @@ class Metric(Protocol):
     def label(self) -> Optional[str]:
         """Returns a string representing a human readable label for the metric."""
         pass
+
+    @property
+    @abstractmethod
+    def default_grain(self) -> Optional[TimeGranularity]:
+        """Default grain used for the metric.
+
+        This will be used in a couple of circumstances:
+        - as the default grain for metric_time if no grain is specified
+        - as the window function order by when reaggregating cumulative metrics for non-default grains
+        """
+        pass
