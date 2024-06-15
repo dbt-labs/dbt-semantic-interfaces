@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Optional, Sequence, Set
 
 from typing_extensions import override
 
@@ -16,7 +16,12 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
-from dbt_semantic_interfaces.protocols import MetricConfig, ProtocolHint
+from dbt_semantic_interfaces.protocols import (
+    Metric,
+    MetricConfig,
+    MetricInputMeasure,
+    ProtocolHint,
+)
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
     ConversionCalculationType,
@@ -191,8 +196,12 @@ class PydanticMetricConfig(HashableBaseModel, ProtocolHint[MetricConfig]):  # no
     meta: Dict[str, Any] = Field(default_factory=dict)
 
 
-class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
+class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[Metric]):
     """Describes a metric."""
+
+    @override
+    def _implements_protocol(self) -> Metric:  # noqa: D
+        return self
 
     name: str
     description: Optional[str]
@@ -229,3 +238,31 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing):
             return (self.type_params.numerator, self.type_params.denominator)
         else:
             assert_values_exhausted(self.type)
+
+    @staticmethod
+    def all_input_measures_for_metric(
+        metric: Metric, metric_index: Dict[MetricReference, Metric]
+    ) -> Set[MetricInputMeasure]:
+        """Gets all input measures for the metric, including those defined on input metrics (recursively)."""
+        measures = set()
+        if metric.type is MetricType.SIMPLE or metric.type is MetricType.CUMULATIVE:
+            assert (
+                metric.type_params.measure is not None
+            ), f"Metric {metric.name} should have a measure defined, but it does not."
+            measures.add(metric.type_params.measure)
+        elif metric.type is MetricType.DERIVED or metric.type is MetricType.RATIO:
+            for input_metric in metric.input_metrics:
+                nested_metric = metric_index.get(MetricReference(input_metric.name))
+                assert nested_metric, f"Could not find metric {input_metric.name} in semantic manifest."
+                measures.update(
+                    PydanticMetric.all_input_measures_for_metric(metric=nested_metric, metric_index=metric_index)
+                )
+        elif metric.type is MetricType.CONVERSION:
+            conversion_type_params = metric.type_params.conversion_type_params
+            assert conversion_type_params, "Conversion metric should have conversion_type_params."
+            measures.add(conversion_type_params.base_measure)
+            measures.add(conversion_type_params.conversion_measure)
+        else:
+            assert_values_exhausted(metric.type)
+
+        return measures

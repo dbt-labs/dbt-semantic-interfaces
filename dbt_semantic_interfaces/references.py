@@ -47,6 +47,7 @@ class EntityReference(LinkableElementReference):  # noqa: D
 class TimeDimensionReference(DimensionReference):  # noqa: D
     pass
 
+    @property
     def dimension_reference(self) -> DimensionReference:  # noqa: D
         return DimensionReference(element_name=self.element_name)
 

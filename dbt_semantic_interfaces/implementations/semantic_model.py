@@ -19,6 +19,7 @@ from dbt_semantic_interfaces.protocols import (
     SemanticModelDefaults,
 )
 from dbt_semantic_interfaces.references import (
+    DimensionReference,
     EntityReference,
     LinkableElementReference,
     MeasureReference,
@@ -168,7 +169,7 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
             f"No dimension with name ({measure_reference.element_name}) in semantic_model with name ({self.name})"
         )
 
-    def get_dimension(self, dimension_reference: LinkableElementReference) -> PydanticDimension:  # noqa: D
+    def get_dimension(self, dimension_reference: DimensionReference) -> PydanticDimension:  # noqa: D
         for dim in self.dimensions:
             if dim.reference == dimension_reference:
                 return dim

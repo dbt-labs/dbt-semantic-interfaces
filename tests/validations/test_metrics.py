@@ -46,6 +46,7 @@ from dbt_semantic_interfaces.validations.metrics import (
     CUMULATIVE_TYPE_PARAMS_SUPPORTED,
     ConversionMetricRule,
     CumulativeMetricRule,
+    DefaultGrainRule,
     DerivedMetricRule,
     WhereFiltersAreParseable,
 )
@@ -713,3 +714,114 @@ def test_cumulative_metrics() -> None:  # noqa: D
                 missing_error_strings.add(expected_str)
         assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
         f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
+
+
+def test_default_grain() -> None:
+    """Test that default grain is validated appropriately."""
+    week_measure_name = "foo"
+    month_measure_name = "boo"
+    week_time_dim_name = "ds__week"
+    month_time_dim_name = "ds__month"
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([DefaultGrainRule()])
+    validation_results = model_validator.validate_semantic_manifest(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="semantic_model",
+                    measures=[
+                        PydanticMeasure(
+                            name=month_measure_name, agg=AggregationType.SUM, agg_time_dimension=month_time_dim_name
+                        ),
+                        PydanticMeasure(
+                            name=week_measure_name, agg=AggregationType.SUM, agg_time_dimension=week_time_dim_name
+                        ),
+                    ],
+                    dimensions=[
+                        PydanticDimension(
+                            name=month_time_dim_name,
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(time_granularity=TimeGranularity.MONTH),
+                        ),
+                        PydanticDimension(
+                            name=week_time_dim_name,
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(time_granularity=TimeGranularity.WEEK),
+                        ),
+                    ],
+                ),
+            ],
+            metrics=[
+                # Simple metrics
+                metric_with_guaranteed_meta(
+                    name="month_metric_with_no_default_grain_set",
+                    type=MetricType.SIMPLE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=month_measure_name),
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="week_metric_with_valid_default_grain",
+                    type=MetricType.SIMPLE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=week_measure_name),
+                    ),
+                    default_grain=TimeGranularity.MONTH,
+                ),
+                metric_with_guaranteed_meta(
+                    name="month_metric_with_invalid_default_grain",
+                    type=MetricType.SIMPLE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=month_measure_name),
+                    ),
+                    default_grain=TimeGranularity.WEEK,
+                ),
+                # Derived metrics
+                metric_with_guaranteed_meta(
+                    name="derived_metric_with_no_default_grain_set",
+                    type=MetricType.DERIVED,
+                    type_params=PydanticMetricTypeParams(
+                        metrics=[
+                            PydanticMetricInput(name="week_metric_with_valid_default_grain"),
+                        ],
+                        expr="week_metric_with_valid_default_grain + 1",
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="derived_metric_with_valid_default_grain",
+                    type=MetricType.DERIVED,
+                    type_params=PydanticMetricTypeParams(
+                        metrics=[
+                            PydanticMetricInput(name="week_metric_with_valid_default_grain"),
+                            PydanticMetricInput(name="month_metric_with_no_default_grain_set"),
+                        ],
+                        expr="week_metric_with_valid_default_grain + month_metric_with_no_default_grain_set",
+                    ),
+                    default_grain=TimeGranularity.YEAR,
+                ),
+                metric_with_guaranteed_meta(
+                    name="derived_metric_with_invalid_default_grain",
+                    type=MetricType.DERIVED,
+                    type_params=PydanticMetricTypeParams(
+                        metrics=[
+                            PydanticMetricInput(name="week_metric_with_valid_default_grain"),
+                            PydanticMetricInput(name="month_metric_with_no_default_grain_set"),
+                        ],
+                        expr="week_metric_with_valid_default_grain + month_metric_with_no_default_grain_set",
+                    ),
+                    default_grain=TimeGranularity.DAY,
+                ),
+            ],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+
+    build_issues = validation_results.all_issues
+    assert len(build_issues) == 2
+    expected_substr1 = "`default_grain` for metric 'month_metric_with_invalid_default_grain' must be >= MONTH."
+    expected_substr2 = "`default_grain` for metric 'derived_metric_with_invalid_default_grain' must be >= MONTH."
+    missing_error_strings = set()
+    for expected_str in [expected_substr1, expected_substr2]:
+        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
+            missing_error_strings.add(expected_str)
+    assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
+    f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"

@@ -1,17 +1,30 @@
 import traceback
-from typing import Generic, List, Optional, Sequence
+from typing import Dict, Generic, List, Optional, Sequence
 
 from dbt_semantic_interfaces.errors import ParsingException
-from dbt_semantic_interfaces.implementations.metric import PydanticMetricTimeWindow
+from dbt_semantic_interfaces.implementations.metric import (
+    PydanticMetric,
+    PydanticMetricTimeWindow,
+)
 from dbt_semantic_interfaces.protocols import (
     ConversionTypeParams,
+    Dimension,
     Metric,
     SemanticManifest,
     SemanticManifestT,
     SemanticModel,
 )
-from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
-from dbt_semantic_interfaces.type_enums import AggregationType, MetricType
+from dbt_semantic_interfaces.references import (
+    DimensionReference,
+    MeasureReference,
+    MetricModelReference,
+    MetricReference,
+)
+from dbt_semantic_interfaces.type_enums import (
+    AggregationType,
+    MetricType,
+    TimeGranularity,
+)
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
@@ -561,4 +574,101 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                     base_semantic_model=base_semantic_model,
                     conversion_semantic_model=conversion_semantic_model,
                 )
+        return issues
+
+
+class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """Checks that default_grain set for metric is queryable for that metric."""
+
+    @staticmethod
+    def _min_queryable_granularity_for_metric(
+        metric: Metric,
+        metric_index: Dict[MetricReference, Metric],
+        measure_to_agg_time_dimension: Dict[MeasureReference, Dimension],
+    ) -> TimeGranularity:
+        """Get the minimum time granularity this metric is allowed to be queried with.
+
+        This should be the largest granularity that any of the metric's agg_time_dimensions is defined at.
+        Defaults to DAY in the
+        """
+        min_queryable_granularity: Optional[TimeGranularity] = None
+        for input_measure in PydanticMetric.all_input_measures_for_metric(metric=metric, metric_index=metric_index):
+            agg_time_dimension = measure_to_agg_time_dimension.get(input_measure.measure_reference)
+            assert agg_time_dimension, f"Measure '{input_measure.name}' not found in semantic manifest."
+            if not agg_time_dimension.type_params:
+                continue
+            defined_time_granularity = agg_time_dimension.type_params.time_granularity
+            if not min_queryable_granularity or defined_time_granularity.to_int() > min_queryable_granularity.to_int():
+                min_queryable_granularity = defined_time_granularity
+
+        return min_queryable_granularity or TimeGranularity.DAY
+
+    @staticmethod
+    @validate_safely(
+        whats_being_done="running model validation ensuring a metric's default_grain is valid for the metric"
+    )
+    def _validate_metric(
+        metric: Metric,
+        metric_index: Dict[MetricReference, Metric],
+        measure_to_agg_time_dimension: Dict[MeasureReference, Dimension],
+    ) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+        context = MetricContext(
+            file_context=FileContext.from_metadata(metadata=metric.metadata),
+            metric=MetricModelReference(metric_name=metric.name),
+        )
+
+        if metric.default_grain:
+            min_queryable_granularity = DefaultGrainRule._min_queryable_granularity_for_metric(
+                metric=metric, metric_index=metric_index, measure_to_agg_time_dimension=measure_to_agg_time_dimension
+            )
+            valid_granularities = [
+                granularity.name
+                for granularity in TimeGranularity
+                if granularity.to_int() >= min_queryable_granularity.to_int()
+            ]
+            if metric.default_grain.name not in valid_granularities:
+                issues.append(
+                    ValidationError(
+                        context=context,
+                        message=(
+                            f"`default_grain` for metric '{metric.name}' must be >= {min_queryable_granularity.name}. "
+                            "Valid options are those that are >= the largest granularity defined for the metric's "
+                            f"measures' agg_time_dimensions. Got: {metric.default_grain.name}. "
+                            f"Valid options: {valid_granularities}"
+                        ),
+                    )
+                )
+
+        return issues
+
+    @staticmethod
+    @validate_safely(whats_being_done="running manifest validation ensuring metric default_grains are valid")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:
+        """Validate that the default_grain for each metric is queryable for that metric.
+
+        TODO: figure out a more efficient way to reference other aspects of the model. This validation essentially
+        requires parsing the entire model, which could be slow and likely is repeated work. The blocker is that the
+        inputs to validations are protocols, which don't easily store parsed metadata.
+        """
+        issues: List[ValidationIssue] = []
+
+        measure_to_agg_time_dimension: Dict[MeasureReference, Dimension] = {}
+        for semantic_model in semantic_manifest.semantic_models:
+            dimension_index = {DimensionReference(dimension.name): dimension for dimension in semantic_model.dimensions}
+            for measure in semantic_model.measures:
+                agg_time_dimension_ref = semantic_model.checked_agg_time_dimension_for_measure(measure.reference)
+                agg_time_dimension = dimension_index.get(agg_time_dimension_ref.dimension_reference)
+                assert (
+                    agg_time_dimension
+                ), f"Dimension '{agg_time_dimension_ref.element_name}' not found in semantic manifest."
+                measure_to_agg_time_dimension[measure.reference] = agg_time_dimension
+
+        metric_index = {MetricReference(metric.name): metric for metric in semantic_manifest.metrics}
+        for metric in semantic_manifest.metrics or []:
+            issues += DefaultGrainRule._validate_metric(
+                metric=metric,
+                metric_index=metric_index,
+                measure_to_agg_time_dimension=measure_to_agg_time_dimension,
+            )
         return issues

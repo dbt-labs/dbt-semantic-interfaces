@@ -17,7 +17,7 @@ test:
 	export FORMAT_JSON_LOGS="1" && hatch -v run dev-env:pytest -n auto tests
 
 lint:
-	hatch run dev-env:pre-commit run --show-diff-on-failure --color=always --all-files
+	hatch run dev-env:pre-commit run --color=always --all-files
 
 json_schema:
 	hatch run dev-env:python dbt_semantic_interfaces/parsing/generate_json_schema_file.py
