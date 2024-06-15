@@ -56,6 +56,16 @@ class MetricReference(ElementReference):  # noqa: D
     pass
 
 
+@dataclass(frozen=True)
+class GroupByMetricReference(LinkableElementReference):
+    """Represents a group by metric.
+
+    Different from MetricReference because it inherits linkable element attributes.
+    """
+
+    pass
+
+
 class ModelReference(SerializableDataclass):
     """A reference to something in the model.
 
