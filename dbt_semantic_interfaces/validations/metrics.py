@@ -19,6 +19,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationRule,
     ValidationError,
     ValidationIssue,
+    ValidationWarning,
     generate_exception_issue,
     validate_safely,
 )
@@ -87,8 +88,9 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
                 file_context=FileContext.from_metadata(metadata=metric.metadata),
                 metric=MetricModelReference(metric_name=metric.name),
             )
-            used_names = {input_metric.name for input_metric in metric.input_metrics}
-            for input_metric in metric.input_metrics:
+            input_metrics = metric.type_params.metrics or []
+            used_names = {input_metric.name for input_metric in input_metrics}
+            for input_metric in input_metrics:
                 if input_metric.alias:
                     issues += UniqueAndValidNameRule.check_valid_name(input_metric.alias, metric_context)
                     if input_metric.alias in used_names:
@@ -109,15 +111,24 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
 
         all_metrics = {m.name for m in semantic_manifest.metrics}
         for metric in semantic_manifest.metrics:
+            metric_context = MetricContext(
+                file_context=FileContext.from_metadata(metadata=metric.metadata),
+                metric=MetricModelReference(metric_name=metric.name),
+            )
             if metric.type == MetricType.DERIVED:
-                for input_metric in metric.input_metrics:
+                if not metric.type_params.metrics:
+                    issues.append(
+                        ValidationError(
+                            context=metric_context,
+                            message=f"No input metrics found for derived metric '{metric.name}'. "
+                            "Please add metrics to type_params.metrics.",
+                        )
+                    )
+                for input_metric in metric.type_params.metrics or []:
                     if input_metric.name not in all_metrics:
                         issues.append(
                             ValidationError(
-                                context=MetricContext(
-                                    file_context=FileContext.from_metadata(metadata=metric.metadata),
-                                    metric=MetricModelReference(metric_name=metric.name),
-                                ),
+                                context=metric_context,
                                 message=f"For metric: {metric.name}, input metric: '{input_metric.name}' does not "
                                 "exist as a configured metric in the model.",
                             )
@@ -129,7 +140,7 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
     def _validate_time_offset_params(metric: Metric) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
-        for input_metric in metric.input_metrics or []:
+        for input_metric in metric.type_params.metrics or []:
             if input_metric.offset_window and input_metric.offset_to_grain:
                 issues.append(
                     ValidationError(
@@ -145,6 +156,40 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
         return issues
 
     @staticmethod
+    @validate_safely(whats_being_done="checking that the expr field uses the input metrics")
+    def _validate_expr(metric: Metric) -> List[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        if metric.type == MetricType.DERIVED:
+            if not metric.type_params.expr:
+                issues.append(
+                    ValidationWarning(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric.metadata),
+                            metric=MetricModelReference(metric_name=metric.name),
+                        ),
+                        message=f"No `expr` set for derived metric {metric.name}. "
+                        "Please add an `expr` that references all input metrics.",
+                    )
+                )
+            else:
+                for input_metric in metric.type_params.metrics or []:
+                    name = input_metric.alias or input_metric.name
+                    if name not in metric.type_params.expr:
+                        issues.append(
+                            ValidationWarning(
+                                context=MetricContext(
+                                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                    metric=MetricModelReference(metric_name=metric.name),
+                                ),
+                                message=f"Input metric '{name}' is not used in `expr`: '{metric.type_params.expr}' for "
+                                f"derived metric '{metric.name}'. Please update the `expr` or remove the input metric.",
+                            )
+                        )
+
+        return issues
+
+    @staticmethod
     @validate_safely(
         whats_being_done="running model validation ensuring derived metrics properties are configured properly"
     )
@@ -155,6 +200,7 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
         for metric in semantic_manifest.metrics or []:
             issues += DerivedMetricRule._validate_alias_collision(metric=metric)
             issues += DerivedMetricRule._validate_time_offset_params(metric=metric)
+            issues += DerivedMetricRule._validate_expr(metric=metric)
         return issues
 
 
