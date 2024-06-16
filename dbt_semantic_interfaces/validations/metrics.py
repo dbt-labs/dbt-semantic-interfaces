@@ -19,6 +19,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationRule,
     ValidationError,
     ValidationIssue,
+    ValidationWarning,
     generate_exception_issue,
     validate_safely,
 )
@@ -162,13 +163,13 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
         if metric.type == MetricType.DERIVED:
             if not metric.type_params.expr:
                 issues.append(
-                    ValidationError(
+                    ValidationWarning(
                         context=MetricContext(
                             file_context=FileContext.from_metadata(metadata=metric.metadata),
                             metric=MetricModelReference(metric_name=metric.name),
                         ),
-                        message=f"No expr set for derived metric {metric.name}. "
-                        "Please add an expr that references all input metrics.",
+                        message=f"No `expr` set for derived metric {metric.name}. "
+                        "Please add an `expr` that references all input metrics.",
                     )
                 )
             else:
@@ -176,13 +177,13 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
                     name = input_metric.alias or input_metric.name
                     if name not in metric.type_params.expr:
                         issues.append(
-                            ValidationError(
+                            ValidationWarning(
                                 context=MetricContext(
                                     file_context=FileContext.from_metadata(metadata=metric.metadata),
                                     metric=MetricModelReference(metric_name=metric.name),
                                 ),
-                                message=f"Input metric '{name}' is not used in expr: '{metric.type_params.expr}' for "
-                                f"derived metric '{metric.name}'. Please update the expr or remove the input metric.",
+                                message=f"Input metric '{name}' is not used in `expr`: '{metric.type_params.expr}' for "
+                                f"derived metric '{metric.name}'. Please update the `expr` or remove the input metric.",
                             )
                         )
 

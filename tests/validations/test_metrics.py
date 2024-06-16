@@ -314,15 +314,15 @@ def test_derived_metric() -> None:  # noqa: D
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
-    build_issues = validation_results.errors
+    build_issues = validation_results.all_issues
     assert len(build_issues) == 6
     expected_substrings = [
         "is already being used. Please choose another alias",
         "does not exist as a configured metric in the model",
         "Both offset_window and offset_to_grain set",
-        "is not used in expr",
+        "is not used in `expr`",
         "No input metrics found for derived metric",
-        "No expr set for derived metric",
+        "No `expr` set for derived metric",
     ]
     missing_error_strings = set()
     for expected_str in expected_substrings:
