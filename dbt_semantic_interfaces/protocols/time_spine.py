@@ -4,7 +4,7 @@ from typing import Protocol
 from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 
-class TimeSpineTableConfiguration(Protocol):
+class TimeSpine(Protocol):
     """Describes the configuration for a time spine table.
 
     A time spine table is a table with a single column containing dates at a specific grain.

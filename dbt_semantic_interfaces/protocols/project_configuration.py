@@ -2,9 +2,7 @@ from abc import abstractmethod
 from typing import Protocol, Sequence
 
 from dbt_semantic_interfaces.protocols.semantic_version import SemanticVersion
-from dbt_semantic_interfaces.protocols.time_spine_configuration import (
-    TimeSpineTableConfiguration,
-)
+from dbt_semantic_interfaces.protocols.time_spine import TimeSpine
 
 
 class ProjectConfiguration(Protocol):
@@ -18,6 +16,6 @@ class ProjectConfiguration(Protocol):
 
     @property
     @abstractmethod
-    def time_spine_table_configurations(self) -> Sequence[TimeSpineTableConfiguration]:
+    def time_spine_table_configurations(self) -> Sequence[TimeSpine]:
         """The time spine table configurations. Multiple allowed for different time grains."""
         pass
