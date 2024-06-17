@@ -684,9 +684,9 @@
             "$id": "time_spine_schema",
             "additionalProperties": false,
             "properties": {
-                "name": {"type": "string"},
-                "node_relation": {"$ref": "node_relation_schema"},
-                "base_column": {"type": "string"},
+                "base_column": {
+                    "type": "string"
+                },
                 "base_granularity": {
                     "enum": [
                         "NANOSECOND",
@@ -712,6 +712,12 @@
                         "quarter",
                         "year"
                     ]
+                },
+                "name": {
+                    "type": "string"
+                },
+                "node_relation": {
+                    "$ref": "#/definitions/node_relation_schema"
                 }
             },
             "required": [
