@@ -7,9 +7,7 @@ from dbt_semantic_interfaces.implementations.base import (
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.protocols import ProtocolHint
-from dbt_semantic_interfaces.protocols.time_spine import (
-    TimeSpine,
-)
+from dbt_semantic_interfaces.protocols.time_spine import TimeSpine
 from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 

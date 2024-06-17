@@ -20,7 +20,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import (
-    NodeRelation,
+    PydanticNodeRelation,
     PydanticSemanticModel,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
@@ -141,7 +141,7 @@ def metric_with_guaranteed_meta(
 def semantic_model_with_guaranteed_meta(
     name: str,
     description: Optional[str] = None,
-    node_relation: Optional[NodeRelation] = None,
+    node_relation: Optional[PydanticNodeRelation] = None,
     metadata: PydanticMetadata = default_meta(),
     entities: Sequence[PydanticEntity] = (),
     measures: Sequence[PydanticMeasure] = (),
@@ -153,7 +153,7 @@ def semantic_model_with_guaranteed_meta(
     """
     created_node_relation = node_relation
     if created_node_relation is None:
-        created_node_relation = NodeRelation(
+        created_node_relation = PydanticNodeRelation(
             schema_name="schema",
             alias="table",
         )
