@@ -27,7 +27,7 @@ class PydanticProjectConfiguration(HashableBaseModel, ModelWithMetadataParsing, 
     def _implements_protocol(self) -> ProjectConfiguration:
         return self
 
-    time_spine_table_configurations: List[PydanticTimeSpine]
+    time_spines: List[PydanticTimeSpine]
     metadata: Optional[PydanticMetadata] = None
     dsi_package_version: PydanticSemanticVersion = UNKNOWN_VERSION_SENTINEL
 

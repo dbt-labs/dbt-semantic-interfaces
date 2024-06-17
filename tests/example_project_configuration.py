@@ -3,16 +3,18 @@ import textwrap
 from dbt_semantic_interfaces.implementations.project_configuration import (
     PydanticProjectConfiguration,
 )
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticNodeRelation
 from dbt_semantic_interfaces.implementations.time_spine import PydanticTimeSpine
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 EXAMPLE_PROJECT_CONFIGURATION = PydanticProjectConfiguration(
-    time_spine_table_configurations=[
+    time_spines=[
         PydanticTimeSpine(
-            location="example_schema.example_table",
-            column_name="ds",
-            grain=TimeGranularity.DAY,
+            name="example_time_spine",
+            node_relation=PydanticNodeRelation(schema_name="example_schema", alias="example_table"),
+            base_column="ds",
+            base_granularity=TimeGranularity.DAY,
         )
     ],
 )
@@ -22,10 +24,13 @@ EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE = YamlConfigFile(
     contents=textwrap.dedent(
         """\
         project_configuration:
-          time_spine_table_configurations:
-            - location: example_schema.example_table
-              column_name: ds
-              grain: day
+          time_spines:
+            - name: sample
+              node_relation:
+                schema_name: sample
+                alias: sample
+              base_column: ds
+              base_granularity: day
         """
     ),
 )

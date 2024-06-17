@@ -318,16 +318,17 @@ semantic_model_defaults_schema = {
 }
 
 
-time_spine_table_configuration_schema = {
-    "$id": "time_spine_table_configuration_schema",
+time_spine_schema = {
+    "$id": "time_spine_schema",
     "type": "object",
     "properties": {
-        "location": {"type": "string"},
-        "column_name": {"type": "string"},
-        "grain": {"enum": time_granularity_values},
+        "name": {"type": "string"},
+        "node_relation": {"$ref": "node_relation_schema"},
+        "base_column": {"type": "string"},
+        "base_granularity": {"enum": time_granularity_values},
     },
     "additionalProperties": False,
-    "required": ["location", "column_name", "grain"],
+    "required": ["name", "node_relation", "base_column", "base_granularity"],
 }
 
 
@@ -335,13 +336,13 @@ project_configuration_schema = {
     "$id": "project_configuration_schema",
     "type": "object",
     "properties": {
-        "time_spine_table_configurations": {
+        "time_spines": {
             "type": "array",
-            "items": {"$ref": "time_spine_table_configuration_schema"},
+            "items": {"$ref": "time_spine_schema"},
         },
     },
     "additionalProperties": False,
-    "required": ["time_spine_table_configurations"],
+    "required": ["time_spines"],
 }
 
 export_config_schema = {
@@ -456,7 +457,7 @@ schema_store = {
     metric_input_schema["$id"]: metric_input_schema,
     node_relation_schema["$id"]: node_relation_schema,
     semantic_model_defaults_schema["$id"]: semantic_model_defaults_schema,
-    time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
+    time_spine_schema["$id"]: time_spine_schema,
     export_schema["$id"]: export_schema,
     export_config_schema["$id"]: export_config_schema,
     saved_query_query_params_schema["$id"]: saved_query_query_params_schema,

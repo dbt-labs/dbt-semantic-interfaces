@@ -16,6 +16,6 @@ class ProjectConfiguration(Protocol):
 
     @property
     @abstractmethod
-    def time_spine_table_configurations(self) -> Sequence[TimeSpine]:
+    def time_spines(self) -> Sequence[TimeSpine]:
         """The time spine table configurations. Multiple allowed for different time grains."""
         pass

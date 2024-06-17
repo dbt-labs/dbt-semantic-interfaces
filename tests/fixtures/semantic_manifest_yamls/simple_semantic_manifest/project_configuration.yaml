@@ -1,6 +1,9 @@
 ---
 project_configuration:
-  time_spine_table_configurations:
-    - location: example_schema.example_table
-      column_name: ds
-      grain: day
+  time_spines:
+    - name: time_spine_day
+      node_relation:
+        alias: example_table
+        schema_name: example_schema
+      base_column: ds
+      base_granularity: day

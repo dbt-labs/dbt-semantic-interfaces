@@ -540,15 +540,15 @@
             "$id": "project_configuration_schema",
             "additionalProperties": false,
             "properties": {
-                "time_spine_table_configurations": {
+                "time_spines": {
                     "items": {
-                        "$ref": "#/definitions/time_spine_table_configuration_schema"
+                        "$ref": "#/definitions/time_spine_schema"
                     },
                     "type": "array"
                 }
             },
             "required": [
-                "time_spine_table_configurations"
+                "time_spines"
             ],
             "type": "object"
         },
@@ -680,14 +680,14 @@
             ],
             "type": "object"
         },
-        "time_spine_table_configuration_schema": {
-            "$id": "time_spine_table_configuration_schema",
+        "time_spine_schema": {
+            "$id": "time_spine_schema",
             "additionalProperties": false,
             "properties": {
-                "column_name": {
-                    "type": "string"
-                },
-                "grain": {
+                "name": {"type": "string"},
+                "node_relation": {"$ref": "node_relation_schema"},
+                "base_column": {"type": "string"},
+                "base_granularity": {
                     "enum": [
                         "NANOSECOND",
                         "MICROSECOND",
@@ -712,15 +712,13 @@
                         "quarter",
                         "year"
                     ]
-                },
-                "location": {
-                    "type": "string"
                 }
             },
             "required": [
-                "location",
-                "column_name",
-                "grain"
+                "name",
+                "node_relation",
+                "base_column",
+                "base_granularity"
             ],
             "type": "object"
         },
