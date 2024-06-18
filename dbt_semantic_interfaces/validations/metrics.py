@@ -34,29 +34,71 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         issues: List[ValidationIssue] = []
 
         if metric.type == MetricType.CUMULATIVE:
-            if metric.type_params.window and metric.type_params.grain_to_date:
+            metric_context = MetricContext(
+                file_context=FileContext.from_metadata(metadata=metric.metadata),
+                metric=MetricModelReference(metric_name=metric.name),
+            )
+
+            for field in ("window", "grain_to_date"):
+                type_params_field_value = getattr(metric.type_params, field)
+                # Warn that the old type_params structure has been deprecated.
+                if type_params_field_value:
+                    issues.append(
+                        ValidationWarning(
+                            context=metric_context,
+                            message=(
+                                f"Cumulative `type_params.{field}` field has been moved and will soon be deprecated. "
+                                f"Please nest that value under `type_params.cumulative_type_params.{field}`."
+                            ),
+                        )
+                    )
+                # Warn that window or grain_to_date is mismatched across params.
+                cumulative_type_params_field_value = (
+                    getattr(metric.type_params.cumulative_type_params, field)
+                    if metric.type_params.cumulative_type_params
+                    else None
+                )
+                if (
+                    type_params_field_value
+                    and cumulative_type_params_field_value
+                    and cumulative_type_params_field_value != type_params_field_value
+                ):
+                    issues.append(
+                        ValidationError(
+                            context=metric_context,
+                            message=(
+                                f"Got differing values for `{field}` on cumulative metric '{metric.name}'. In "
+                                f"`type_params.{field}`, got '{type_params_field_value}'. In "
+                                f"`type_params.cumulative_type_params.{field}`, got "
+                                f"'{cumulative_type_params_field_value}'. Please remove the value from "
+                                f"`type_params.{field}`."
+                            ),
+                        )
+                    )
+
+            window = metric.type_params.window
+            if metric.type_params.cumulative_type_params and metric.type_params.cumulative_type_params.window:
+                window = metric.type_params.cumulative_type_params.window
+            grain_to_date = metric.type_params.grain_to_date
+            if metric.type_params.cumulative_type_params and metric.type_params.cumulative_type_params.grain_to_date:
+                grain_to_date = metric.type_params.cumulative_type_params.grain_to_date
+            if window and grain_to_date:
                 issues.append(
                     ValidationError(
-                        context=MetricContext(
-                            file_context=FileContext.from_metadata(metadata=metric.metadata),
-                            metric=MetricModelReference(metric_name=metric.name),
-                        ),
-                        message="Both window and grain_to_date set for cumulative metric. Please set one or the other",
+                        context=metric_context,
+                        message="Both window and grain_to_date set for cumulative metric. Please set one or the other.",
                     )
                 )
 
-            if metric.type_params.window:
+            if window:
                 try:
-                    window_str = f"{metric.type_params.window.count} {metric.type_params.window.granularity.value}"
+                    window_str = f"{window.count} {window.granularity.value}"
                     # TODO: Should not call an implementation class.
                     PydanticMetricTimeWindow.parse(window_str)
                 except ParsingException as e:
                     issues.append(
                         ValidationError(
-                            context=MetricContext(
-                                file_context=FileContext.from_metadata(metadata=metric.metadata),
-                                metric=MetricModelReference(metric_name=metric.name),
-                            ),
+                            context=metric_context,
                             message="".join(traceback.format_exception_only(type(e), value=e)),
                             extra_detail="".join(traceback.format_tb(e.__traceback__)),
                         )

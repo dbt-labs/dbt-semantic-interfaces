@@ -21,6 +21,7 @@ from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
     ConversionCalculationType,
     MetricType,
+    PeriodAggregation,
     TimeGranularity,
 )
 from dsi_pydantic_shim import Field
@@ -158,6 +159,14 @@ class PydanticConversionTypeParams(HashableBaseModel):
     constant_properties: Optional[List[PydanticConstantPropertyInput]]
 
 
+class PydanticCumulativeTypeParams(HashableBaseModel):
+    """Type params to provide context for cumulative metrics properties."""
+
+    window: Optional[PydanticMetricTimeWindow]
+    grain_to_date: Optional[TimeGranularity]
+    period_agg: PeriodAggregation = PeriodAggregation.FIRST
+
+
 class PydanticMetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
@@ -169,6 +178,7 @@ class PydanticMetricTypeParams(HashableBaseModel):
     grain_to_date: Optional[TimeGranularity]
     metrics: Optional[List[PydanticMetricInput]]
     conversion_type_params: Optional[PydanticConversionTypeParams]
+    cumulative_type_params: Optional[PydanticCumulativeTypeParams]
 
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
 

@@ -36,13 +36,15 @@ def test_can_configure_model_validator_rules(  # noqa: D
     validator = SemanticManifestValidator[PydanticSemanticManifest]()
     issues = SemanticManifestValidator[PydanticSemanticManifest]().validate_semantic_manifest(model)
     assert (
-        len(issues.all_issues) == 1
-    ), f"SemanticManifestValidator with default rules had unexpected number of issues {issues}"
+        len(issues.errors) == 1
+    ), f"SemanticManifestValidator with default rules had unexpected number of errors {issues.errors}"
 
     # confirm that a custom configuration excluding ValidMaterializationRule, no issue is raised
     rules = [rule for rule in validator.DEFAULT_RULES if rule.__class__ is not DerivedMetricRule]
     issues = SemanticManifestValidator[PydanticSemanticManifest](rules=rules).validate_semantic_manifest(model)
-    assert len(issues.all_issues) == 0, f"SemanticManifestValidator without DerivedMetricRule returned issues {issues}"
+    assert (
+        len(issues.errors) == 0
+    ), f"SemanticManifestValidator without DerivedMetricRule returned issues {issues.errors}"
 
 
 def test_cant_configure_model_validator_without_rules() -> None:  # noqa: D

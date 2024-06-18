@@ -15,6 +15,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticConstantPropertyInput,
     PydanticConversionTypeParams,
+    PydanticCumulativeTypeParams,
     PydanticMetricInput,
     PydanticMetricInputMeasure,
     PydanticMetricTimeWindow,
@@ -38,10 +39,12 @@ from dbt_semantic_interfaces.type_enums import (
     DimensionType,
     EntityType,
     MetricType,
+    PeriodAggregation,
     TimeGranularity,
 )
 from dbt_semantic_interfaces.validations.metrics import (
     ConversionMetricRule,
+    CumulativeMetricRule,
     DerivedMetricRule,
     WhereFiltersAreParseable,
 )
@@ -568,4 +571,136 @@ def test_conversion_metrics() -> None:  # noqa: D
         if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
             missing_error_strings.add(expected_str)
     assert len(missing_error_strings) == 0, "Failed to match one or more expected errors: "
+    f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
+
+
+def test_cumulative_metrics() -> None:  # noqa: D
+    measure_name = "foo"
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([CumulativeMetricRule()])
+    validation_results = model_validator.validate_semantic_manifest(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="sum_measure",
+                    measures=[
+                        PydanticMeasure(
+                            name=measure_name,
+                            agg=AggregationType.SUM,
+                            agg_time_dimension="ds",
+                        )
+                    ],
+                    dimensions=[
+                        PydanticDimension(
+                            name="ds",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                    ],
+                ),
+            ],
+            metrics=[
+                # Metrics with old type params structure - should 2 get warnings
+                metric_with_guaranteed_meta(
+                    name="metric1",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        window=PydanticMetricTimeWindow(count=1, granularity=TimeGranularity.WEEK),
+                        cumulative_type_params=PydanticCumulativeTypeParams(period_agg=PeriodAggregation.LAST),
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="metric2",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        grain_to_date=TimeGranularity.MONTH,
+                    ),
+                ),
+                # Metrics with new type params structure - should have no issues
+                metric_with_guaranteed_meta(
+                    name="big_mama",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        cumulative_type_params=PydanticCumulativeTypeParams(
+                            window=PydanticMetricTimeWindow(count=1, granularity=TimeGranularity.WEEK),
+                            period_agg=PeriodAggregation.AVERAGE,
+                        ),
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="lil_baby",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        cumulative_type_params=PydanticCumulativeTypeParams(grain_to_date=TimeGranularity.MONTH),
+                    ),
+                ),
+                # Metric with both window & grain across both type_params - should get 2 warnings
+                metric_with_guaranteed_meta(
+                    name="woooooo",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        grain_to_date=TimeGranularity.MONTH,
+                        cumulative_type_params=PydanticCumulativeTypeParams(
+                            window=PydanticMetricTimeWindow(count=1, granularity=TimeGranularity.WEEK),
+                            period_agg=PeriodAggregation.FIRST,
+                        ),
+                    ),
+                ),
+                # Metrics with duplicated window or grain_to_date - should 4 get warnings
+                metric_with_guaranteed_meta(
+                    name="what_a_metric",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        grain_to_date=TimeGranularity.YEAR,
+                        cumulative_type_params=PydanticCumulativeTypeParams(
+                            grain_to_date=TimeGranularity.HOUR,
+                        ),
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="dis_bad",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        window=PydanticMetricTimeWindow(count=2, granularity=TimeGranularity.QUARTER),
+                        cumulative_type_params=PydanticCumulativeTypeParams(
+                            window=PydanticMetricTimeWindow(count=1, granularity=TimeGranularity.QUARTER),
+                        ),
+                    ),
+                ),
+                # Metric without window or grain_to_date - should have no issues
+                metric_with_guaranteed_meta(
+                    name="dis_good",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        cumulative_type_params=PydanticCumulativeTypeParams(period_agg=PeriodAggregation.FIRST),
+                    ),
+                ),
+            ],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+
+    build_issues = validation_results.all_issues
+    for issue in build_issues:
+        print(issue.message)
+    assert len(build_issues) == 8
+    expected_substr1 = "Both window and grain_to_date set for cumulative metric. Please set one or the other."
+    expected_substr2 = "Got differing values for `window`"
+    expected_substr3 = "Got differing values for `grain_to_date`"
+    expected_substr4 = "Cumulative `type_params.window` field has been moved and will soon be deprecated."
+    expected_substr5 = "Cumulative `type_params.grain_to_date` field has been moved and will soon be deprecated."
+    missing_error_strings = set()
+    for expected_str in [expected_substr1, expected_substr2, expected_substr3, expected_substr4, expected_substr5]:
+        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
+            missing_error_strings.add(expected_str)
+    assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
     f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
