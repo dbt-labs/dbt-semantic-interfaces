@@ -24,6 +24,9 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     validate_safely,
 )
 
+# Temp: undo once cumulative_type_params are supported in MF
+CUMULATIVE_TYPE_PARAMS_SUPPORTED = False
+
 
 class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that cumulative sum metrics are configured properly."""
@@ -42,7 +45,7 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
             for field in ("window", "grain_to_date"):
                 type_params_field_value = getattr(metric.type_params, field)
                 # Warn that the old type_params structure has been deprecated.
-                if type_params_field_value:
+                if type_params_field_value and CUMULATIVE_TYPE_PARAMS_SUPPORTED:
                     issues.append(
                         ValidationWarning(
                             context=metric_context,
@@ -62,7 +65,7 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                     type_params_field_value
                     and cumulative_type_params_field_value
                     and cumulative_type_params_field_value != type_params_field_value
-                ):
+                ) and CUMULATIVE_TYPE_PARAMS_SUPPORTED:
                     issues.append(
                         ValidationError(
                             context=metric_context,
