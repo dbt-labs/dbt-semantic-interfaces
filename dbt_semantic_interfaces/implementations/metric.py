@@ -211,7 +211,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     metadata: Optional[PydanticMetadata]
     label: Optional[str] = None
     config: Optional[PydanticMetricConfig]
-    default_grain: Optional[TimeGranularity] = None
+    default_granularity: Optional[TimeGranularity] = None
 
     @property
     def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:

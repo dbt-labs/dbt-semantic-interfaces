@@ -304,6 +304,7 @@ metric_schema = {
         "description": {"type": "string"},
         "label": {"type": "string"},
         "config": {"$ref": "metric_config_schema"},
+        "default_granularity": {"enum": time_granularity_values},
     },
     "additionalProperties": False,
     "required": ["name", "type", "type_params"],

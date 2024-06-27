@@ -458,6 +458,32 @@
                 "config": {
                     "$ref": "#/definitions/metric_config_schema"
                 },
+                "default_granularity": {
+                    "enum": [
+                        "NANOSECOND",
+                        "MICROSECOND",
+                        "MILLISECOND",
+                        "SECOND",
+                        "MINUTE",
+                        "HOUR",
+                        "DAY",
+                        "WEEK",
+                        "MONTH",
+                        "QUARTER",
+                        "YEAR",
+                        "nanosecond",
+                        "microsecond",
+                        "millisecond",
+                        "second",
+                        "minute",
+                        "hour",
+                        "day",
+                        "week",
+                        "month",
+                        "quarter",
+                        "year"
+                    ]
+                },
                 "description": {
                     "type": "string"
                 },

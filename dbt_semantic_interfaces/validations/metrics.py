@@ -578,7 +578,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
 
 class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
-    """Checks that default_grain set for metric is queryable for that metric."""
+    """Checks that default_granularity set for metric is queryable for that metric."""
 
     @staticmethod
     def _min_queryable_granularity_for_metric(
@@ -605,7 +605,7 @@ class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generi
 
     @staticmethod
     @validate_safely(
-        whats_being_done="running model validation ensuring a metric's default_grain is valid for the metric"
+        whats_being_done="running model validation ensuring a metric's default_granularity is valid for the metric"
     )
     def _validate_metric(
         metric: Metric,
@@ -618,7 +618,7 @@ class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generi
             metric=MetricModelReference(metric_name=metric.name),
         )
 
-        if metric.default_grain:
+        if metric.default_granularity:
             min_queryable_granularity = DefaultGrainRule._min_queryable_granularity_for_metric(
                 metric=metric, metric_index=metric_index, measure_to_agg_time_dimension=measure_to_agg_time_dimension
             )
@@ -627,15 +627,15 @@ class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generi
                 for granularity in TimeGranularity
                 if granularity.to_int() >= min_queryable_granularity.to_int()
             ]
-            if metric.default_grain.name not in valid_granularities:
+            if metric.default_granularity.name not in valid_granularities:
                 issues.append(
                     ValidationError(
                         context=context,
                         message=(
-                            f"`default_grain` for metric '{metric.name}' must be >= {min_queryable_granularity.name}. "
-                            "Valid options are those that are >= the largest granularity defined for the metric's "
-                            f"measures' agg_time_dimensions. Got: {metric.default_grain.name}. "
-                            f"Valid options: {valid_granularities}"
+                            f"`default_granularity` for metric '{metric.name}' must be >= "
+                            f"{min_queryable_granularity.name}. Valid options are those that are >= the largest "
+                            f"granularity defined for the metric's measures' agg_time_dimensions. Got: "
+                            f"{metric.default_granularity.name}. Valid options: {valid_granularities}"
                         ),
                     )
                 )
@@ -643,9 +643,9 @@ class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generi
         return issues
 
     @staticmethod
-    @validate_safely(whats_being_done="running manifest validation ensuring metric default_grains are valid")
+    @validate_safely(whats_being_done="running manifest validation ensuring metric default_granularitys are valid")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:
-        """Validate that the default_grain for each metric is queryable for that metric.
+        """Validate that the default_granularity for each metric is queryable for that metric.
 
         TODO: figure out a more efficient way to reference other aspects of the model. This validation essentially
         requires parsing the entire model, which could be slow and likely is repeated work. The blocker is that the

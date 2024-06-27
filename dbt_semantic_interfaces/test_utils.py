@@ -123,7 +123,7 @@ def metric_with_guaranteed_meta(
     type_params: PydanticMetricTypeParams,
     metadata: PydanticMetadata = default_meta(),
     description: str = "adhoc metric",
-    default_grain: Optional[TimeGranularity] = None,
+    default_granularity: Optional[TimeGranularity] = None,
 ) -> PydanticMetric:
     """Creates a metric with the given input.
 
@@ -136,7 +136,7 @@ def metric_with_guaranteed_meta(
         type_params=type_params,
         filter=None,
         metadata=metadata,
-        default_grain=default_grain,
+        default_granularity=default_granularity,
     )
 
 
