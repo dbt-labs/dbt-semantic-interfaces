@@ -16,12 +16,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
-from dbt_semantic_interfaces.protocols import (
-    Metric,
-    MetricConfig,
-    MetricInputMeasure,
-    ProtocolHint,
-)
+from dbt_semantic_interfaces.protocols import Metric, MetricConfig, ProtocolHint
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
     ConversionCalculationType,
@@ -242,17 +237,17 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     @staticmethod
     def all_input_measures_for_metric(
         metric: Metric, metric_index: Dict[MetricReference, Metric]
-    ) -> Set[MetricInputMeasure]:
+    ) -> Set[MeasureReference]:
         """Gets all input measures for the metric, including those defined on input metrics (recursively)."""
-        measures = set()
+        measures: Set[MeasureReference] = set()
         if metric.type is MetricType.SIMPLE or metric.type is MetricType.CUMULATIVE:
             assert (
                 metric.type_params.measure is not None
             ), f"Metric {metric.name} should have a measure defined, but it does not."
-            measures.add(metric.type_params.measure)
+            measures.add(metric.type_params.measure.measure_reference)
         elif metric.type is MetricType.DERIVED or metric.type is MetricType.RATIO:
             for input_metric in metric.input_metrics:
-                nested_metric = metric_index.get(MetricReference(input_metric.name))
+                nested_metric = metric_index.get(input_metric.as_reference)
                 assert nested_metric, f"Could not find metric {input_metric.name} in semantic manifest."
                 measures.update(
                     PydanticMetric.all_input_measures_for_metric(metric=nested_metric, metric_index=metric_index)
@@ -260,8 +255,8 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         elif metric.type is MetricType.CONVERSION:
             conversion_type_params = metric.type_params.conversion_type_params
             assert conversion_type_params, "Conversion metric should have conversion_type_params."
-            measures.add(conversion_type_params.base_measure)
-            measures.add(conversion_type_params.conversion_measure)
+            measures.add(conversion_type_params.base_measure.measure_reference)
+            measures.add(conversion_type_params.conversion_measure.measure_reference)
         else:
             assert_values_exhausted(metric.type)
 

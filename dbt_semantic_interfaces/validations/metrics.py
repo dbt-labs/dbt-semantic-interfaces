@@ -592,9 +592,9 @@ class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generi
         Defaults to DAY in the
         """
         min_queryable_granularity: Optional[TimeGranularity] = None
-        for input_measure in PydanticMetric.all_input_measures_for_metric(metric=metric, metric_index=metric_index):
-            agg_time_dimension = measure_to_agg_time_dimension.get(input_measure.measure_reference)
-            assert agg_time_dimension, f"Measure '{input_measure.name}' not found in semantic manifest."
+        for measure_reference in PydanticMetric.all_input_measures_for_metric(metric=metric, metric_index=metric_index):
+            agg_time_dimension = measure_to_agg_time_dimension.get(measure_reference)
+            assert agg_time_dimension, f"Measure '{measure_reference.element_name}' not found in semantic manifest."
             if not agg_time_dimension.type_params:
                 continue
             defined_time_granularity = agg_time_dimension.type_params.time_granularity
