@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.transformations.transform_rule import (
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 
 
-class SetDefaultGrainRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
+class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
     """If default_granularity is not set for a metric, set it to DAY if available, else the smallest available grain."""
 
     @override

@@ -577,7 +577,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         return issues
 
 
-class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+class DefaultGranularityRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that default_granularity set for metric is queryable for that metric."""
 
     @staticmethod
@@ -619,7 +619,7 @@ class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generi
         )
 
         if metric.default_granularity:
-            min_queryable_granularity = DefaultGrainRule._min_queryable_granularity_for_metric(
+            min_queryable_granularity = DefaultGranularityRule._min_queryable_granularity_for_metric(
                 metric=metric, metric_index=metric_index, measure_to_agg_time_dimension=measure_to_agg_time_dimension
             )
             valid_granularities = [
@@ -666,7 +666,7 @@ class DefaultGrainRule(SemanticManifestValidationRule[SemanticManifestT], Generi
 
         metric_index = {MetricReference(metric.name): metric for metric in semantic_manifest.metrics}
         for metric in semantic_manifest.metrics or []:
-            issues += DefaultGrainRule._validate_metric(
+            issues += DefaultGranularityRule._validate_metric(
                 metric=metric,
                 metric_index=metric_index,
                 measure_to_agg_time_dimension=measure_to_agg_time_dimension,
