@@ -46,7 +46,7 @@ from dbt_semantic_interfaces.validations.metrics import (
     CUMULATIVE_TYPE_PARAMS_SUPPORTED,
     ConversionMetricRule,
     CumulativeMetricRule,
-    DefaultGrainRule,
+    DefaultGranularityRule,
     DerivedMetricRule,
     WhereFiltersAreParseable,
 )
@@ -722,7 +722,7 @@ def test_default_granularity() -> None:
     month_measure_name = "boo"
     week_time_dim_name = "ds__week"
     month_time_dim_name = "ds__month"
-    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([DefaultGrainRule()])
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([DefaultGranularityRule()])
     validation_results = model_validator.validate_semantic_manifest(
         PydanticSemanticManifest(
             semantic_models=[
