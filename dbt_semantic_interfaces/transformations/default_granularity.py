@@ -45,4 +45,6 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
                     ):
                         default_granularity = dimension.type_params.time_granularity
 
+            metric.default_granularity = default_granularity
+
         return semantic_manifest
