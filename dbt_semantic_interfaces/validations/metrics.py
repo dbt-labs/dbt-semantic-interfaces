@@ -584,8 +584,8 @@ class DefaultGranularityRule(SemanticManifestValidationRule[SemanticManifestT], 
     def _min_queryable_granularity_for_metric(
         metric: Metric,
         metric_index: Dict[MetricReference, Metric],
-        measure_to_agg_time_dimension: Dict[MeasureReference, Dimension],
-    ) -> TimeGranularity:
+        measure_to_agg_time_dimension: Dict[MeasureReference, Optional[Dimension]],
+    ) -> Optional[TimeGranularity]:
         """Get the minimum time granularity this metric is allowed to be queried with.
 
         This should be the largest granularity that any of the metric's agg_time_dimensions is defined at.
@@ -594,14 +594,18 @@ class DefaultGranularityRule(SemanticManifestValidationRule[SemanticManifestT], 
         min_queryable_granularity: Optional[TimeGranularity] = None
         for measure_reference in PydanticMetric.all_input_measures_for_metric(metric=metric, metric_index=metric_index):
             agg_time_dimension = measure_to_agg_time_dimension.get(measure_reference)
-            assert agg_time_dimension, f"Measure '{measure_reference.element_name}' not found in semantic manifest."
-            if not agg_time_dimension.type_params:
-                continue
-            defined_time_granularity = agg_time_dimension.type_params.time_granularity
+            if not agg_time_dimension:
+                # This indicates the measure or agg_time_dimension were invalid, so we can't determine granularity.
+                return None
+            defined_time_granularity = (
+                agg_time_dimension.type_params.time_granularity
+                if agg_time_dimension.type_params
+                else TimeGranularity.DAY
+            )
             if not min_queryable_granularity or defined_time_granularity.to_int() > min_queryable_granularity.to_int():
                 min_queryable_granularity = defined_time_granularity
 
-        return min_queryable_granularity or TimeGranularity.DAY
+        return min_queryable_granularity
 
     @staticmethod
     @validate_safely(
@@ -610,7 +614,7 @@ class DefaultGranularityRule(SemanticManifestValidationRule[SemanticManifestT], 
     def _validate_metric(
         metric: Metric,
         metric_index: Dict[MetricReference, Metric],
-        measure_to_agg_time_dimension: Dict[MeasureReference, Dimension],
+        measure_to_agg_time_dimension: Dict[MeasureReference, Optional[Dimension]],
     ) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
         context = MetricContext(
@@ -622,6 +626,17 @@ class DefaultGranularityRule(SemanticManifestValidationRule[SemanticManifestT], 
             min_queryable_granularity = DefaultGranularityRule._min_queryable_granularity_for_metric(
                 metric=metric, metric_index=metric_index, measure_to_agg_time_dimension=measure_to_agg_time_dimension
             )
+            if not min_queryable_granularity:
+                issues.append(
+                    ValidationError(
+                        context=context,
+                        message=(
+                            f"Unable to validate `default_granularity` for metric '{metric.name}' due to "
+                            "misconfiguration with measures or related agg_time_dimensions."
+                        ),
+                    )
+                )
+                return issues
             valid_granularities = [
                 granularity.name
                 for granularity in TimeGranularity
@@ -653,15 +668,19 @@ class DefaultGranularityRule(SemanticManifestValidationRule[SemanticManifestT], 
         """
         issues: List[ValidationIssue] = []
 
-        measure_to_agg_time_dimension: Dict[MeasureReference, Dimension] = {}
+        measure_to_agg_time_dimension: Dict[MeasureReference, Optional[Dimension]] = {}
         for semantic_model in semantic_manifest.semantic_models:
             dimension_index = {DimensionReference(dimension.name): dimension for dimension in semantic_model.dimensions}
             for measure in semantic_model.measures:
-                agg_time_dimension_ref = semantic_model.checked_agg_time_dimension_for_measure(measure.reference)
-                agg_time_dimension = dimension_index.get(agg_time_dimension_ref.dimension_reference)
-                assert (
-                    agg_time_dimension
-                ), f"Dimension '{agg_time_dimension_ref.element_name}' not found in semantic manifest."
+                try:
+                    agg_time_dimension_ref = semantic_model.checked_agg_time_dimension_for_measure(measure.reference)
+                    agg_time_dimension: Optional[Dimension] = dimension_index[
+                        agg_time_dimension_ref.dimension_reference
+                    ]
+                except (AssertionError, KeyError):
+                    # If the agg_time_dimension is not set or does not exist, this will be validated elsewhere.
+                    # Here, swallow the error to avoid disrupting the validation process.
+                    agg_time_dimension = None
                 measure_to_agg_time_dimension[measure.reference] = agg_time_dimension
 
         metric_index = {MetricReference(metric.name): metric for metric in semantic_manifest.metrics}
