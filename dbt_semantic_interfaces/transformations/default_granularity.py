@@ -34,7 +34,12 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
             seen_agg_time_dimensions: Set[TimeDimensionReference] = set()
             for semantic_model in semantic_manifest.semantic_models:
                 for measure_ref in set(metric.measure_references).intersection(semantic_model.measure_references):
-                    agg_time_dimension_ref = semantic_model.checked_agg_time_dimension_for_measure(measure_ref)
+                    try:
+                        agg_time_dimension_ref = semantic_model.checked_agg_time_dimension_for_measure(measure_ref)
+                    except AssertionError:
+                        # This indicates the agg_time_dimension is misconfigured, which will fail elsewhere.
+                        # Do nothing here to avoid disrupting the validation process.
+                        continue
                     if agg_time_dimension_ref in seen_agg_time_dimensions:
                         continue
                     seen_agg_time_dimensions.add(agg_time_dimension_ref)

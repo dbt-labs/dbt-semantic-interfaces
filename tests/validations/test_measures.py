@@ -72,6 +72,8 @@ def test_measures_only_exist_in_one_semantic_model() -> None:  # noqa: D
           node_relation:
             schema_name: some_schema
             alias: source_table
+          defaults:
+            agg_time_dimension: ds
           entities:
             - name: example_entity
               type: primary

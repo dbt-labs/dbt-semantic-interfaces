@@ -20,6 +20,9 @@ from dbt_semantic_interfaces.transformations.convert_median import (
 from dbt_semantic_interfaces.transformations.cumulative_type_params import (
     SetCumulativeTypeParamsRule,
 )
+from dbt_semantic_interfaces.transformations.default_granularity import (
+    SetDefaultGranularityRule,
+)
 from dbt_semantic_interfaces.transformations.names import LowerCaseNamesRule
 from dbt_semantic_interfaces.transformations.proxy_measure import CreateProxyMeasureRule
 from dbt_semantic_interfaces.transformations.rule_set import (
@@ -54,6 +57,7 @@ class PydanticSemanticManifestTransformRuleSet(
             ConvertMedianToPercentileRule(),
             AddInputMetricMeasuresRule(),
             SetCumulativeTypeParamsRule(),
+            SetDefaultGranularityRule(),
         )
 
     @property
