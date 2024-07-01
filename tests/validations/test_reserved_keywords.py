@@ -4,7 +4,7 @@ from copy import deepcopy
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.implementations.semantic_model import NodeRelation
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticNodeRelation
 from dbt_semantic_interfaces.test_utils import find_semantic_model_with
 from dbt_semantic_interfaces.validations.reserved_keywords import (
     RESERVED_KEYWORDS,
@@ -76,7 +76,7 @@ def test_reserved_keywords_in_node_relation(  # noqa: D
     (semantic_model_with_node_relation, _index) = find_semantic_model_with(
         model=model, function=lambda semantic_model: semantic_model.node_relation is not None
     )
-    semantic_model_with_node_relation.node_relation = NodeRelation(
+    semantic_model_with_node_relation.node_relation = PydanticNodeRelation(
         alias=random_keyword(),
         schema_name="some_schema",
     )

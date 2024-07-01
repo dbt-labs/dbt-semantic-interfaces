@@ -35,9 +35,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
-from dbt_semantic_interfaces.implementations.time_spine_table_configuration import (
-    PydanticTimeSpineTableConfiguration,
-)
+from dbt_semantic_interfaces.implementations.time_spine import PydanticTimeSpine
 from dbt_semantic_interfaces.protocols import Dimension as DimensionProtocol
 from dbt_semantic_interfaces.protocols import Entity as EntityProtocol
 from dbt_semantic_interfaces.protocols import Measure as MeasureProtocol
@@ -48,9 +46,7 @@ from dbt_semantic_interfaces.protocols import (
     SemanticManifest as SemanticManifestProtocol,
 )
 from dbt_semantic_interfaces.protocols import SemanticModel as SemanticModelProtocol
-from dbt_semantic_interfaces.protocols.time_spine_configuration import (
-    TimeSpineTableConfiguration as TimeSpineTableConfigurationProtocol,
-)
+from dbt_semantic_interfaces.protocols.time_spine import TimeSpine as TimeSpineProtocol
 from dbt_semantic_interfaces.type_enums import DimensionType, MetricType
 
 OPTIONAL_STR_STRATEGY = text() | none()
@@ -284,12 +280,12 @@ def test_saved_query_protocol(saved_query: PydanticSavedQuery) -> None:  # noqa:
 
 
 @runtime_checkable
-class RuntimeCheckableTimeSpineConfiguration(TimeSpineTableConfigurationProtocol, Protocol):
+class RuntimeCheckableTimeSpineConfiguration(TimeSpineProtocol, Protocol):
     """We don't want runtime_checkable versions of protocols in the package, but we want them for tests."""
 
     pass
 
 
-@given(builds(PydanticTimeSpineTableConfiguration))
-def test_time_spine_table_configuration_protocol(time_spine: PydanticTimeSpineTableConfiguration) -> None:  # noqa: D
+@given(builds(PydanticTimeSpine))
+def test_time_spine_table_configuration_protocol(time_spine: PydanticTimeSpine) -> None:  # noqa: D
     assert isinstance(time_spine, RuntimeCheckableTimeSpineConfiguration)
