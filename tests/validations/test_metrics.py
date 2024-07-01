@@ -43,7 +43,6 @@ from dbt_semantic_interfaces.type_enums import (
     TimeGranularity,
 )
 from dbt_semantic_interfaces.validations.metrics import (
-    CUMULATIVE_TYPE_PARAMS_SUPPORTED,
     ConversionMetricRule,
     CumulativeMetricRule,
     DefaultGranularityRule,
@@ -692,28 +691,18 @@ def test_cumulative_metrics() -> None:  # noqa: D
     )
 
     build_issues = validation_results.all_issues
-    if CUMULATIVE_TYPE_PARAMS_SUPPORTED:
-        assert len(build_issues) == 8
-        expected_substr1 = "Both window and grain_to_date set for cumulative metric. Please set one or the other."
-        expected_substr2 = "Got differing values for `window`"
-        expected_substr3 = "Got differing values for `grain_to_date`"
-        expected_substr4 = "Cumulative `type_params.window` field has been moved and will soon be deprecated."
-        expected_substr5 = "Cumulative `type_params.grain_to_date` field has been moved and will soon be deprecated."
-        missing_error_strings = set()
-        for expected_str in [expected_substr1, expected_substr2, expected_substr3, expected_substr4, expected_substr5]:
-            if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
-                missing_error_strings.add(expected_str)
-        assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
-        f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
-    else:
-        assert len(build_issues) == 1
-        expected_substr1 = "Both window and grain_to_date set for cumulative metric. Please set one or the other."
-        missing_error_strings = set()
-        for expected_str in [expected_substr1]:
-            if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
-                missing_error_strings.add(expected_str)
-        assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
-        f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
+    assert len(build_issues) == 8
+    expected_substr1 = "Both window and grain_to_date set for cumulative metric. Please set one or the other."
+    expected_substr2 = "Got differing values for `window`"
+    expected_substr3 = "Got differing values for `grain_to_date`"
+    expected_substr4 = "Cumulative `type_params.window` field has been moved and will soon be deprecated."
+    expected_substr5 = "Cumulative `type_params.grain_to_date` field has been moved and will soon be deprecated."
+    missing_error_strings = set()
+    for expected_str in [expected_substr1, expected_substr2, expected_substr3, expected_substr4, expected_substr5]:
+        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
+            missing_error_strings.add(expected_str)
+    assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
+    f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
 
 
 def test_default_granularity() -> None:
