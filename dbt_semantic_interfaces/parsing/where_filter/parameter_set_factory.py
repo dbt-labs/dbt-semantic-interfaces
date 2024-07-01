@@ -43,16 +43,16 @@ class ParameterSetFactory:
         """Gets called by Jinja when rendering {{ TimeDimension(...) }}."""
         group_by_item_name = DunderedNameFormatter.parse_name(time_dimension_name)
 
-        # metric_time is the only time dimension that does not have an associated primary entity, so the
-        # GroupByItemName would not have any entity links.
-        if is_metric_time_name(group_by_item_name.element_name):
-            if len(group_by_item_name.entity_links) != 0 or group_by_item_name.time_granularity is not None:
-                raise ParseWhereFilterException(
-                    f"Name is in an incorrect format: {time_dimension_name} "
-                    f"When referencing {METRIC_TIME_ELEMENT_NAME},"
-                    "the name should not have any dunders (double underscores, or __)."
-                )
+        # `metric_time` is the only time dimension that does not have an associated primary entity, so the
+        # name should not have any entity links.
+        if is_metric_time_name(group_by_item_name.element_name) and len(group_by_item_name.entity_links) != 0:
+            raise ParseWhereFilterException(
+                f"Name is in an incorrect format: '{time_dimension_name}'. There should be no entity links "
+                f"included when referencing {METRIC_TIME_ELEMENT_NAME}."
+            )
         else:
+            # Wait... why are we raising an exception if time_granularity is not None?
+            # Test this in YAML spec: if you add time_granularity to a where filter time dimension, does it error?
             if len(group_by_item_name.entity_links) != 1 or group_by_item_name.time_granularity is not None:
                 raise ParseWhereFilterException(
                     ParameterSetFactory._exception_message_for_incorrect_format(time_dimension_name)
@@ -93,7 +93,7 @@ class ParameterSetFactory:
         structured_dundered_name = DunderedNameFormatter.parse_name(entity_name)
         if structured_dundered_name.time_granularity is not None:
             raise ParseWhereFilterException(
-                f"Name is in an incorrect format: {repr(entity_name)}. " f"It should not contain a time grain suffix."
+                f"Name is in an incorrect format: {entity_name}. Entities should not use a time grain suffix."
             )
 
         additional_entity_path_elements = tuple(
@@ -115,5 +115,6 @@ class ParameterSetFactory:
             )
         return MetricCallParameterSet(
             metric_reference=MetricReference(element_name=metric_name),
+            # Should this parse to entities & dimensions for simplicity down the line?
             group_by=tuple([LinkableElementReference(element_name=group_by_name) for group_by_name in group_by]),
         )
