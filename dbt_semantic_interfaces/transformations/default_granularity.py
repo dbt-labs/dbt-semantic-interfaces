@@ -9,10 +9,10 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 from dbt_semantic_interfaces.protocols import ProtocolHint
 from dbt_semantic_interfaces.protocols.metric import Metric
-from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     MetricReference,
+    SemanticModelReference,
     TimeDimensionReference,
 )
 from dbt_semantic_interfaces.transformations.transform_rule import (
@@ -38,7 +38,7 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
                 continue
 
             default_granularity = TimeGranularity.DAY
-            seen_agg_time_dimensions: Set[Tuple[SemanticModel, TimeDimensionReference]] = set()
+            seen_agg_time_dimensions: Set[Tuple[SemanticModelReference, TimeDimensionReference]] = set()
 
             metric_index: Dict[MetricReference, Metric] = {
                 MetricReference(metric.name): metric for metric in semantic_manifest.metrics
@@ -59,7 +59,7 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
                         )
                         continue
                     # Time dims might have the same names across semantic models, so check model/name combo.
-                    semantic_model_with_agg_time_dimension = (semantic_model, agg_time_dimension_ref)
+                    semantic_model_with_agg_time_dimension = (semantic_model.reference, agg_time_dimension_ref)
                     if semantic_model_with_agg_time_dimension in seen_agg_time_dimensions:
                         continue
                     seen_agg_time_dimensions.add(semantic_model_with_agg_time_dimension)
