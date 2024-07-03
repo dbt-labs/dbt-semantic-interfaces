@@ -53,7 +53,7 @@ class ParameterSetFactory:
                     "the name should not have any dunders (double underscores, or __)."
                 )
         else:
-            if len(group_by_item_name.entity_links) != 1 or group_by_item_name.time_granularity is not None:
+            if len(group_by_item_name.entity_links) < 1 or group_by_item_name.time_granularity is not None:
                 raise ParseWhereFilterException(
                     ParameterSetFactory._exception_message_for_incorrect_format(time_dimension_name)
                 )
@@ -77,7 +77,7 @@ class ParameterSetFactory:
                 f"TimeDimension(...) or Dimension(...).grain(...)"
             )
 
-        if len(group_by_item_name.entity_links) != 1:
+        if len(group_by_item_name.entity_links) < 1:
             raise ParseWhereFilterException(ParameterSetFactory._exception_message_for_incorrect_format(dimension_name))
 
         return DimensionCallParameterSet(

@@ -195,6 +195,48 @@ def test_entity() -> None:  # noqa
     )
 
 
+def test_dimension_with_entity_path() -> None:  # noqa
+    for where in (
+        "{{ Dimension('entity_1__stuff', entity_path=['entity_0']) }} = 'x'",
+        "{{ Dimension('entity_0__entity_1__stuff') }} = 'x'",
+    ):
+        param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+        print(param_sets)
+        assert len(param_sets.dimension_call_parameter_sets) == 1
+        assert param_sets.dimension_call_parameter_sets[0].entity_path == (
+            EntityReference("entity_0"),
+            EntityReference("entity_1"),
+        )
+
+
+def test_time_dimension_with_entity_path() -> None:  # noqa
+    for where in (
+        "{{ TimeDimension('entity_1__ds', entity_path=['entity_0']) }} > '2023-01-01'",
+        "{{ TimeDimension('entity_0__entity_1__ds') }} > '2023-01-01'",
+    ):
+        param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+        print(param_sets)
+        assert len(param_sets.time_dimension_call_parameter_sets) == 1
+        assert param_sets.time_dimension_call_parameter_sets[0].entity_path == (
+            EntityReference("entity_0"),
+            EntityReference("entity_1"),
+        )
+
+
+def test_entity_with_entity_path() -> None:  # noqa
+    for where in (
+        "{{ Entity('entity_1__stuff', entity_path=['entity_0']) }} = 'x'",
+        "{{ Entity('entity_0__entity_1__stuff') }} = 'x'",
+    ):
+        param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+        print(param_sets)
+        assert len(param_sets.entity_call_parameter_sets) == 1
+        assert param_sets.entity_call_parameter_sets[0].entity_path == (
+            EntityReference("entity_0"),
+            EntityReference("entity_1"),
+        )
+
+
 def test_metric() -> None:  # noqa
     where = "{{ Metric('metric', group_by=['dimension']) }} = 10"
     param_sets = WhereFilterParser.parse_call_parameter_sets(where)
