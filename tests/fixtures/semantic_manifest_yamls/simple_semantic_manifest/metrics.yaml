@@ -548,7 +548,7 @@ metric:
   type_params:
     measure:
       name: listings
-  filter: "{{ Metric('bookings', group_by=['listing']) }} > 2"
+  filter: "{{ Metric('bookings', sup=['listing']) }} > 2"
 ---
 metric:
   name: "active_listings"
