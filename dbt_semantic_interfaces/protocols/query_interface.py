@@ -60,7 +60,7 @@ class QueryInterfaceTimeDimensionFactory(Protocol):
     def create(
         self,
         time_dimension_name: str,
-        time_granularity_name: str,
+        time_granularity_name: Optional[str] = None,
         entity_path: Sequence[str] = (),
         descending: Optional[bool] = None,
         date_part_name: Optional[str] = None,

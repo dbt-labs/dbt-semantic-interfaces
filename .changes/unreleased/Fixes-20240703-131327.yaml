@@ -1,0 +1,7 @@
+kind: Fixes
+body: Don't require time_granularity_name in QueryInterfaceTimeDimensionFactory. This
+  creates consistency with other interfaces.
+time: 2024-07-03T13:13:27.671224-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "306"
