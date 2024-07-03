@@ -65,3 +65,5 @@ def test_set_default_granularity_rule(  # noqa: D
             assert (
                 metric.default_granularity == configured_default_granularities[metric.name]
             ), f"Default granularity was unexpected changed during transformation for metric '{metric.name}"
+        if metric.name == "monthly_times_yearly_bookings":
+            assert metric.default_granularity == TimeGranularity.YEAR

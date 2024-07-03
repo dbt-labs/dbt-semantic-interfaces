@@ -1,13 +1,16 @@
-from typing import Set
+from typing import Dict, Set
 
 from typing_extensions import override
 
+from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.protocols import ProtocolHint
+from dbt_semantic_interfaces.protocols.metric import Metric
 from dbt_semantic_interfaces.references import (
     DimensionReference,
+    MetricReference,
     TimeDimensionReference,
 )
 from dbt_semantic_interfaces.transformations.transform_rule import (
@@ -32,8 +35,15 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
 
             default_granularity = TimeGranularity.DAY
             seen_agg_time_dimensions: Set[TimeDimensionReference] = set()
+
+            metric_index: Dict[MetricReference, Metric] = {
+                MetricReference(metric.name): metric for metric in semantic_manifest.metrics
+            }
+
             for semantic_model in semantic_manifest.semantic_models:
-                for measure_ref in set(metric.measure_references).intersection(semantic_model.measure_references):
+                for measure_ref in set(
+                    PydanticMetric.all_input_measures_for_metric(metric=metric, metric_index=metric_index)
+                ).intersection(semantic_model.measure_references):
                     try:
                         agg_time_dimension_ref = semantic_model.checked_agg_time_dimension_for_measure(measure_ref)
                     except AssertionError:
