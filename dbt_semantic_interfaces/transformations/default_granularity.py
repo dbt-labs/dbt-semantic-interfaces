@@ -1,4 +1,5 @@
-from typing import Dict, Set
+import logging
+from typing import Dict, Set, Tuple
 
 from typing_extensions import override
 
@@ -8,6 +9,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 from dbt_semantic_interfaces.protocols import ProtocolHint
 from dbt_semantic_interfaces.protocols.metric import Metric
+from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     MetricReference,
@@ -17,6 +19,8 @@ from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
 from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
+
+logger = logging.getLogger(__name__)
 
 
 class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
@@ -34,7 +38,7 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
                 continue
 
             default_granularity = TimeGranularity.DAY
-            seen_agg_time_dimensions: Set[TimeDimensionReference] = set()
+            seen_agg_time_dimensions: Set[Tuple[SemanticModel, TimeDimensionReference]] = set()
 
             metric_index: Dict[MetricReference, Metric] = {
                 MetricReference(metric.name): metric for metric in semantic_manifest.metrics
@@ -49,11 +53,16 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
                     except AssertionError:
                         # This indicates the agg_time_dimension is misconfigured, which will fail elsewhere.
                         # Do nothing here to avoid disrupting the validation process.
+                        logger.warning(
+                            f"Agg time dimension '{agg_time_dimension_ref.element_name}' not found in model."
+                            "This should raise a validation error elsewhere."
+                        )
                         continue
-                    # This will skip some!!
-                    if agg_time_dimension_ref in seen_agg_time_dimensions:
+                    # Time dims might have the same names across semantic models, so check model/name combo.
+                    semantic_model_with_agg_time_dimension = (semantic_model, agg_time_dimension_ref)
+                    if semantic_model_with_agg_time_dimension in seen_agg_time_dimensions:
                         continue
-                    seen_agg_time_dimensions.add(agg_time_dimension_ref)
+                    seen_agg_time_dimensions.add(semantic_model_with_agg_time_dimension)
                     dimension = semantic_model.get_dimension(DimensionReference(agg_time_dimension_ref.element_name))
                     if (
                         dimension.type_params

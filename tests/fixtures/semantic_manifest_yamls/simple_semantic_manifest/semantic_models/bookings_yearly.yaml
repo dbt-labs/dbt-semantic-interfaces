@@ -14,7 +14,7 @@ semantic_model:
     - name: yearly_bookings
       expr: "1"
       agg: sum
-      
+
   dimensions:
     - name: ds
       type: time
