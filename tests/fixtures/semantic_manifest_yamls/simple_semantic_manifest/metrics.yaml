@@ -559,3 +559,32 @@ metric:
     measure:
       name: listings
   filter: "{{ Metric('bookings', group_by=['listing', 'metric_time']) }} > 2"
+---
+metric:
+  name: monthly_bookings
+  description: bookings by month
+  label: bookings by month
+  type: simple
+  type_params:
+    measure:
+      name: monthly_bookings
+---
+metric:
+  name: yearly_bookings
+  description: bookings by year
+  label: bookings by year
+  type: simple
+  type_params:
+    measure:
+      name: yearly_bookings
+---
+metric:
+  name: monthly_times_yearly_bookings
+  description: monthly times yearly bookings
+  label: monthly times yearly bookings
+  type: derived
+  type_params:
+    expr: monthly_bookings * yearly_bookings
+    metrics:
+      - name: monthly_bookings
+      - name: yearly_bookings
