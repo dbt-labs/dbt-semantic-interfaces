@@ -50,6 +50,7 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
                         # This indicates the agg_time_dimension is misconfigured, which will fail elsewhere.
                         # Do nothing here to avoid disrupting the validation process.
                         continue
+                    # This will skip some!!
                     if agg_time_dimension_ref in seen_agg_time_dimensions:
                         continue
                     seen_agg_time_dimensions.add(agg_time_dimension_ref)
