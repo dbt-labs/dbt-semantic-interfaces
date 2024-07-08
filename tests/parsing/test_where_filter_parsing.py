@@ -10,11 +10,15 @@ This module tests the various combinations we might encounter in the wild, with 
 on inputs to parse_obj or parse_raw, as that is what the pydantic models will generally encounter.
 """
 
+from typing import Tuple, Union
+
 import pytest
 
 from dbt_semantic_interfaces.call_parameter_sets import (
+    DimensionCallParameterSet,
     EntityCallParameterSet,
     MetricCallParameterSet,
+    TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
@@ -28,8 +32,9 @@ from dbt_semantic_interfaces.references import (
     EntityReference,
     LinkableElementReference,
     MetricReference,
+    TimeDimensionReference,
 )
-from dbt_semantic_interfaces.type_enums.date_part import DatePart
+from dbt_semantic_interfaces.type_enums import DatePart, TimeGranularity
 
 __BOOLEAN_EXPRESSION__ = "1 > 0"
 
@@ -170,6 +175,36 @@ def test_dimension_date_part() -> None:  # noqa
     param_sets = WhereFilterParser.parse_call_parameter_sets(where)
     assert len(param_sets.time_dimension_call_parameter_sets) == 1
     assert param_sets.time_dimension_call_parameter_sets[0].date_part == DatePart.YEAR
+
+
+@pytest.mark.parametrize(
+    "where_and_expected_call_params",
+    [
+        (
+            "{{ TimeDimension('metric_time__week') }} > '2023-01-01'",
+            TimeDimensionCallParameterSet(
+                time_dimension_reference=TimeDimensionReference("metric_time"),
+                entity_path=(),
+                time_granularity=TimeGranularity.WEEK,
+            ),
+        ),
+        (
+            "{{ TimeDimension('metric_time', time_granularity_name='week') }} > '2023-01-01'",
+            TimeDimensionCallParameterSet(
+                time_dimension_reference=TimeDimensionReference("metric_time"),
+                entity_path=(),
+                time_granularity=TimeGranularity.WEEK,
+            ),
+        ),
+    ],
+)
+def test_time_dimension_grain(  # noqa
+    where_and_expected_call_params: Tuple[str, Union[TimeDimensionCallParameterSet, DimensionCallParameterSet]]
+) -> None:
+    where, expected_call_params = where_and_expected_call_params
+    param_sets = WhereFilterParser.parse_call_parameter_sets(where)
+    assert len(param_sets.time_dimension_call_parameter_sets) == 1
+    assert param_sets.time_dimension_call_parameter_sets[0] == expected_call_params
 
 
 def test_entity_without_primary_entity_prefix() -> None:  # noqa

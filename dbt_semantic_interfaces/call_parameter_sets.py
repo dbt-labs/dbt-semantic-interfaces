@@ -16,15 +16,16 @@ from dbt_semantic_interfaces.type_enums.date_part import DatePart
 
 @dataclass(frozen=True)
 class DimensionCallParameterSet:
-    """When 'Dimension(...)' is used in the Jinja template of the where filter, the parameters to that call."""
+    """When 'Dimension(...)' is used in a Jinja template, the parameters to that call."""
 
     entity_path: Tuple[EntityReference, ...]
     dimension_reference: DimensionReference
+    # TODO: MFS Jinja allows grain and date part in Dimension(...). Should we allow them here, too, for consistency?
 
 
 @dataclass(frozen=True)
 class TimeDimensionCallParameterSet:
-    """When 'TimeDimension(...)' is used in the Jinja template of the where filter, the parameters to that call."""
+    """When 'TimeDimension(...)' is used in the Jinja template, the parameters to that call."""
 
     entity_path: Tuple[EntityReference, ...]
     time_dimension_reference: TimeDimensionReference
@@ -34,7 +35,7 @@ class TimeDimensionCallParameterSet:
 
 @dataclass(frozen=True)
 class EntityCallParameterSet:
-    """When 'Entity(...)' is used in the Jinja template of the where filter, the parameters to that call."""
+    """When 'Entity(...)' is used in the Jinja template, the parameters to that call."""
 
     entity_path: Tuple[EntityReference, ...]
     entity_reference: EntityReference

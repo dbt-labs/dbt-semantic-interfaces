@@ -96,6 +96,25 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
         )
     )
 
+    parse_result = PydanticWhereFilter(
+        where_sql_template=(
+            """{{ TimeDimension('user__created_at__month', entity_path=['listing']) }} = '2020-01-01'"""
+        )
+    ).call_parameter_sets
+
+    assert parse_result == FilterCallParameterSets(
+        time_dimension_call_parameter_sets=(
+            TimeDimensionCallParameterSet(
+                time_dimension_reference=TimeDimensionReference(element_name="created_at"),
+                entity_path=(
+                    EntityReference("listing"),
+                    EntityReference("user"),
+                ),
+                time_granularity=TimeGranularity.MONTH,
+            ),
+        )
+    )
+
 
 def test_extract_metric_time_dimension_call_parameter_sets() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
@@ -170,14 +189,6 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
         PydanticWhereFilter(where_sql_template=("{{ Metric('bookings') }} > 2")).call_parameter_sets
 
 
-def test_metric_time_in_dimension_call_error() -> None:  # noqa: D
-    with pytest.raises(ParseWhereFilterException, match="so it should be referenced using TimeDimension"):
-        assert (
-            PydanticWhereFilter(where_sql_template="{{ Dimension('metric_time') }} > '2020-01-01'").call_parameter_sets
-            is not None
-        )
-
-
 def test_invalid_entity_name_error() -> None:
     """Test to ensure we throw an error if an entity name is invalid."""
     bad_entity_filter = PydanticWhereFilter(where_sql_template="{{ Entity('is_food_order__day' )}}")
@@ -243,14 +254,8 @@ def test_where_filter_intersection_error_collection() -> None:
 
     error_string = str(exc_info.value)
     # These are a little too implementation-specific, but it demonstrates that we are collecting the errors we find.
-    assert (
-        "Name is in an incorrect format: 'order_id__is_food_order__day'. It should not contain a time grain "
-        "suffix." in error_string
-    )
-    assert (
-        "Name is in an incorrect format: 'order_id__order_time__month'. It should be of the form: "
-        "<primary entity name>__<dimension_name>" in error_string
-    )
+    assert "Received different grains in `time_dimension_name` parameter" in error_string
+    assert "It should not contain a time grain suffix." in error_string
 
 
 def test_time_dimension_without_granularity() -> None:  # noqa: D
