@@ -8,10 +8,7 @@ from dbt_semantic_interfaces.call_parameter_sets import (
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.naming.dundered import DunderedNameFormatter
-from dbt_semantic_interfaces.naming.keywords import (
-    METRIC_TIME_ELEMENT_NAME,
-    is_metric_time_name,
-)
+from dbt_semantic_interfaces.naming.keywords import is_metric_time_name
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -42,28 +39,24 @@ class ParameterSetFactory:
     ) -> TimeDimensionCallParameterSet:
         """Gets called by Jinja when rendering {{ TimeDimension(...) }}."""
         group_by_item_name = DunderedNameFormatter.parse_name(time_dimension_name)
-
-        # metric_time is the only time dimension that does not have an associated primary entity, so the
-        # GroupByItemName would not have any entity links.
-        if is_metric_time_name(group_by_item_name.element_name):
-            if len(group_by_item_name.entity_links) != 0 or group_by_item_name.time_granularity is not None:
-                raise ParseWhereFilterException(
-                    f"Name is in an incorrect format: {time_dimension_name} "
-                    f"When referencing {METRIC_TIME_ELEMENT_NAME},"
-                    "the name should not have any dunders (double underscores, or __)."
-                )
-        else:
-            if len(group_by_item_name.entity_links) != 1 or group_by_item_name.time_granularity is not None:
-                raise ParseWhereFilterException(
-                    ParameterSetFactory._exception_message_for_incorrect_format(time_dimension_name)
-                )
+        if len(group_by_item_name.entity_links) != 1 and not is_metric_time_name(group_by_item_name.element_name):
+            raise ParseWhereFilterException(
+                ParameterSetFactory._exception_message_for_incorrect_format(time_dimension_name)
+            )
+        grain_parsed_from_name = group_by_item_name.time_granularity
+        grain_from_param = TimeGranularity(time_granularity_name) if time_granularity_name else None
+        if grain_parsed_from_name and grain_from_param and grain_from_param != grain_parsed_from_name:
+            raise ParseWhereFilterException(
+                f"Received different grains in `time_dimension_name` parameter ('{time_dimension_name}') "
+                f"and `time_granularity_name` parameter ('{time_granularity_name}')."
+            )
 
         return TimeDimensionCallParameterSet(
             time_dimension_reference=TimeDimensionReference(element_name=group_by_item_name.element_name),
             entity_path=(
                 tuple(EntityReference(element_name=arg) for arg in entity_path) + group_by_item_name.entity_links
             ),
-            time_granularity=TimeGranularity(time_granularity_name) if time_granularity_name is not None else None,
+            time_granularity=grain_parsed_from_name or grain_from_param,
             date_part=DatePart(date_part_name.lower()) if date_part_name else None,
         )
 
@@ -71,13 +64,8 @@ class ParameterSetFactory:
     def create_dimension(dimension_name: str, entity_path: Sequence[str] = ()) -> DimensionCallParameterSet:
         """Gets called by Jinja when rendering {{ Dimension(...) }}."""
         group_by_item_name = DunderedNameFormatter.parse_name(dimension_name)
-        if is_metric_time_name(group_by_item_name.element_name):
-            raise ParseWhereFilterException(
-                f"{METRIC_TIME_ELEMENT_NAME} is a time dimension, so it should be referenced using "
-                f"TimeDimension(...) or Dimension(...).grain(...)"
-            )
 
-        if len(group_by_item_name.entity_links) != 1:
+        if len(group_by_item_name.entity_links) != 1 and not is_metric_time_name(group_by_item_name.element_name):
             raise ParseWhereFilterException(ParameterSetFactory._exception_message_for_incorrect_format(dimension_name))
 
         return DimensionCallParameterSet(
