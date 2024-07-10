@@ -2,14 +2,19 @@ from __future__ import annotations
 
 import dataclasses
 import datetime
+import inspect
 import logging
+from abc import ABC
 from builtins import NameError
 from dataclasses import dataclass
 from enum import Enum
 from typing import (
     Any,
+    ClassVar,
     Dict,
     Optional,
+    Sequence,
+    Set,
     Tuple,
     Type,
     TypeVar,
@@ -141,25 +146,47 @@ def _get_type_parameter_for_sequence_like_tuple_type(field_type: Type) -> Type:
     return args[0]
 
 
-class SerializableDataclass:
-    """Describes a dataclass that can be serialized using DataclassSerializer.
+class SerializableDataclass(ABC):
+    """Describes a dataclass that can be serialized using `DataclassSerializer`.
 
-    Previously, Pydnatic has been used for defining objects as it provides built in support for serialization and
+    Previously, Pydantic has been used for defining objects as it provides built in support for serialization and
     deserialization. However, Pydantic object is slow compared to dataclass initialization, with tests showing 10x-100x
     slower performance. This is an issue if many objects are created, which can happen in during plan generation. Using
-    the BaseModel.construct() is still not as fast as dataclass initiaization and it also makes for an awkward developer
-    interface. Because of this, MF implements a simple custom serializer / deserializer to work with the built-in
-    Python dataclass.
+    the BaseModel.construct() is still not as fast as dataclass initialization, and it also makes for an awkward
+    developer interface. Because of this, MF implements a simple custom serializer / deserializer to work with the
+    built-in Python dataclass.
 
     The dataclass must have concrete types for all fields and not all types are supported. Please see implementation
     details in DataclassSerializer. Not adding post_init checks as there have been previous issues with slow object
     initialization.
-
-    This is a concrete object as MyPy currently throws a type error if a Python dataclass is defined with an abstract
-    parent class.
     """
 
-    pass
+    # Contains all known implementing subclasses.
+    _concrete_subclass_registry: ClassVar[Optional[Set[Type[SerializableDataclass]]]] = None
+
+    @classmethod
+    def concrete_subclasses_for_testing(cls) -> Sequence[Type[SerializableDataclass]]:
+        """Returns subclasses that implement this interface.
+
+        This is intended to be used in tests to verify the ability to serialize the class.
+        """
+        return sorted(
+            cls._concrete_subclass_registry or (), key=lambda class_type: (class_type.__module__, class_type.__name__)
+        )
+
+    def __init_subclass__(cls, **kwargs) -> None:
+        """Adds the implementing class to the registry and check for non-concrete fields.
+
+        It would be helpful to check that the fields of the dataclass are concrete fields, but that would need to be
+        done after class initialization, and checking in `__post_init__` adds significant overhead.
+        """
+        super().__init_subclass__(**kwargs)
+
+        if SerializableDataclass._concrete_subclass_registry is None:
+            SerializableDataclass._concrete_subclass_registry = set()
+
+        if not inspect.isabstract(cls):
+            SerializableDataclass._concrete_subclass_registry.add(cls)
 
 
 SerializableDataclassT = TypeVar("SerializableDataclassT", bound=SerializableDataclass)
