@@ -45,8 +45,8 @@ from dbt_semantic_interfaces.type_enums import (
 from dbt_semantic_interfaces.validations.metrics import (
     ConversionMetricRule,
     CumulativeMetricRule,
-    DefaultGranularityRule,
     DerivedMetricRule,
+    MetricTimeGranularityRule,
     WhereFiltersAreParseable,
 )
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
@@ -705,13 +705,13 @@ def test_cumulative_metrics() -> None:  # noqa: D
     f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
 
 
-def test_default_granularity() -> None:
+def test_time_granularity() -> None:
     """Test that default grain is validated appropriately."""
     week_measure_name = "foo"
     month_measure_name = "boo"
     week_time_dim_name = "ds__week"
     month_time_dim_name = "ds__month"
-    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([DefaultGranularityRule()])
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([MetricTimeGranularityRule()])
     validation_results = model_validator.validate_semantic_manifest(
         PydanticSemanticManifest(
             semantic_models=[
@@ -742,66 +742,62 @@ def test_default_granularity() -> None:
             metrics=[
                 # Simple metrics
                 metric_with_guaranteed_meta(
-                    name="month_metric_with_no_default_granularity_set",
+                    name="month_metric_with_no_time_granularity_set",
                     type=MetricType.SIMPLE,
                     type_params=PydanticMetricTypeParams(
                         measure=PydanticMetricInputMeasure(name=month_measure_name),
                     ),
                 ),
                 metric_with_guaranteed_meta(
-                    name="week_metric_with_valid_default_granularity",
+                    name="week_metric_with_valid_time_granularity",
                     type=MetricType.SIMPLE,
                     type_params=PydanticMetricTypeParams(
                         measure=PydanticMetricInputMeasure(name=week_measure_name),
                     ),
-                    default_granularity=TimeGranularity.MONTH,
+                    time_granularity=TimeGranularity.MONTH,
                 ),
                 metric_with_guaranteed_meta(
-                    name="month_metric_with_invalid_default_granularity",
+                    name="month_metric_with_invalid_time_granularity",
                     type=MetricType.SIMPLE,
                     type_params=PydanticMetricTypeParams(
                         measure=PydanticMetricInputMeasure(name=month_measure_name),
                     ),
-                    default_granularity=TimeGranularity.WEEK,
+                    time_granularity=TimeGranularity.WEEK,
                 ),
                 # Derived metrics
                 metric_with_guaranteed_meta(
-                    name="derived_metric_with_no_default_granularity_set",
+                    name="derived_metric_with_no_time_granularity_set",
                     type=MetricType.DERIVED,
                     type_params=PydanticMetricTypeParams(
                         metrics=[
-                            PydanticMetricInput(name="week_metric_with_valid_default_granularity"),
+                            PydanticMetricInput(name="week_metric_with_valid_time_granularity"),
                         ],
-                        expr="week_metric_with_valid_default_granularity + 1",
+                        expr="week_metric_with_valid_time_granularity + 1",
                     ),
                 ),
                 metric_with_guaranteed_meta(
-                    name="derived_metric_with_valid_default_granularity",
+                    name="derived_metric_with_valid_time_granularity",
                     type=MetricType.DERIVED,
                     type_params=PydanticMetricTypeParams(
                         metrics=[
-                            PydanticMetricInput(name="week_metric_with_valid_default_granularity"),
-                            PydanticMetricInput(name="month_metric_with_no_default_granularity_set"),
+                            PydanticMetricInput(name="week_metric_with_valid_time_granularity"),
+                            PydanticMetricInput(name="month_metric_with_no_time_granularity_set"),
                         ],
-                        expr=(
-                            "week_metric_with_valid_default_granularity + month_metric_with_no_default_granularity_set"
-                        ),
+                        expr=("week_metric_with_valid_time_granularity + month_metric_with_no_time_granularity_set"),
                     ),
-                    default_granularity=TimeGranularity.YEAR,
+                    time_granularity=TimeGranularity.YEAR,
                 ),
                 metric_with_guaranteed_meta(
-                    name="derived_metric_with_invalid_default_granularity",
+                    name="derived_metric_with_invalid_time_granularity",
                     type=MetricType.DERIVED,
                     type_params=PydanticMetricTypeParams(
                         metrics=[
-                            PydanticMetricInput(name="week_metric_with_valid_default_granularity"),
-                            PydanticMetricInput(name="month_metric_with_no_default_granularity_set"),
+                            PydanticMetricInput(name="week_metric_with_valid_time_granularity"),
+                            PydanticMetricInput(name="month_metric_with_no_time_granularity_set"),
                         ],
-                        expr=(
-                            "week_metric_with_valid_default_granularity + month_metric_with_no_default_granularity_set"
-                        ),
+                        expr=("week_metric_with_valid_time_granularity + month_metric_with_no_time_granularity_set"),
                     ),
-                    default_granularity=TimeGranularity.DAY,
+                    time_granularity=TimeGranularity.DAY,
                 ),
             ],
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
@@ -810,12 +806,8 @@ def test_default_granularity() -> None:
 
     build_issues = validation_results.all_issues
     assert len(build_issues) == 2
-    expected_substr1 = (
-        "`default_granularity` for metric 'month_metric_with_invalid_default_granularity' must be >= MONTH."
-    )
-    expected_substr2 = (
-        "`default_granularity` for metric 'derived_metric_with_invalid_default_granularity' must be >= MONTH."
-    )
+    expected_substr1 = "`time_granularity` for metric 'month_metric_with_invalid_time_granularity' must be >= MONTH."
+    expected_substr2 = "`time_granularity` for metric 'derived_metric_with_invalid_time_granularity' must be >= MONTH."
     missing_error_strings = set()
     for expected_str in [expected_substr1, expected_substr2]:
         if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):

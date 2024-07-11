@@ -458,7 +458,7 @@
                 "config": {
                     "$ref": "#/definitions/metric_config_schema"
                 },
-                "default_granularity": {
+                "time_granularity": {
                     "enum": [
                         "NANOSECOND",
                         "MICROSECOND",

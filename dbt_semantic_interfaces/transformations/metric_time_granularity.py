@@ -23,8 +23,8 @@ from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 logger = logging.getLogger(__name__)
 
 
-class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
-    """If default_granularity is not set for a metric, set it to DAY if available, else the smallest available grain."""
+class SetMetricTimeGranularityRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
+    """If time_granularity is not set for a metric, set it to DAY if available, else the smallest available grain."""
 
     @override
     def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
@@ -32,12 +32,12 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
 
     @staticmethod
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:
-        """For each metric, set default_granularity to DAY or smallest granularity supported by all agg_time_dims."""
+        """For each metric, set time_granularity to DAY or smallest granularity supported by all agg_time_dims."""
         for metric in semantic_manifest.metrics:
-            if metric.default_granularity:
+            if metric.time_granularity:
                 continue
 
-            default_granularity = TimeGranularity.DAY
+            time_granularity = TimeGranularity.DAY
             seen_agg_time_dimensions: Set[Tuple[SemanticModelReference, TimeDimensionReference]] = set()
 
             metric_index: Dict[MetricReference, Metric] = {
@@ -66,10 +66,10 @@ class SetDefaultGranularityRule(ProtocolHint[SemanticManifestTransformRule[Pydan
                     dimension = semantic_model.get_dimension(DimensionReference(agg_time_dimension_ref.element_name))
                     if (
                         dimension.type_params
-                        and dimension.type_params.time_granularity.to_int() > default_granularity.to_int()
+                        and dimension.type_params.time_granularity.to_int() > time_granularity.to_int()
                     ):
-                        default_granularity = dimension.type_params.time_granularity
+                        time_granularity = dimension.type_params.time_granularity
 
-            metric.default_granularity = default_granularity
+            metric.time_granularity = time_granularity
 
         return semantic_manifest
