@@ -458,7 +458,20 @@
                 "config": {
                     "$ref": "#/definitions/metric_config_schema"
                 },
-                "default_granularity": {
+                "description": {
+                    "type": "string"
+                },
+                "filter": {
+                    "$ref": "#/definitions/filter_schema"
+                },
+                "label": {
+                    "type": "string"
+                },
+                "name": {
+                    "pattern": "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$",
+                    "type": "string"
+                },
+                "time_granularity": {
                     "enum": [
                         "NANOSECOND",
                         "MICROSECOND",
@@ -483,19 +496,6 @@
                         "quarter",
                         "year"
                     ]
-                },
-                "description": {
-                    "type": "string"
-                },
-                "filter": {
-                    "$ref": "#/definitions/filter_schema"
-                },
-                "label": {
-                    "type": "string"
-                },
-                "name": {
-                    "pattern": "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$",
-                    "type": "string"
                 },
                 "type": {
                     "enum": [

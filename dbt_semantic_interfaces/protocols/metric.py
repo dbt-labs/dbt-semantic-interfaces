@@ -328,7 +328,7 @@ class Metric(Protocol):
 
     @property
     @abstractmethod
-    def default_granularity(self) -> Optional[TimeGranularity]:
+    def time_granularity(self) -> Optional[TimeGranularity]:
         """Default grain used for the metric.
 
         This will be used in a couple of circumstances:

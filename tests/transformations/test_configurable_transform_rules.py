@@ -3,8 +3,8 @@ from typing import Dict
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.transformations.default_granularity import (
-    SetDefaultGranularityRule,
+from dbt_semantic_interfaces.transformations.metric_time_granularity import (
+    SetMetricTimeGranularityRule,
 )
 from dbt_semantic_interfaces.transformations.semantic_manifest_transformer import (
     PydanticSemanticManifestTransformer,
@@ -40,30 +40,30 @@ def test_can_configure_model_transform_rules(  # noqa: D
     assert all(len(x.name) == 3 for x in transformed_model.semantic_models)
 
 
-def test_set_default_granularity_rule(  # noqa: D
+def test_set_time_granularity_rule(  # noqa: D
     simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
     pre_model = simple_semantic_manifest__with_primary_transforms
 
-    metric_exists_without_default_granularity = False
+    metric_exists_without_time_granularity = False
     configured_default_granularities: Dict[str, TimeGranularity] = {}
     for metric in pre_model.metrics:
-        if metric.default_granularity:
-            configured_default_granularities[metric.name] = metric.default_granularity
-            metric_exists_without_default_granularity = True
+        if metric.time_granularity:
+            configured_default_granularities[metric.name] = metric.time_granularity
+            metric_exists_without_time_granularity = True
 
     assert (
-        pre_model.metrics and metric_exists_without_default_granularity
-    ), "If there are no metrics without a configured default_granularity, this tests nothing."
+        pre_model.metrics and metric_exists_without_time_granularity
+    ), "If there are no metrics without a configured time_granularity, this tests nothing."
 
-    rules = [SetDefaultGranularityRule()]
+    rules = [SetMetricTimeGranularityRule()]
     transformed_model = PydanticSemanticManifestTransformer.transform(pre_model, ordered_rule_sequences=(rules,))
 
     for metric in transformed_model.metrics:
-        assert metric.default_granularity, f"No default_granularity set in transformation for metric '{metric.name}'"
+        assert metric.time_granularity, f"No time_granularity set in transformation for metric '{metric.name}'"
         if metric.name in configured_default_granularities:
             assert (
-                metric.default_granularity == configured_default_granularities[metric.name]
-            ), f"Default granularity was unexpected changed during transformation for metric '{metric.name}"
+                metric.time_granularity == configured_default_granularities[metric.name]
+            ), f"Time granularity was unexpected changed during transformation for metric '{metric.name}"
         if metric.name == "monthly_times_yearly_bookings":
-            assert metric.default_granularity == TimeGranularity.YEAR
+            assert metric.time_granularity == TimeGranularity.YEAR

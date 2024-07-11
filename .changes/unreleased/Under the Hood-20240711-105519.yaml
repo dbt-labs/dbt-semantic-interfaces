@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Rename Metric.default_granularity field to Metric.time_granularity.
+time: 2024-07-11T10:55:19.887705-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "290"

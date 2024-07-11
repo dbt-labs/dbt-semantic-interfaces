@@ -154,7 +154,7 @@ metric:
   name: "trailing_2_months_revenue"
   description: "trailing_2_months_revenue"
   type: cumulative
-  default_granularity: month
+  time_granularity: month
   type_params:
     measure:
       name: txn_revenue
