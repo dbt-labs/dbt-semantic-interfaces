@@ -1,5 +1,5 @@
 import traceback
-from typing import Dict, Generic, List, Optional, Sequence
+from typing import Dict, Generic, List, Optional, Sequence, Set
 
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.metric import (
@@ -42,11 +42,15 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     """Checks that cumulative sum metrics are configured properly."""
 
     @staticmethod
-    @validate_safely(whats_being_done="checking that the params of metric are valid if it is a cumulative sum metric")
-    def _validate_cumulative_sum_metric_params(metric: Metric) -> List[ValidationIssue]:
+    @validate_safely(whats_being_done="running model validation ensuring cumulative sum metrics are valid")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        if metric.type == MetricType.CUMULATIVE:
+        metrics_using_old_params: Set[str] = set()
+        for metric in semantic_manifest.metrics or []:
+            if metric.type != MetricType.CUMULATIVE:
+                continue
+
             metric_context = MetricContext(
                 file_context=FileContext.from_metadata(metadata=metric.metadata),
                 metric=MetricModelReference(metric_name=metric.name),
@@ -56,15 +60,8 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 type_params_field_value = getattr(metric.type_params, field)
                 # Warn that the old type_params structure has been deprecated.
                 if type_params_field_value:
-                    issues.append(
-                        ValidationWarning(
-                            context=metric_context,
-                            message=(
-                                f"Cumulative `type_params.{field}` field has been moved and will soon be deprecated. "
-                                f"Please nest that value under `type_params.cumulative_type_params.{field}`."
-                            ),
-                        )
-                    )
+                    metrics_using_old_params.add(metric.name)
+
                 # Warn that window or grain_to_date is mismatched across params.
                 cumulative_type_params_field_value = (
                     getattr(metric.type_params.cumulative_type_params, field)
@@ -116,16 +113,19 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                             extra_detail="".join(traceback.format_tb(e.__traceback__)),
                         )
                     )
-
-        return issues
-
-    @staticmethod
-    @validate_safely(whats_being_done="running model validation ensuring cumulative sum metrics are valid")
-    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
-        issues: List[ValidationIssue] = []
-
-        for metric in semantic_manifest.metrics or []:
-            issues += CumulativeMetricRule._validate_cumulative_sum_metric_params(metric=metric)
+        if metrics_using_old_params:
+            issues.append(
+                ValidationWarning(
+                    context=metric_context,
+                    message=(
+                        "Cumulative fields `type_params.window` and `type_params.grain_to_date` have been moved and "
+                        "will soon be deprecated. Please nest those values under "
+                        "`type_params.cumulative_type_params.window` and "
+                        "`type_params.cumulative_type_params.grain_to_date`. Metrics using old fields: "
+                        f"{sorted(metrics_using_old_params)}"
+                    ),
+                )
+            )
 
         return issues
 
