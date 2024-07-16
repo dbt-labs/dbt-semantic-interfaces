@@ -35,7 +35,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
-from dbt_semantic_interfaces.implementations.time_spine_table_deprecated import (
+from dbt_semantic_interfaces.implementations.time_spine_deprecated import (
     PydanticTimeSpineTableConfiguration,
 )
 from dbt_semantic_interfaces.protocols import Dimension as DimensionProtocol
