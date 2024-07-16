@@ -347,6 +347,29 @@ time_spine_table_configuration_schema = {
     "required": ["location", "column_name", "grain"],
 }
 
+time_spine_primary_column_schema = {
+    "$id": "time_spine_primary_column_schema",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "time_granularity": {"enum": time_granularity_values},
+    },
+    "additionalProperties": False,
+    "required": ["name", "time_granularity"],
+}
+
+time_spine_schema = {
+    "$id": "time_spine_schema",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+        "node_relation": {"$ref": "node_relation_schema"},
+        "primary_column": {"$ref": "time_spine_primary_column_schema"},
+    },
+    "additionalProperties": False,
+    "required": ["name", "node_relation", "primary_column"],
+}
+
 
 project_configuration_schema = {
     "$id": "project_configuration_schema",
@@ -356,9 +379,13 @@ project_configuration_schema = {
             "type": "array",
             "items": {"$ref": "time_spine_table_configuration_schema"},
         },
+        "time_spines": {
+            "type": "array",
+            "items": {"$ref": "time_spine_schema"},
+        },
     },
     "additionalProperties": False,
-    "required": ["time_spine_table_configurations"],
+    "required": [],
 }
 
 export_config_schema = {
@@ -475,6 +502,8 @@ schema_store = {
     node_relation_schema["$id"]: node_relation_schema,
     semantic_model_defaults_schema["$id"]: semantic_model_defaults_schema,
     time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
+    time_spine_schema["$id"]: time_spine_schema,
+    time_spine_primary_column_schema["$id"]: time_spine_primary_column_schema,
     export_schema["$id"]: export_schema,
     export_config_schema["$id"]: export_config_schema,
     saved_query_query_params_schema["$id"]: saved_query_query_params_schema,

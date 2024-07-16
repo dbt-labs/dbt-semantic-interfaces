@@ -14,6 +14,7 @@ from dbt_semantic_interfaces.implementations.semantic_version import (
     UNKNOWN_VERSION_SENTINEL,
     PydanticSemanticVersion,
 )
+from dbt_semantic_interfaces.implementations.time_spine import PydanticTimeSpine
 from dbt_semantic_interfaces.implementations.time_spine_table_configuration import (
     PydanticTimeSpineTableConfiguration,
 )
@@ -32,6 +33,7 @@ class PydanticProjectConfiguration(HashableBaseModel, ModelWithMetadataParsing, 
     time_spine_table_configurations: List[PydanticTimeSpineTableConfiguration]
     metadata: Optional[PydanticMetadata] = None
     dsi_package_version: PydanticSemanticVersion = UNKNOWN_VERSION_SENTINEL
+    time_spines: List[PydanticTimeSpine] = []
 
     @validator("dsi_package_version", always=True)
     @classmethod

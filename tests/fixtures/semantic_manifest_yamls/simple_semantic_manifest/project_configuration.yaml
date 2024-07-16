@@ -4,3 +4,11 @@ project_configuration:
     - location: example_schema.example_table
       column_name: ds
       grain: day
+  time_spines:
+    - name: day_time_spine
+      node_relation:
+        schema_name: stuff
+        alias: day_time_spine
+      primary_column:
+        name: ds_day
+        time_granularity: day

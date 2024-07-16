@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import abstractmethod
 from typing import Protocol
 
@@ -5,10 +7,10 @@ from dbt_semantic_interfaces.type_enums import TimeGranularity
 
 
 class TimeSpineTableConfiguration(Protocol):
-    """Describes the configuration for a time spine table.
+    """Legacy time spine class that will eventually be deprecated in favor of TimeSpine.
 
+    Describes the configuration for a time spine table.
     A time spine table is a table with a single column containing dates at a specific grain.
-
     e.g. with day granularity:
     ...
     2020-01-01
