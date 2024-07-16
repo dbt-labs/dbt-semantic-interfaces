@@ -7,6 +7,7 @@ from dbt_semantic_interfaces.protocols.dimension import Dimension
 from dbt_semantic_interfaces.protocols.entity import Entity
 from dbt_semantic_interfaces.protocols.measure import Measure
 from dbt_semantic_interfaces.protocols.metadata import Metadata
+from dbt_semantic_interfaces.protocols.node_relation import NodeRelation
 from dbt_semantic_interfaces.references import (
     EntityReference,
     LinkableElementReference,
@@ -14,30 +15,6 @@ from dbt_semantic_interfaces.references import (
     SemanticModelReference,
     TimeDimensionReference,
 )
-
-
-class NodeRelation(Protocol):
-    """Path object to where the data should be."""
-
-    @property
-    @abstractmethod
-    def alias(self) -> str:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
-    def schema_name(self) -> str:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
-    def database(self) -> Optional[str]:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
-    def relation_name(self) -> str:  # noqa: D
-        pass
 
 
 class SemanticModelDefaults(Protocol):

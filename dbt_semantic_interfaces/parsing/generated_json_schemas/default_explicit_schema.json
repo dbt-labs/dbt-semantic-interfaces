@@ -621,11 +621,15 @@
                         "$ref": "#/definitions/time_spine_table_configuration_schema"
                     },
                     "type": "array"
+                },
+                "time_spines": {
+                    "items": {
+                        "$ref": "#/definitions/time_spine_schema"
+                    },
+                    "type": "array"
                 }
             },
-            "required": [
-                "time_spine_table_configurations"
-            ],
+            "required": [],
             "type": "object"
         },
         "saved_query_query_params_schema": {
@@ -753,6 +757,67 @@
             },
             "required": [
                 "name"
+            ],
+            "type": "object"
+        },
+        "time_spine_primary_column_schema": {
+            "$id": "time_spine_primary_column_schema",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "time_granularity": {
+                    "enum": [
+                        "NANOSECOND",
+                        "MICROSECOND",
+                        "MILLISECOND",
+                        "SECOND",
+                        "MINUTE",
+                        "HOUR",
+                        "DAY",
+                        "WEEK",
+                        "MONTH",
+                        "QUARTER",
+                        "YEAR",
+                        "nanosecond",
+                        "microsecond",
+                        "millisecond",
+                        "second",
+                        "minute",
+                        "hour",
+                        "day",
+                        "week",
+                        "month",
+                        "quarter",
+                        "year"
+                    ]
+                }
+            },
+            "required": [
+                "name",
+                "time_granularity"
+            ],
+            "type": "object"
+        },
+        "time_spine_schema": {
+            "$id": "time_spine_schema",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "node_relation": {
+                    "$ref": "#/definitions/node_relation_schema"
+                },
+                "primary_column": {
+                    "$ref": "#/definitions/time_spine_primary_column_schema"
+                }
+            },
+            "required": [
+                "name",
+                "node_relation",
+                "primary_column"
             ],
             "type": "object"
         },

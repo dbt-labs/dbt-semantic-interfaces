@@ -1,0 +1,6 @@
+kind: Features
+body: Support for configuring multiple time spines at different granularities.
+time: 2024-07-16T10:42:15.662883-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "280"

@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.type_enums import TimeGranularity
 class PydanticTimeSpineTableConfiguration(
     HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[TimeSpineTableConfiguration]
 ):
-    """Pydantic implementation of SemanticVersion."""
+    """Legacy Pydantic implementation of SemanticVersion. In the process of deprecation."""
 
     @override
     def _implements_protocol(self) -> TimeSpineTableConfiguration:
