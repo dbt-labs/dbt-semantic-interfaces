@@ -18,6 +18,7 @@ from dbt_semantic_interfaces.protocols import (
     SemanticModelConfig,
     SemanticModelDefaults,
 )
+from dbt_semantic_interfaces.protocols.semantic_model import NodeRelation
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -29,13 +30,17 @@ from dbt_semantic_interfaces.references import (
 from dsi_pydantic_shim import Field, validator
 
 
-class NodeRelation(HashableBaseModel):
+class PydanticNodeRelation(HashableBaseModel, ProtocolHint[NodeRelation]):
     """Path object to where the data should be."""
 
     alias: str
     schema_name: str
     database: Optional[str] = None
     relation_name: str = ""
+
+    @override
+    def _implements_protocol(self) -> NodeRelation:  # noqa: D
+        return self
 
     @validator("relation_name", always=True)
     @classmethod
@@ -58,12 +63,12 @@ class NodeRelation(HashableBaseModel):
         return value
 
     @staticmethod
-    def from_string(sql_str: str) -> NodeRelation:  # noqa: D
+    def from_string(sql_str: str) -> PydanticNodeRelation:  # noqa: D
         sql_str_split = sql_str.split(".")
         if len(sql_str_split) == 2:
-            return NodeRelation(schema_name=sql_str_split[0], alias=sql_str_split[1])
+            return PydanticNodeRelation(schema_name=sql_str_split[0], alias=sql_str_split[1])
         elif len(sql_str_split) == 3:
-            return NodeRelation(database=sql_str_split[0], schema_name=sql_str_split[1], alias=sql_str_split[2])
+            return PydanticNodeRelation(database=sql_str_split[0], schema_name=sql_str_split[1], alias=sql_str_split[2])
         raise RuntimeError(
             f"Invalid input for a SQL table, expected form '<schema>.<table>' or '<db>.<schema>.<table>' "
             f"but got: {sql_str}"
@@ -96,7 +101,7 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
     name: str
     defaults: Optional[PydanticSemanticModelDefaults]
     description: Optional[str]
-    node_relation: NodeRelation
+    node_relation: PydanticNodeRelation
 
     primary_entity: Optional[str]
     entities: Sequence[PydanticEntity] = []
