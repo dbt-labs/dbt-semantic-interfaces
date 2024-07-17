@@ -67,6 +67,7 @@ class GroupByMetricReference(LinkableElementReference):
     pass
 
 
+@dataclass(frozen=True, order=True)
 class ModelReference(SerializableDataclass):
     """A reference to something in the model.
 
