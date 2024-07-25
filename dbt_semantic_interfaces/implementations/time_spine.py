@@ -30,6 +30,5 @@ class PydanticTimeSpine(HashableBaseModel, ProtocolHint[TimeSpine]):
     def _implements_protocol(self) -> TimeSpine:
         return self
 
-    name: str
     node_relation: PydanticNodeRelation
     primary_column: PydanticTimeSpinePrimaryColumn

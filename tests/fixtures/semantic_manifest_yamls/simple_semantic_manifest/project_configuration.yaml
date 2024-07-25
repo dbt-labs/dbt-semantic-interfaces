@@ -5,8 +5,7 @@ project_configuration:
       column_name: ds
       grain: day
   time_spines:
-    - name: day_time_spine
-      node_relation:
+    - node_relation:
         schema_name: stuff
         alias: day_time_spine
       primary_column:

@@ -362,12 +362,11 @@ time_spine_schema = {
     "$id": "time_spine_schema",
     "type": "object",
     "properties": {
-        "name": {"type": "string"},
         "node_relation": {"$ref": "node_relation_schema"},
         "primary_column": {"$ref": "time_spine_primary_column_schema"},
     },
     "additionalProperties": False,
-    "required": ["name", "node_relation", "primary_column"],
+    "required": ["node_relation", "primary_column"],
 }
 
 

@@ -16,12 +16,6 @@ class TimeSpine(Protocol):
 
     @property
     @abstractmethod
-    def name(self) -> str:
-        """A name the user assigns to this time spine."""
-        pass
-
-    @property
-    @abstractmethod
     def node_relation(self) -> NodeRelation:
         """dbt model where this time spine lives."""  # noqa: D403
         pass

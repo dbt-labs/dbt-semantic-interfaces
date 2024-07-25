@@ -24,7 +24,6 @@ EXAMPLE_PROJECT_CONFIGURATION = PydanticProjectConfiguration(
     ],
     time_spines=[
         PydanticTimeSpine(
-            name="day_time_spine",
             node_relation=PydanticNodeRelation(alias="day_time_spine", schema_name="stuff"),
             primary_column=PydanticTimeSpinePrimaryColumn(name="ds_day", time_granularity=TimeGranularity.DAY),
         )
@@ -41,8 +40,7 @@ EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE = YamlConfigFile(
               column_name: ds
               grain: day
           time_spines:
-            - name: day_time_spine
-              node_relation:
+            - node_relation:
                 schema_name: stuff
                 alias: day_time_spine
               primary_column:
