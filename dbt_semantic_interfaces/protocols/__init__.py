@@ -32,6 +32,10 @@ from dbt_semantic_interfaces.protocols.semantic_model import (  # noqa:F401
     SemanticModelDefaults,
     SemanticModelT,
 )
+from dbt_semantic_interfaces.protocols.time_spine import (  # noqa:F401
+    TimeSpine,
+    TimeSpinePrimaryColumn,
+)
 from dbt_semantic_interfaces.protocols.where_filter import (  # noqa:F401
     WhereFilter,
     WhereFilterIntersection,

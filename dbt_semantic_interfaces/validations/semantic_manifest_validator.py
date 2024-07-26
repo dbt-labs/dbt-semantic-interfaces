@@ -37,6 +37,7 @@ from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelDefaultsRule,
     SemanticModelValidityWindowRule,
 )
+from dbt_semantic_interfaces.validations.time_spines import TimeSpineRule
 from dbt_semantic_interfaces.validations.unique_valid_name import (
     PrimaryEntityDimensionPairs,
     UniqueAndValidNameRule,
@@ -91,6 +92,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         SemanticModelLabelsRule[SemanticManifestT](),
         EntityLabelsRule[SemanticManifestT](),
         ConversionMetricRule[SemanticManifestT](),
+        TimeSpineRule[SemanticManifestT](),
     )
 
     def __init__(
@@ -100,7 +102,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
 
         Args:
             rules: List of validation rules to run. Defaults to DEFAULT_RULES
-            max_workers: sets the max number of rules to run against the model concurrently
+            max_workers: sets the max number of rules to run against the semantic_manifest concurrently
         """
         # Raises an error if 'rules' is an empty sequence or None
         if not rules:
@@ -147,7 +149,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
 
     def checked_validations(self, semantic_manifest: SemanticManifestT) -> None:
         """Similar to validate(), but throws an exception if validation fails."""
-        model_copy = copy.deepcopy(semantic_manifest)
-        model_issues = self.validate_semantic_manifest(model_copy)
-        if model_issues.has_blocking_issues:
-            raise SemanticManifestValidationException(issues=tuple(model_issues.all_issues))
+        semantic_manifest_copy = copy.deepcopy(semantic_manifest)
+        semantic_manifest_issues = self.validate_semantic_manifest(semantic_manifest_copy)
+        if semantic_manifest_issues.has_blocking_issues:
+            raise SemanticManifestValidationException(issues=tuple(semantic_manifest_issues.all_issues))
