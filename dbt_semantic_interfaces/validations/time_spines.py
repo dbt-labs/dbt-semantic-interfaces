@@ -1,40 +1,11 @@
-import traceback
-from typing import Dict, Generic, List, Optional, Sequence, Set
+from typing import Dict, Generic, List, Sequence, Set
 
-from dbt_semantic_interfaces.errors import ParsingException
-from dbt_semantic_interfaces.implementations.metric import (
-    PydanticMetric,
-    PydanticMetricTimeWindow,
-)
-from dbt_semantic_interfaces.protocols import (
-    TimeSpine,
-    ConversionTypeParams,
-    Dimension,
-    Metric,
-    SemanticManifest,
-    SemanticManifestT,
-    SemanticModel,
-)
-from dbt_semantic_interfaces.references import (
-    DimensionReference,
-    MeasureReference,
-    MetricModelReference,
-    MetricReference,
-)
-from dbt_semantic_interfaces.type_enums import (
-    AggregationType,
-    MetricType,
-    TimeGranularity,
-)
-from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
+from dbt_semantic_interfaces.protocols import SemanticManifestT, TimeSpine
+from dbt_semantic_interfaces.type_enums import TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
-    FileContext,
-    MetricContext,
     SemanticManifestValidationRule,
-    ValidationError,
     ValidationIssue,
     ValidationWarning,
-    generate_exception_issue,
     validate_safely,
 )
 
@@ -60,13 +31,13 @@ class TimeSpineRule(SemanticManifestValidationRule[SemanticManifestT], Generic[S
         time_spines = semantic_manifest.project_configuration.time_spines
         if not time_spines:
             # TODO: update docs link when new one is available!
-            docs_message = f"See documentation to configure: https://docs.getdbt.com/docs/build/metricflow-time-spine"
+            docs_message = "See documentation to configure: https://docs.getdbt.com/docs/build/metricflow-time-spine"
             # If they have the old time spine configured and need to migrate
             if semantic_manifest.project_configuration.time_spine_table_configurations:
                 issues.append(
                     ValidationWarning(
-                        message=f"Time spines without YAML configuration are in the process of deprecation. Please add YAML "
-                        "configuration for your 'metricflow_time_spine' model. " + docs_message
+                        message="Time spines without YAML configuration are in the process of deprecation. Please add "
+                        "YAML configuration for your 'metricflow_time_spine' model. " + docs_message
                     )
                 )
             return issues
@@ -84,18 +55,19 @@ class TimeSpineRule(SemanticManifestValidationRule[SemanticManifestT], Generic[S
                 granularities_with_multiple_time_spines.add(granularity)
 
         if granularities_with_multiple_time_spines:
-            duplicate_granularity_time_spines: Dict[str, str] = {}
+            duplicate_granularity_time_spines: Dict[str, List[str]] = {}
             for granularity in granularities_with_multiple_time_spines:
                 duplicate_granularity_time_spines[granularity.name] = [
                     time_spine.node_relation.relation_name for time_spine in time_spines_by_granularity[granularity]
                 ]
             issues.append(
                 ValidationWarning(
-                    message=f"Only one time spine is supported per granularity. Got duplicates: {duplicate_granularity_time_spines}"
+                    message=f"Only one time spine is supported per granularity. Got duplicates: "
+                    f"{duplicate_granularity_time_spines}"
                 )
             )
 
-        # Warn if there is a time dimension configured with a smaller granularity than the smallest time spine granularity
+        # Warn if there is a time dimension configured with a smaller granularity than the smallest time spine
         dimension_granularities = {
             dimension.type_params.time_granularity
             for semantic_model in semantic_manifest.semantic_models
@@ -109,7 +81,8 @@ class TimeSpineRule(SemanticManifestValidationRule[SemanticManifestT], Generic[S
                 ValidationWarning(
                     message=f"To avoid unexpected query errors, configuring a time spine at or below the smallest time "
                     f"dimension granularity is recommended. Smallest time dimension granularity: "
-                    f"{smallest_dim_granularity.name}; Smallest time spine granularity: {smallest_time_spine_granularity}"
+                    f"{smallest_dim_granularity.name}; Smallest time spine granularity: "
+                    f"{smallest_time_spine_granularity}"
                 )
             )
 

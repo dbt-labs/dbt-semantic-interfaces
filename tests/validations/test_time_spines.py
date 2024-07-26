@@ -1,67 +1,31 @@
-from copy import deepcopy
-
-import pytest
-
 from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimension,
     PydanticDimensionTypeParams,
 )
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
-from dbt_semantic_interfaces.implementations.filters.where_filter import (
-    PydanticWhereFilter,
-    PydanticWhereFilterIntersection,
-)
-from dbt_semantic_interfaces.implementations.time_spine import PydanticTimeSpine, PydanticTimeSpinePrimaryColumn
+from dbt_semantic_interfaces.implementations.node_relation import PydanticNodeRelation
 from dbt_semantic_interfaces.implementations.project_configuration import (
     PydanticProjectConfiguration,
     PydanticTimeSpineTableConfiguration,
 )
-from dbt_semantic_interfaces.implementations.node_relation import PydanticNodeRelation
-from dbt_semantic_interfaces.implementations.metric import (
-    PydanticConstantPropertyInput,
-    PydanticConversionTypeParams,
-    PydanticCumulativeTypeParams,
-    PydanticMetricInput,
-    PydanticMetricInputMeasure,
-    PydanticMetricTimeWindow,
-    PydanticMetricTypeParams,
-)
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.references import (
-    DimensionReference,
-    EntityReference,
-    TimeDimensionReference,
+from dbt_semantic_interfaces.implementations.time_spine import (
+    PydanticTimeSpine,
+    PydanticTimeSpinePrimaryColumn,
 )
-from dbt_semantic_interfaces.test_utils import (
-    find_metric_with,
-    metric_with_guaranteed_meta,
-    semantic_model_with_guaranteed_meta,
-)
+from dbt_semantic_interfaces.test_utils import semantic_model_with_guaranteed_meta
 from dbt_semantic_interfaces.type_enums import (
     AggregationType,
     DimensionType,
     EntityType,
-    MetricType,
-    PeriodAggregation,
     TimeGranularity,
-)
-from dbt_semantic_interfaces.validations.metrics import (
-    ConversionMetricRule,
-    CumulativeMetricRule,
-    DerivedMetricRule,
-    MetricTimeGranularityRule,
-    WhereFiltersAreParseable,
 )
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
     SemanticManifestValidator,
 )
-from dbt_semantic_interfaces.validations.validator_helpers import (
-    SemanticManifestValidationException,
-)
-from tests.example_project_configuration import EXAMPLE_PROJECT_CONFIGURATION
 
 
 def test_valid_time_spines() -> None:  # noqa: D
