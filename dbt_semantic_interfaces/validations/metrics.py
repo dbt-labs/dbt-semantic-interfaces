@@ -39,10 +39,10 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 
 
 class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
-    """Checks that cumulative sum metrics are configured properly."""
+    """Checks that cumulative metrics are configured properly."""
 
     @staticmethod
-    @validate_safely(whats_being_done="running model validation ensuring cumulative sum metrics are valid")
+    @validate_safely(whats_being_done="running model validation ensuring cumulative metrics are valid")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
