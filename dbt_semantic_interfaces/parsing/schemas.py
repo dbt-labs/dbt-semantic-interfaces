@@ -423,6 +423,11 @@ saved_query_query_params_schema = {
             "type": "array",
             "items": {"type": "string"},
         },
+        "order_by": {
+            "type": "array",
+            "items": {"type": "string"},
+        },
+        "limit": {"type": "integer"},
         "where": {"$ref": "filter_schema"},
     },
     "required": ["metrics"],
