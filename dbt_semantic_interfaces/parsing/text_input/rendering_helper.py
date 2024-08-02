@@ -177,23 +177,9 @@ class _RenderingClassForJinjaTemplate:
 
     def _update_current_description(
         self,
-        time_granularity_name: Optional[str] = None,
-        date_part_name: Optional[str] = None,
-        descending: Optional[bool] = None,
+        builder_method: ObjectBuilderMethod,
+        new_description: QueryItemDescription,
     ) -> None:
-        args = (time_granularity_name, date_part_name, descending)
-        assert sum(1 for arg in args if arg is not None) == 1, f"Expected exactly 1 argument set, but got {args}"
-
-        builder_method: Optional[ObjectBuilderMethod]
-        if time_granularity_name is not None:
-            builder_method = ObjectBuilderMethod.GRAIN
-        elif date_part_name is not None:
-            builder_method = ObjectBuilderMethod.DATE_PART
-        elif descending is not None:
-            builder_method = ObjectBuilderMethod.DESCENDING
-        else:
-            assert False, "Exactly 1 argument should have been set as previously checked."
-
         if builder_method not in self._allowed_builder_methods:
             raise InvalidBuilderMethodException(
                 f"`{builder_method.value}` can't be used with `{self._current_description.item_type.value}`"
@@ -201,22 +187,27 @@ class _RenderingClassForJinjaTemplate:
                 item_type=self._current_description.item_type,
                 invalid_builder_method=builder_method,
             )
-        self._current_description = self._current_description.create_modified(
-            time_granularity_name=time_granularity_name,
-            date_part_name=date_part_name,
-            descending=descending,
-        )
+        self._current_description = new_description
 
     def grain(self, time_granularity: str) -> _RenderingClassForJinjaTemplate:
-        self._update_current_description(time_granularity_name=time_granularity)
+        self._update_current_description(
+            builder_method=ObjectBuilderMethod.GRAIN,
+            new_description=self._current_description.create_modified(time_granularity_name=time_granularity),
+        )
         return self
 
     def descending(self, _is_descending: bool) -> _RenderingClassForJinjaTemplate:
-        self._update_current_description(descending=_is_descending)
+        self._update_current_description(
+            builder_method=ObjectBuilderMethod.DESCENDING,
+            new_description=self._current_description.create_modified(descending=_is_descending),
+        )
         return self
 
     def date_part(self, date_part_name: str) -> _RenderingClassForJinjaTemplate:
-        self._update_current_description(date_part_name=date_part_name)
+        self._update_current_description(
+            builder_method=ObjectBuilderMethod.DATE_PART,
+            new_description=self._current_description.create_modified(date_part_name=date_part_name),
+        )
         return self
 
     @override

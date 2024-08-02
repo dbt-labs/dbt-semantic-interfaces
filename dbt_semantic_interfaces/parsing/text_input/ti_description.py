@@ -51,9 +51,9 @@ class QueryItemDescription:
 
     def create_modified(
         self,
-        time_granularity_name: Optional[str],
-        date_part_name: Optional[str],
-        descending: Optional[bool],
+        time_granularity_name: Optional[str] = None,
+        date_part_name: Optional[str] = None,
+        descending: Optional[bool] = None,
     ) -> QueryItemDescription:
         """Create one with the same fields as self except the ones provided."""
         return QueryItemDescription(
