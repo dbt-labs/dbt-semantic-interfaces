@@ -66,6 +66,18 @@ class QueryItemDescription:
             descending=descending or self.descending,
         )
 
+    def with_descending_unset(self) -> QueryItemDescription:
+        """Return this with the `descending` field set to None."""
+        return QueryItemDescription(
+            item_type=self.item_type,
+            item_name=self.item_name,
+            entity_path=self.entity_path,
+            time_granularity_name=self.time_granularity_name,
+            date_part_name=self.date_part_name,
+            group_by_for_metric_item=self.group_by_for_metric_item,
+            descending=None,
+        )
+
 
 class QueryItemType(Enum):
     """Enumerates the types of items that a used to group items in a filter or a query.
