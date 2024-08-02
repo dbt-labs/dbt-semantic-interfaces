@@ -28,6 +28,11 @@ saved_query:
       - TimeDimension('metric_time', 'DAY')
     where:
       - "{{ Metric('bookings', group_by=['listing', 'metric_time']) }} > 5"
+    order_by:
+      - Metric('listings').descending(True)
+      - TimeDimension('metric_time', 'DAY')
+    limit: 10
+
   exports:
     - name: highly_active_listings
       config:
