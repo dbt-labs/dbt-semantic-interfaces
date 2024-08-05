@@ -642,7 +642,16 @@
                     },
                     "type": "array"
                 },
+                "limit": {
+                    "type": "integer"
+                },
                 "metrics": {
+                    "items": {
+                        "type": "string"
+                    },
+                    "type": "array"
+                },
+                "order_by": {
                     "items": {
                         "type": "string"
                     },

@@ -22,7 +22,19 @@ class SavedQueryQueryParams(Protocol):
     @property
     @abstractmethod
     def where(self) -> Optional[WhereFilterIntersection]:
-        """Returns the intersection class containing any where filters specified in the saved query."""
+        """Returns the intersection class containing any where-filters specified in the saved query."""
+        pass
+
+    @property
+    @abstractmethod
+    def order_by(self) -> Sequence[str]:
+        """If specified, order by these query items - should match an item in `metrics` or `group_by`."""
+        pass
+
+    @property
+    @abstractmethod
+    def limit(self) -> Optional[int]:
+        """If specified, limit the number of rows."""
         pass
 
 

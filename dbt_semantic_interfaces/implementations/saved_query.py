@@ -29,6 +29,8 @@ class PydanticSavedQueryQueryParams(HashableBaseModel, ProtocolHint[SavedQueryQu
 
     metrics: List[str]
     group_by: List[str] = []
+    order_by: List[str] = []
+    limit: Optional[int] = None
     where: Optional[PydanticWhereFilterIntersection] = None
 
 
