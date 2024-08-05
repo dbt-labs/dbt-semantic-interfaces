@@ -247,6 +247,28 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
         return validation_issues
 
     @staticmethod
+    @validate_safely("Validate the order-by field in a saved query.")
+    def _check_limit(saved_query: SavedQuery) -> Sequence[ValidationIssue]:
+        validation_issues: List[ValidationIssue] = []
+        limit = saved_query.query_params.limit
+        if limit is None:
+            return validation_issues
+
+        if limit < 0:
+            validation_issues.append(
+                ValidationError(
+                    message=f"Invalid limit value: {limit} (should be >= 0)",
+                    context=SavedQueryContext(
+                        file_context=FileContext.from_metadata(metadata=saved_query.metadata),
+                        element_type=SavedQueryElementType.LIMIT,
+                        element_value=str(limit),
+                    ),
+                )
+            )
+
+        return validation_issues
+
+    @staticmethod
     @validate_safely("Validate all saved queries in a semantic manifest.")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
@@ -269,6 +291,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
             )
             issues += SavedQueryRule._check_where(saved_query)
             issues += SavedQueryRule._check_order_by(saved_query)
+            issues += SavedQueryRule._check_limit(saved_query)
         return issues
 
 
