@@ -9,6 +9,7 @@ from jinja2.exceptions import SecurityError
 from jinja2.sandbox import SandboxedEnvironment
 from typing_extensions import override
 
+from dbt_semantic_interfaces.errors import InvalidQuerySyntax
 from dbt_semantic_interfaces.parsing.text_input.description_renderer import (
     QueryItemDescriptionRenderer,
 )
@@ -31,6 +32,18 @@ class QueryItemTextProcessor:
     * Collecting `QueryItemDescription`s from a Jinja template.
     * Rendering a Jinja template using a specified renderer.
     """
+
+    def get_description(self, query_item_input: str, valid_method_mapping: ValidMethodMapping) -> QueryItemDescription:
+        """Get the `QueryItemDescription` for a single item e.g. `Dimension('listing__country').descending(True)`."""
+        descriptions = self.collect_descriptions_from_template(
+            jinja_template="{{ " + query_item_input + " }}",
+            valid_method_mapping=valid_method_mapping,
+        )
+        if len(descriptions) != 1:
+            raise InvalidQuerySyntax(
+                f"Did not get exactly one query item from: {query_item_input!r} Got: {descriptions}"
+            )
+        return descriptions[0]
 
     def collect_descriptions_from_template(
         self,

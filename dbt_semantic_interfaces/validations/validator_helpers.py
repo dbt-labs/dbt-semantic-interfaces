@@ -153,6 +153,8 @@ class SavedQueryElementType(Enum):
     METRIC = "metric"
     GROUP_BY = "group by"
     WHERE = "where"
+    ORDER_BY = "order by"
+    LIMIT = "limit"
 
 
 class SavedQueryContext(BaseModel):

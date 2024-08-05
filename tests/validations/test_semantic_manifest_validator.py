@@ -7,6 +7,9 @@ from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
     SemanticManifestValidator,
 )
 
+# Note: Using `assert results.errors == ()` instead of `assert not results.has_blocking_issues` as the diff shows up
+# better in pytest output.
+
 
 def test_semantic_manifest_validator_default_success(  # noqa:D
     simple_semantic_manifest: PydanticSemanticManifest,
