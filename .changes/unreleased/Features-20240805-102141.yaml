@@ -1,0 +1,6 @@
+kind: Features
+body: Add support for order-by and limit in a saved query.
+time: 2024-08-05T10:21:41.445782-07:00
+custom:
+  Author: plypaul
+  Issue: "325"
