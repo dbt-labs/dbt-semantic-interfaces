@@ -8,11 +8,11 @@ from typing import Generic, List, Optional, Sequence, Set
 from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
 from dbt_semantic_interfaces.naming.keywords import METRIC_TIME_ELEMENT_NAME
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
-    QueryItemDescription,
+    ObjectBuilderItemDescription,
     QueryItemType,
 )
 from dbt_semantic_interfaces.parsing.text_input.ti_processor import (
-    QueryItemTextProcessor,
+    ObjectBuilderTextProcessor,
 )
 from dbt_semantic_interfaces.parsing.text_input.valid_method import (
     ConfiguredValidMethodMapping,
@@ -142,7 +142,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
     @staticmethod
     def _parse_query_item(
         saved_query: SavedQuery,
-        text_processor: QueryItemTextProcessor,
+        text_processor: ObjectBuilderTextProcessor,
         query_item_input: str,
         element_type: SavedQueryElementType,
         valid_method_mapping: ValidMethodMapping,
@@ -184,7 +184,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
             return validation_issues
 
         valid_query_item_descriptions = set()
-        text_processor = QueryItemTextProcessor()
+        text_processor = ObjectBuilderTextProcessor()
         for metric in saved_query.query_params.metrics:
             # In an order-by, a metric is specified as "Metric('bookings')" while in the metrics section, it's only the
             # metric name.
@@ -299,7 +299,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
 class _ParseQueryItemResult:
     """Result of parsing a string like `Dimension('listing__country')`."""
 
-    item_description: Optional[QueryItemDescription]
+    item_description: Optional[ObjectBuilderItemDescription]
     validation_issue: Optional[ValidationIssue]
 
     def __post_init__(self) -> None:
