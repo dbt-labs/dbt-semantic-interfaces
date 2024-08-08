@@ -1,13 +1,15 @@
 from __future__ import annotations
 
+from typing import Sequence
+
 from dbt_semantic_interfaces.call_parameter_sets import (
     FilterCallParameterSets,
     ParseWhereFilterException,
 )
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
-from dbt_semantic_interfaces.parsing.text_input.ti_description import QueryItemType
-from dbt_semantic_interfaces.parsing.text_input.ti_exceptions import (
-    QueryItemJinjaException,
+from dbt_semantic_interfaces.parsing.text_input.ti_description import (
+    QueryItemDescription,
+    QueryItemType,
 )
 from dbt_semantic_interfaces.parsing.text_input.ti_processor import (
     QueryItemTextProcessor,
@@ -24,17 +26,22 @@ class WhereFilterParser:
     """Parses the template in the WhereFilter into FilterCallParameterSets."""
 
     @staticmethod
-    def parse_call_parameter_sets(where_sql_template: str) -> FilterCallParameterSets:
-        """Return the result of extracting the semantic objects referenced in the where SQL template string."""
+    def parse_item_descriptions(where_sql_template: str) -> Sequence[QueryItemDescription]:
+        """Parses the filter and returns the item descriptions."""
         text_processor = QueryItemTextProcessor()
 
         try:
-            descriptions = text_processor.collect_descriptions_from_template(
+            return text_processor.collect_descriptions_from_template(
                 jinja_template=where_sql_template,
                 valid_method_mapping=ConfiguredValidMethodMapping.DEFAULT_MAPPING,
             )
-        except QueryItemJinjaException as e:
+        except Exception as e:
             raise ParseWhereFilterException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
+
+    @staticmethod
+    def parse_call_parameter_sets(where_sql_template: str) -> FilterCallParameterSets:
+        """Return the result of extracting the semantic objects referenced in the where SQL template string."""
+        descriptions = WhereFilterParser.parse_item_descriptions(where_sql_template)
 
         """
         Dimensions that are created with a grain or date_part parameter, for instance Dimension(...).grain(...), are

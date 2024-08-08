@@ -4,6 +4,12 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional, Tuple
 
+from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
+from dbt_semantic_interfaces.errors import InvalidQuerySyntax
+from dbt_semantic_interfaces.naming.dundered import StructuredDunderedName
+from dbt_semantic_interfaces.type_enums import TimeGranularity
+from dbt_semantic_interfaces.type_enums.date_part import DatePart
+
 
 @dataclass(frozen=True)
 class QueryItemDescription:
@@ -38,16 +44,57 @@ class QueryItemDescription:
     descending: Optional[bool]
 
     def __post_init__(self) -> None:  # noqa: D105
-        if self.item_type is QueryItemType.ENTITY or self.item_type is QueryItemType.METRIC:
-            assert (
-                self.time_granularity_name is None
-            ), f"{self.time_granularity_name=} is not supported for {self.item_type=}"
-            assert self.date_part_name is None, f"{self.date_part_name=} is not supported for {self.item_type=}"
+        item_type = self.item_type
 
-        if self.item_type is not QueryItemType.METRIC:
-            assert (
-                not self.group_by_for_metric_item
-            ), f"{self.group_by_for_metric_item=} is not supported for {self.item_type=}"
+        # Check that time granularity and date part are only specified for dimensions and time dimensions.
+        if item_type is QueryItemType.ENTITY or item_type is QueryItemType.METRIC:
+            if self.time_granularity_name is not None:
+                raise InvalidQuerySyntax(f"{self.time_granularity_name=} is not supported for {item_type=}")
+            if self.date_part_name is not None:
+                raise InvalidQuerySyntax(f"{self.date_part_name=} is not supported for {item_type=}")
+        elif item_type is QueryItemType.TIME_DIMENSION or item_type is QueryItemType.DIMENSION:
+            pass
+        else:
+            assert_values_exhausted(item_type)
+
+        structured_item_name = StructuredDunderedName.parse_name(self.item_name)
+
+        # Check that metrics do not have an entity prefix or entity path.
+        if item_type is QueryItemType.METRIC:
+            if len(self.entity_path) > 0:
+                raise InvalidQuerySyntax("The entity path should not be specified for a metric.")
+            if len(structured_item_name.entity_links) > 0:
+                raise InvalidQuerySyntax("The name of the metric should not have entity links.")
+        # Check that dimensions / time dimensions have a valid time granularity / date part.
+        elif item_type is QueryItemType.DIMENSION or item_type is QueryItemType.TIME_DIMENSION:
+            if self.time_granularity_name is not None:
+                valid_time_granularity_names = set(time_granularity.value for time_granularity in TimeGranularity)
+                if self.time_granularity_name.lower() not in valid_time_granularity_names:
+                    raise InvalidQuerySyntax(
+                        f"{self.time_granularity_name!r} is not a valid time granularity. Valid values are"
+                        f" {valid_time_granularity_names}"
+                    )
+
+            if self.date_part_name is not None:
+                valid_date_part_names = set(date_part.value for date_part in DatePart)
+                if self.date_part_name.lower() not in set(date_part.value for date_part in DatePart):
+                    raise InvalidQuerySyntax(
+                        f"{self.time_granularity_name!r} is not a valid time granularity. Valid values are"
+                        f" {valid_date_part_names}"
+                    )
+
+            # Check that non-metric items don't specify group_by_for_metric_item.
+            if item_type is QueryItemType.METRIC:
+                pass
+            elif (
+                item_type is QueryItemType.DIMENSION
+                or item_type is QueryItemType.ENTITY
+                or item_type is QueryItemType.TIME_DIMENSION
+            ):
+                if len(self.group_by_for_metric_item) > 0:
+                    raise InvalidQuerySyntax("A group-by should only be specified for metrics.")
+            else:
+                assert_values_exhausted(item_type)
 
     def create_modified(
         self,
@@ -91,6 +138,12 @@ class QueryItemType(Enum):
     TIME_DIMENSION = "TimeDimension"
     ENTITY = "Entity"
     METRIC = "Metric"
+
+    def __lt__(self, other) -> bool:  # type: ignore[misc]
+        """Allow for ordering so that a sequence of these can be consistently represented for test snapshots."""
+        if self.__class__ is other.__class__:
+            return self.value < other.value
+        return NotImplemented
 
 
 class ObjectBuilderMethod(Enum):
