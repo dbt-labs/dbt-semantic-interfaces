@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import ABC, abstractmethod
 
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
-    QueryItemDescription,
+    ObjectBuilderItemDescription,
 )
 
 
@@ -22,6 +22,6 @@ class QueryItemDescriptionRenderer(ABC):
     """
 
     @abstractmethod
-    def render_description(self, item_description: QueryItemDescription) -> str:
+    def render_description(self, item_description: ObjectBuilderItemDescription) -> str:
         """Return the string that will be substituted for the query item in the Jinja template."""
         raise NotImplementedError

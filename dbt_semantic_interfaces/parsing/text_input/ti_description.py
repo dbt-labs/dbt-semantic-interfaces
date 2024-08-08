@@ -12,7 +12,7 @@ from dbt_semantic_interfaces.type_enums.date_part import DatePart
 
 
 @dataclass(frozen=True)
-class QueryItemDescription:
+class ObjectBuilderItemDescription:
     """Describes a query item specified by the user.
 
     For example, the following specified in an order-by of a saved query:
@@ -21,7 +21,7 @@ class QueryItemDescription:
 
         ->
 
-        QueryItemDescription(
+        ObjectBuilderItemDescription(
             item_type=GroupByItemType.DIMENSION,
             item_name="user__created_at",
             entity_path=['listing'],
@@ -101,9 +101,9 @@ class QueryItemDescription:
         time_granularity_name: Optional[str] = None,
         date_part_name: Optional[str] = None,
         descending: Optional[bool] = None,
-    ) -> QueryItemDescription:
+    ) -> ObjectBuilderItemDescription:
         """Create one with the same fields as self except the ones provided."""
-        return QueryItemDescription(
+        return ObjectBuilderItemDescription(
             item_type=self.item_type,
             item_name=self.item_name,
             entity_path=self.entity_path,
@@ -113,9 +113,9 @@ class QueryItemDescription:
             descending=descending or self.descending,
         )
 
-    def with_descending_unset(self) -> QueryItemDescription:
+    def with_descending_unset(self) -> ObjectBuilderItemDescription:
         """Return this with the `descending` field set to None."""
-        return QueryItemDescription(
+        return ObjectBuilderItemDescription(
             item_type=self.item_type,
             item_name=self.item_name,
             entity_path=self.entity_path,

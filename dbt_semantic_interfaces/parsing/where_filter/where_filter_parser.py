@@ -8,11 +8,11 @@ from dbt_semantic_interfaces.call_parameter_sets import (
 )
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
-    QueryItemDescription,
+    ObjectBuilderItemDescription,
     QueryItemType,
 )
 from dbt_semantic_interfaces.parsing.text_input.ti_processor import (
-    QueryItemTextProcessor,
+    ObjectBuilderTextProcessor,
 )
 from dbt_semantic_interfaces.parsing.text_input.valid_method import (
     ConfiguredValidMethodMapping,
@@ -26,9 +26,9 @@ class WhereFilterParser:
     """Parses the template in the WhereFilter into FilterCallParameterSets."""
 
     @staticmethod
-    def parse_item_descriptions(where_sql_template: str) -> Sequence[QueryItemDescription]:
+    def parse_item_descriptions(where_sql_template: str) -> Sequence[ObjectBuilderItemDescription]:
         """Parses the filter and returns the item descriptions."""
-        text_processor = QueryItemTextProcessor()
+        text_processor = ObjectBuilderTextProcessor()
 
         try:
             return text_processor.collect_descriptions_from_template(
