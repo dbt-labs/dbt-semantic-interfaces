@@ -109,9 +109,9 @@ class ObjectBuilderTextProcessor:
         self,
         jinja_template: str,
         valid_method_mapping: ValidMethodMapping,
-        description_processor: QueryItemDescriptionProcessor,
+        description_processor: ObjectBuilderItemDescriptionProcessor,
     ) -> str:
-        """Helper to run a `QueryItemDescriptionProcessor` on a Jinja template."""
+        """Helper to run a `ObjectBuilderItemDescriptionProcessor` on a Jinja template."""
         render_helper = ObjectBuilderJinjaRenderHelper(
             description_processor=description_processor,
             valid_method_mapping=valid_method_mapping,
@@ -136,7 +136,7 @@ class ObjectBuilderTextProcessor:
         return rendered
 
 
-class QueryItemDescriptionProcessor(ABC):
+class ObjectBuilderItemDescriptionProcessor(ABC):
     """General processor that does something to a query-item description seen in a Jinja template."""
 
     @abstractmethod
@@ -145,7 +145,7 @@ class QueryItemDescriptionProcessor(ABC):
         raise NotImplementedError
 
 
-class _CollectDescriptionProcessor(QueryItemDescriptionProcessor):
+class _CollectDescriptionProcessor(ObjectBuilderItemDescriptionProcessor):
     """Processor that collects all descriptions that were processed."""
 
     def __init__(self) -> None:  # noqa: D107
@@ -163,7 +163,7 @@ class _CollectDescriptionProcessor(QueryItemDescriptionProcessor):
         return ""
 
 
-class _RendererProcessor(QueryItemDescriptionProcessor):
+class _RendererProcessor(ObjectBuilderItemDescriptionProcessor):
     """Processor that renders the descriptions in a Jinja template using the given renderer.
 
     This is just a pass-through, but it allows `QueryItemDescriptionRenderer` to be a facade that has more appropriate

@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.parsing.text_input.ti_exceptions import (
 
 if typing.TYPE_CHECKING:
     from dbt_semantic_interfaces.parsing.text_input.ti_processor import (
-        QueryItemDescriptionProcessor,
+        ObjectBuilderItemDescriptionProcessor,
     )
 
 from dbt_semantic_interfaces.parsing.text_input.valid_method import ValidMethodMapping
@@ -40,7 +40,7 @@ class ObjectBuilderJinjaRenderHelper:
 
     def __init__(  # noqa: D107
         self,
-        description_processor: QueryItemDescriptionProcessor,
+        description_processor: ObjectBuilderItemDescriptionProcessor,
         valid_method_mapping: ValidMethodMapping,
     ) -> None:
         self._description_processor = description_processor
@@ -159,7 +159,7 @@ class _RenderingClassForJinjaTemplate:
 
     def __init__(
         self,
-        description_processor: QueryItemDescriptionProcessor,
+        description_processor: ObjectBuilderItemDescriptionProcessor,
         allowed_methods: FrozenSet[ObjectBuilderMethod],
         initial_item_description: ObjectBuilderItemDescription,
     ) -> None:
