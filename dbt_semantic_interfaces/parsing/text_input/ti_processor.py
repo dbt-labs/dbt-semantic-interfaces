@@ -17,7 +17,7 @@ from dbt_semantic_interfaces.parsing.text_input.rendering_helper import (
     ObjectBuilderJinjaRenderHelper,
 )
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
-    QueryItemDescription,
+    ObjectBuilderItemDescription,
 )
 from dbt_semantic_interfaces.parsing.text_input.ti_exceptions import (
     QueryItemJinjaException,
@@ -25,16 +25,21 @@ from dbt_semantic_interfaces.parsing.text_input.ti_exceptions import (
 from dbt_semantic_interfaces.parsing.text_input.valid_method import ValidMethodMapping
 
 
-class QueryItemTextProcessor:
+class ObjectBuilderTextProcessor:
     """Performs processing actions for text containing query items specified in the object-builder syntax.
 
     This currently supports:
-    * Collecting `QueryItemDescription`s from a Jinja template.
+    * Collecting `ObjectBuilderItemDescription`s from a Jinja template.
     * Rendering a Jinja template using a specified renderer.
     """
 
-    def get_description(self, query_item_input: str, valid_method_mapping: ValidMethodMapping) -> QueryItemDescription:
-        """Get the `QueryItemDescription` for a single item e.g. `Dimension('listing__country').descending(True)`."""
+    def get_description(
+        self, query_item_input: str, valid_method_mapping: ValidMethodMapping
+    ) -> ObjectBuilderItemDescription:
+        """Get the `ObjectBuilderItemDescription` for a single item.
+
+        e.g. `Dimension('listing__country').descending(True)`.
+        """
         descriptions = self.collect_descriptions_from_template(
             jinja_template="{{ " + query_item_input + " }}",
             valid_method_mapping=valid_method_mapping,
@@ -49,8 +54,8 @@ class QueryItemTextProcessor:
         self,
         jinja_template: str,
         valid_method_mapping: ValidMethodMapping,
-    ) -> Sequence[QueryItemDescription]:
-        """Returns the `QueryItemDescription`s that are found in a Jinja template.
+    ) -> Sequence[ObjectBuilderItemDescription]:
+        """Returns the `ObjectBuilderItemDescription`s that are found in a Jinja template.
 
         Args:
             jinja_template: A Jinja-template string like `{{ Dimension('listing__country') }} = 'US'`.
@@ -104,9 +109,9 @@ class QueryItemTextProcessor:
         self,
         jinja_template: str,
         valid_method_mapping: ValidMethodMapping,
-        description_processor: QueryItemDescriptionProcessor,
+        description_processor: ObjectBuilderItemDescriptionProcessor,
     ) -> str:
-        """Helper to run a `QueryItemDescriptionProcessor` on a Jinja template."""
+        """Helper to run a `ObjectBuilderItemDescriptionProcessor` on a Jinja template."""
         render_helper = ObjectBuilderJinjaRenderHelper(
             description_processor=description_processor,
             valid_method_mapping=valid_method_mapping,
@@ -131,34 +136,34 @@ class QueryItemTextProcessor:
         return rendered
 
 
-class QueryItemDescriptionProcessor(ABC):
+class ObjectBuilderItemDescriptionProcessor(ABC):
     """General processor that does something to a query-item description seen in a Jinja template."""
 
     @abstractmethod
-    def process_description(self, item_description: QueryItemDescription) -> str:
+    def process_description(self, item_description: ObjectBuilderItemDescription) -> str:
         """Process the given description, and return a string that would be substituted into the Jinja template."""
         raise NotImplementedError
 
 
-class _CollectDescriptionProcessor(QueryItemDescriptionProcessor):
+class _CollectDescriptionProcessor(ObjectBuilderItemDescriptionProcessor):
     """Processor that collects all descriptions that were processed."""
 
     def __init__(self) -> None:  # noqa: D107
-        self._items: List[QueryItemDescription] = []
+        self._items: List[ObjectBuilderItemDescription] = []
 
-    def collected_descriptions(self) -> Sequence[QueryItemDescription]:
+    def collected_descriptions(self) -> Sequence[ObjectBuilderItemDescription]:
         """Return all descriptions that were processed so far."""
         return self._items
 
     @override
-    def process_description(self, item_description: QueryItemDescription) -> str:
+    def process_description(self, item_description: ObjectBuilderItemDescription) -> str:
         if item_description not in self._items:
             self._items.append(item_description)
 
         return ""
 
 
-class _RendererProcessor(QueryItemDescriptionProcessor):
+class _RendererProcessor(ObjectBuilderItemDescriptionProcessor):
     """Processor that renders the descriptions in a Jinja template using the given renderer.
 
     This is just a pass-through, but it allows `QueryItemDescriptionRenderer` to be a facade that has more appropriate
@@ -169,5 +174,5 @@ class _RendererProcessor(QueryItemDescriptionProcessor):
         self._renderer = renderer
 
     @override
-    def process_description(self, item_description: QueryItemDescription) -> str:
+    def process_description(self, item_description: ObjectBuilderItemDescription) -> str:
         return self._renderer.render_description(item_description)

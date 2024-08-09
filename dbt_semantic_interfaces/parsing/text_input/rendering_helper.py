@@ -6,8 +6,8 @@ from typing import Callable, FrozenSet, Optional, Sequence
 from typing_extensions import override
 
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
+    ObjectBuilderItemDescription,
     ObjectBuilderMethod,
-    QueryItemDescription,
     QueryItemType,
 )
 from dbt_semantic_interfaces.parsing.text_input.ti_exceptions import (
@@ -16,7 +16,7 @@ from dbt_semantic_interfaces.parsing.text_input.ti_exceptions import (
 
 if typing.TYPE_CHECKING:
     from dbt_semantic_interfaces.parsing.text_input.ti_processor import (
-        QueryItemDescriptionProcessor,
+        ObjectBuilderItemDescriptionProcessor,
     )
 
 from dbt_semantic_interfaces.parsing.text_input.valid_method import ValidMethodMapping
@@ -40,7 +40,7 @@ class ObjectBuilderJinjaRenderHelper:
 
     def __init__(  # noqa: D107
         self,
-        description_processor: QueryItemDescriptionProcessor,
+        description_processor: ObjectBuilderItemDescriptionProcessor,
         valid_method_mapping: ValidMethodMapping,
     ) -> None:
         self._description_processor = description_processor
@@ -56,7 +56,7 @@ class ObjectBuilderJinjaRenderHelper:
             return _RenderingClassForJinjaTemplate(
                 description_processor=description_processor,
                 allowed_methods=allowed_methods,
-                initial_item_description=QueryItemDescription(
+                initial_item_description=ObjectBuilderItemDescription(
                     item_type=item_type,
                     item_name=name,
                     entity_path=tuple(entity_path),
@@ -85,7 +85,7 @@ class ObjectBuilderJinjaRenderHelper:
             return _RenderingClassForJinjaTemplate(
                 description_processor=description_processor,
                 allowed_methods=allowed_methods,
-                initial_item_description=QueryItemDescription(
+                initial_item_description=ObjectBuilderItemDescription(
                     item_type=item_type,
                     item_name=time_dimension_name,
                     entity_path=tuple(entity_path),
@@ -108,7 +108,7 @@ class ObjectBuilderJinjaRenderHelper:
             return _RenderingClassForJinjaTemplate(
                 description_processor=description_processor,
                 allowed_methods=allowed_methods,
-                initial_item_description=QueryItemDescription(
+                initial_item_description=ObjectBuilderItemDescription(
                     item_type=item_type,
                     item_name=entity_name,
                     entity_path=tuple(entity_path),
@@ -131,7 +131,7 @@ class ObjectBuilderJinjaRenderHelper:
             return _RenderingClassForJinjaTemplate(
                 description_processor=description_processor,
                 allowed_methods=allowed_methods,
-                initial_item_description=QueryItemDescription(
+                initial_item_description=ObjectBuilderItemDescription(
                     item_type=item_type,
                     item_name=metric_name,
                     entity_path=(),
@@ -159,9 +159,9 @@ class _RenderingClassForJinjaTemplate:
 
     def __init__(
         self,
-        description_processor: QueryItemDescriptionProcessor,
+        description_processor: ObjectBuilderItemDescriptionProcessor,
         allowed_methods: FrozenSet[ObjectBuilderMethod],
-        initial_item_description: QueryItemDescription,
+        initial_item_description: ObjectBuilderItemDescription,
     ) -> None:
         """Initializer.
 
@@ -178,7 +178,7 @@ class _RenderingClassForJinjaTemplate:
     def _update_current_description(
         self,
         builder_method: ObjectBuilderMethod,
-        new_description: QueryItemDescription,
+        new_description: ObjectBuilderItemDescription,
     ) -> None:
         if builder_method not in self._allowed_builder_methods:
             raise InvalidBuilderMethodException(
