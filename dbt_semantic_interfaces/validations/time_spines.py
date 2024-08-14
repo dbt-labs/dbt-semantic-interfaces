@@ -30,7 +30,6 @@ class TimeSpineRule(SemanticManifestValidationRule[SemanticManifestT], Generic[S
 
         time_spines = semantic_manifest.project_configuration.time_spines
         if not time_spines:
-            # TODO: update docs link when new one is available!
             docs_message = "See documentation to configure: https://docs.getdbt.com/docs/build/metricflow-time-spine"
             # If they have the old time spine configured and need to migrate
             if semantic_manifest.project_configuration.time_spine_table_configurations:
