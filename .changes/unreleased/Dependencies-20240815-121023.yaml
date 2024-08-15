@@ -1,0 +1,6 @@
+kind: Dependencies
+body: upgrade importlib-metadata
+time: 2024-08-15T12:10:23.526215+02:00
+custom:
+    Author: geoheil
+    PR: "334"
