@@ -1,0 +1,6 @@
+kind: Features
+body: Add custom granularity spec to time spine.
+time: 2024-08-15T18:33:45.822932-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "335"

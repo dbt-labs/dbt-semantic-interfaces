@@ -14,6 +14,7 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 from dbt_semantic_interfaces.implementations.time_spine import (
     PydanticTimeSpine,
+    PydanticTimeSpineCustomGranularityColumn,
     PydanticTimeSpinePrimaryColumn,
 )
 from dbt_semantic_interfaces.test_utils import semantic_model_with_guaranteed_meta
@@ -53,6 +54,10 @@ def test_valid_time_spines() -> None:  # noqa: D
                 PydanticTimeSpine(
                     node_relation=PydanticNodeRelation(alias="time_spine", schema_name="my_fav_schema"),
                     primary_column=PydanticTimeSpinePrimaryColumn(name="ds", time_granularity=TimeGranularity.DAY),
+                    custom_granularity_columns=[
+                        PydanticTimeSpineCustomGranularityColumn(name="retail_year"),
+                        PydanticTimeSpineCustomGranularityColumn(name="martian_week"),
+                    ],
                 ),
                 PydanticTimeSpine(
                     node_relation=PydanticNodeRelation(alias="time_spine2", schema_name="my_fav_schema"),
@@ -122,6 +127,10 @@ def test_duplicate_time_spine_granularity() -> None:  # noqa: D
                 PydanticTimeSpine(
                     node_relation=PydanticNodeRelation(alias="time_spine", schema_name="my_fav_schema"),
                     primary_column=PydanticTimeSpinePrimaryColumn(name="ds", time_granularity=TimeGranularity.SECOND),
+                    custom_granularity_columns=[
+                        PydanticTimeSpineCustomGranularityColumn(name="retail_year"),
+                        PydanticTimeSpineCustomGranularityColumn(name="martian_week"),
+                    ],
                 ),
                 PydanticTimeSpine(
                     node_relation=PydanticNodeRelation(alias="time_spine2", schema_name="my_fav_schema"),
