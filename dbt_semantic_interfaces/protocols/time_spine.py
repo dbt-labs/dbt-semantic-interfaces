@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Protocol
+from typing import Protocol, Sequence
 
 from dbt_semantic_interfaces.implementations.node_relation import NodeRelation
 from dbt_semantic_interfaces.type_enums import TimeGranularity
@@ -26,6 +26,12 @@ class TimeSpine(Protocol):
         """The column in the time spine that maps to one of our standard granularities."""
         pass
 
+    @property
+    @abstractmethod
+    def custom_granularity_columns(self) -> Sequence[TimeSpineCustomGranularityColumn]:
+        """The columns in the time spine table that map to custom granularities."""
+        pass
+
 
 class TimeSpinePrimaryColumn(Protocol):
     """The column in the time spine that maps to one of our standard granularities."""
@@ -39,5 +45,15 @@ class TimeSpinePrimaryColumn(Protocol):
     @property
     @abstractmethod
     def time_granularity(self) -> TimeGranularity:
+        """The column name."""
+        pass
+
+
+class TimeSpineCustomGranularityColumn(Protocol):
+    """A column in the time spine table that maps to a custom granularity."""
+
+    @property
+    @abstractmethod
+    def name(self) -> str:
         """The column name."""
         pass

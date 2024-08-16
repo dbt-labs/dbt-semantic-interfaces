@@ -6,6 +6,7 @@ from dbt_semantic_interfaces.implementations.project_configuration import (
 )
 from dbt_semantic_interfaces.implementations.time_spine import (
     PydanticTimeSpine,
+    PydanticTimeSpineCustomGranularityColumn,
     PydanticTimeSpinePrimaryColumn,
 )
 from dbt_semantic_interfaces.implementations.time_spine_table_configuration import (
@@ -26,6 +27,10 @@ EXAMPLE_PROJECT_CONFIGURATION = PydanticProjectConfiguration(
         PydanticTimeSpine(
             node_relation=PydanticNodeRelation(alias="day_time_spine", schema_name="stuff"),
             primary_column=PydanticTimeSpinePrimaryColumn(name="ds_day", time_granularity=TimeGranularity.DAY),
+            custom_granularity_columns=[
+                PydanticTimeSpineCustomGranularityColumn(name="retail_year"),
+                PydanticTimeSpineCustomGranularityColumn(name="martian_week"),
+            ],
         )
     ],
 )
