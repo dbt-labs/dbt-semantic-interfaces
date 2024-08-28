@@ -521,6 +521,7 @@ schema_store = {
     semantic_model_defaults_schema["$id"]: semantic_model_defaults_schema,
     time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
     time_spine_schema["$id"]: time_spine_schema,
+    custom_granularity_column_schema["$id"]: custom_granularity_column_schema,
     time_spine_primary_column_schema["$id"]: time_spine_primary_column_schema,
     export_schema["$id"]: export_schema,
     export_config_schema["$id"]: export_config_schema,
