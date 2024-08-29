@@ -28,7 +28,7 @@ class TimeSpine(Protocol):
 
     @property
     @abstractmethod
-    def custom_granularity_columns(self) -> Sequence[TimeSpineCustomGranularityColumn]:
+    def custom_granularities(self) -> Sequence[TimeSpineCustomGranularityColumn]:
         """The columns in the time spine table that map to custom granularities."""
         pass
 

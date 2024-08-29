@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Sequence
+from typing import Optional, Sequence
 
 from typing_extensions import override
 
@@ -32,6 +32,7 @@ class PydanticTimeSpineCustomGranularityColumn(  # noqa: D101
         return self
 
     name: str
+    column_name: Optional[str] = None
 
 
 class PydanticTimeSpine(HashableBaseModel, ProtocolHint[TimeSpine]):  # noqa: D101
@@ -41,4 +42,4 @@ class PydanticTimeSpine(HashableBaseModel, ProtocolHint[TimeSpine]):  # noqa: D1
 
     node_relation: PydanticNodeRelation
     primary_column: PydanticTimeSpinePrimaryColumn
-    custom_granularity_columns: Sequence[PydanticTimeSpineCustomGranularityColumn] = []
+    custom_granularities: Sequence[PydanticTimeSpineCustomGranularityColumn] = []

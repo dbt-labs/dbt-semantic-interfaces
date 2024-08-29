@@ -123,6 +123,9 @@
             "$id": "custom_granularity_column_schema",
             "additionalProperties": false,
             "properties": {
+                "column_name": {
+                    "type": "string"
+                },
                 "name": {
                     "type": "string"
                 }
@@ -826,7 +829,7 @@
             "$id": "time_spine_schema",
             "additionalProperties": false,
             "properties": {
-                "custom_granularity_columns": {
+                "custom_granularities": {
                     "items": {
                         "$ref": "#/definitions/custom_granularity_column_schema"
                     },
