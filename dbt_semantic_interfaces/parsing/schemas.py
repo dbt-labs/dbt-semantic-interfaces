@@ -358,12 +358,26 @@ time_spine_primary_column_schema = {
     "required": ["name", "time_granularity"],
 }
 
+custom_granularity_column_schema = {
+    "$id": "custom_granularity_column_schema",
+    "type": "object",
+    "properties": {
+        "name": {"type": "string"},
+    },
+    "additionalProperties": False,
+    "required": ["name"],
+}
+
 time_spine_schema = {
     "$id": "time_spine_schema",
     "type": "object",
     "properties": {
         "node_relation": {"$ref": "node_relation_schema"},
         "primary_column": {"$ref": "time_spine_primary_column_schema"},
+        "custom_granularity_columns": {
+            "type": "array",
+            "items": {"$ref": "custom_granularity_column_schema"},
+        },
     },
     "additionalProperties": False,
     "required": ["node_relation", "primary_column"],
@@ -507,6 +521,7 @@ schema_store = {
     semantic_model_defaults_schema["$id"]: semantic_model_defaults_schema,
     time_spine_table_configuration_schema["$id"]: time_spine_table_configuration_schema,
     time_spine_schema["$id"]: time_spine_schema,
+    custom_granularity_column_schema["$id"]: custom_granularity_column_schema,
     time_spine_primary_column_schema["$id"]: time_spine_primary_column_schema,
     export_schema["$id"]: export_schema,
     export_config_schema["$id"]: export_config_schema,

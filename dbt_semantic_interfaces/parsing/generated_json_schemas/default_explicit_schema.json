@@ -119,6 +119,19 @@
             "required": [],
             "type": "object"
         },
+        "custom_granularity_column_schema": {
+            "$id": "custom_granularity_column_schema",
+            "additionalProperties": false,
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "type": "object"
+        },
         "dimension_schema": {
             "$id": "dimension_schema",
             "additionalProperties": false,
@@ -813,6 +826,12 @@
             "$id": "time_spine_schema",
             "additionalProperties": false,
             "properties": {
+                "custom_granularity_columns": {
+                    "items": {
+                        "$ref": "#/definitions/custom_granularity_column_schema"
+                    },
+                    "type": "array"
+                },
                 "node_relation": {
                     "$ref": "#/definitions/node_relation_schema"
                 },
