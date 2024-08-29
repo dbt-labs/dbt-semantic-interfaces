@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Protocol, Sequence
+from typing import Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.implementations.node_relation import NodeRelation
 from dbt_semantic_interfaces.type_enums import TimeGranularity
@@ -55,5 +55,11 @@ class TimeSpineCustomGranularityColumn(Protocol):
     @property
     @abstractmethod
     def name(self) -> str:
+        """The column name."""
+        pass
+
+    @property
+    @abstractmethod
+    def column_name(self) -> Optional[str]:
         """The column name."""
         pass
