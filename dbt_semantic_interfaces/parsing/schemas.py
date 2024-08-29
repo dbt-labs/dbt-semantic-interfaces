@@ -363,6 +363,7 @@ custom_granularity_column_schema = {
     "type": "object",
     "properties": {
         "name": {"type": "string"},
+        "column_name": {"type": "string"},
     },
     "additionalProperties": False,
     "required": ["name"],
@@ -374,7 +375,7 @@ time_spine_schema = {
     "properties": {
         "node_relation": {"$ref": "node_relation_schema"},
         "primary_column": {"$ref": "time_spine_primary_column_schema"},
-        "custom_granularity_columns": {
+        "custom_granularities": {
             "type": "array",
             "items": {"$ref": "custom_granularity_column_schema"},
         },
