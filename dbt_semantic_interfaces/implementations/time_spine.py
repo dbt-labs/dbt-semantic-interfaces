@@ -13,6 +13,7 @@ from dbt_semantic_interfaces.protocols.time_spine import (
     TimeSpinePrimaryColumn,
 )
 from dbt_semantic_interfaces.type_enums import TimeGranularity
+from dsi_pydantic_shim import Field
 
 
 class PydanticTimeSpinePrimaryColumn(HashableBaseModel, ProtocolHint[TimeSpinePrimaryColumn]):  # noqa: D101
@@ -42,4 +43,4 @@ class PydanticTimeSpine(HashableBaseModel, ProtocolHint[TimeSpine]):  # noqa: D1
 
     node_relation: PydanticNodeRelation
     primary_column: PydanticTimeSpinePrimaryColumn
-    custom_granularities: Sequence[PydanticTimeSpineCustomGranularityColumn] = []
+    custom_granularities: Sequence[PydanticTimeSpineCustomGranularityColumn] = Field(default_factory=list)

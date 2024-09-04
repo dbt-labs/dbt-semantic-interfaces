@@ -18,6 +18,7 @@ from dbt_semantic_interfaces.protocols.saved_query import (
     SavedQuery,
     SavedQueryQueryParams,
 )
+from dsi_pydantic_shim import Field
 
 
 class PydanticSavedQueryQueryParams(HashableBaseModel, ProtocolHint[SavedQueryQueryParams]):
@@ -28,8 +29,8 @@ class PydanticSavedQueryQueryParams(HashableBaseModel, ProtocolHint[SavedQueryQu
         return self
 
     metrics: List[str]
-    group_by: List[str] = []
-    order_by: List[str] = []
+    group_by: List[str] = Field(default_factory=list)
+    order_by: List[str] = Field(default_factory=list)
     limit: Optional[int] = None
     where: Optional[PydanticWhereFilterIntersection] = None
 
@@ -46,4 +47,4 @@ class PydanticSavedQuery(HashableBaseModel, ModelWithMetadataParsing, ProtocolHi
     description: Optional[str] = None
     metadata: Optional[PydanticMetadata] = None
     label: Optional[str] = None
-    exports: List[PydanticExport] = []
+    exports: List[PydanticExport] = Field(default_factory=list)

@@ -59,9 +59,9 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
     node_relation: PydanticNodeRelation
 
     primary_entity: Optional[str]
-    entities: Sequence[PydanticEntity] = []
-    measures: Sequence[PydanticMeasure] = []
-    dimensions: Sequence[PydanticDimension] = []
+    entities: Sequence[PydanticEntity] = Field(default_factory=list)
+    measures: Sequence[PydanticMeasure] = Field(default_factory=list)
+    dimensions: Sequence[PydanticDimension] = Field(default_factory=list)
     label: Optional[str] = None
 
     metadata: Optional[PydanticMetadata]

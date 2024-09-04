@@ -20,7 +20,7 @@ from dbt_semantic_interfaces.implementations.time_spine_table_configuration impo
 )
 from dbt_semantic_interfaces.protocols import ProtocolHint
 from dbt_semantic_interfaces.protocols.project_configuration import ProjectConfiguration
-from dsi_pydantic_shim import validator
+from dsi_pydantic_shim import Field, validator
 
 
 class PydanticProjectConfiguration(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[ProjectConfiguration]):
@@ -30,10 +30,10 @@ class PydanticProjectConfiguration(HashableBaseModel, ModelWithMetadataParsing, 
     def _implements_protocol(self) -> ProjectConfiguration:
         return self
 
-    time_spine_table_configurations: List[PydanticTimeSpineTableConfiguration] = []
+    time_spine_table_configurations: List[PydanticTimeSpineTableConfiguration] = Field(default_factory=list)
     metadata: Optional[PydanticMetadata] = None
     dsi_package_version: PydanticSemanticVersion = UNKNOWN_VERSION_SENTINEL
-    time_spines: List[PydanticTimeSpine] = []
+    time_spines: List[PydanticTimeSpine] = Field(default_factory=list)
 
     @validator("dsi_package_version", always=True)
     @classmethod
