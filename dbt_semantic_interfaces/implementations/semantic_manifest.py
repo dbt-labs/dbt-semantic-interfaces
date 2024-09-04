@@ -10,6 +10,7 @@ from dbt_semantic_interfaces.implementations.project_configuration import (
 from dbt_semantic_interfaces.implementations.saved_query import PydanticSavedQuery
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.protocols import ProtocolHint, SemanticManifest
+from dsi_pydantic_shim import Field
 
 
 class PydanticSemanticManifest(HashableBaseModel, ProtocolHint[SemanticManifest]):
@@ -22,4 +23,4 @@ class PydanticSemanticManifest(HashableBaseModel, ProtocolHint[SemanticManifest]
     semantic_models: List[PydanticSemanticModel]
     metrics: List[PydanticMetric]
     project_configuration: PydanticProjectConfiguration
-    saved_queries: List[PydanticSavedQuery] = []
+    saved_queries: List[PydanticSavedQuery] = Field(default_factory=list)

@@ -9,6 +9,7 @@ from dbt_semantic_interfaces.implementations.base import (
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import MeasureReference
 from dbt_semantic_interfaces.type_enums import AggregationType
+from dsi_pydantic_shim import Field
 
 
 class PydanticNonAdditiveDimensionParameters(HashableBaseModel):
@@ -21,7 +22,7 @@ class PydanticNonAdditiveDimensionParameters(HashableBaseModel):
 
     # Optional Fields
     window_choice: AggregationType = AggregationType.MIN
-    window_groupings: List[str] = []
+    window_groupings: List[str] = Field(default_factory=list)
 
 
 class PydanticMeasureAggregationParameters(HashableBaseModel):

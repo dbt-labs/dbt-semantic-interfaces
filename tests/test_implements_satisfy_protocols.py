@@ -30,7 +30,7 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.project_configuration import (
     PydanticProjectConfiguration,
 )
-from dbt_semantic_interfaces.implementations.saved_query import PydanticSavedQuery
+from dbt_semantic_interfaces.implementations.saved_query import PydanticSavedQuery, PydanticSavedQueryQueryParams
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
@@ -123,7 +123,7 @@ SIMPLE_METRIC_STRATEGY = builds(
 
 SAVED_QUERY_STRATEGY = builds(
     PydanticSavedQuery,
-    group_by=from_type(List[str]),
+    query_params=builds(PydanticSavedQueryQueryParams),
     where=from_type(List[PydanticWhereFilter]),
     description=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,
