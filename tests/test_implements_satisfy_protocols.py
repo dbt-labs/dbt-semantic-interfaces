@@ -30,7 +30,10 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.project_configuration import (
     PydanticProjectConfiguration,
 )
-from dbt_semantic_interfaces.implementations.saved_query import PydanticSavedQuery, PydanticSavedQueryQueryParams
+from dbt_semantic_interfaces.implementations.saved_query import (
+    PydanticSavedQuery,
+    PydanticSavedQueryQueryParams,
+)
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
