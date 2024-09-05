@@ -174,6 +174,10 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
 
         for metric in semantic_manifest.metrics:
             custom_granularity_restricted_names_and_types[metric.name] = SemanticManifestNodeType.METRIC.value
+        for semantic_model in semantic_manifest.semantic_models:
+            custom_granularity_restricted_names_and_types[
+                semantic_model.name
+            ] = SemanticManifestNodeType.SEMANTIC_MODEL.value
 
         # Verify custom granularity names are unique across relevant elements
         seen_custom_granularity_names: Set[str] = set()
