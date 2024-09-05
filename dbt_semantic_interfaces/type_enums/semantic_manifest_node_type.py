@@ -7,3 +7,4 @@ class SemanticManifestNodeType(ExtendedEnum):
     METRIC = "metric"
     SAVED_QUERY = "saved_query"
     SEMANTIC_MODEL = "semantic_model"
+    TIME_SPINE = "time_spine"

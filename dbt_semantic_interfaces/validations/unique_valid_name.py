@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import enum
 import re
-from typing import Dict, Generic, List, Optional, Sequence, Tuple, Union
+from typing import Dict, Generic, List, Optional, Sequence, Set, Tuple, Union
 
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.protocols import (
@@ -102,12 +102,14 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
 
     @staticmethod
     @validate_safely(whats_being_done="checking semantic model sub element names are unique")
-    def _validate_semantic_model_elements(semantic_model: SemanticModel) -> List[ValidationIssue]:
+    def _validate_semantic_model_elements_and_time_spines(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
-        element_info_tuples: List[Tuple[ElementReference, str, ValidationContext]] = []
+        custom_granularity_restricted_names_and_types: Dict[str, str] = {}
 
-        if semantic_model.measures:
+        for semantic_model in semantic_manifest.semantic_models:
+            element_info_tuples: List[Tuple[ElementReference, str, ValidationContext]] = []
             for measure in semantic_model.measures:
+                custom_granularity_restricted_names_and_types[measure.name] = SemanticModelElementType.MEASURE.value
                 element_info_tuples.append(
                     (
                         measure.reference,
@@ -121,8 +123,8 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
                         ),
                     )
                 )
-        if semantic_model.entities:
             for entity in semantic_model.entities:
+                custom_granularity_restricted_names_and_types[entity.name] = SemanticModelElementType.ENTITY.value
                 element_info_tuples.append(
                     (
                         entity.reference,
@@ -136,8 +138,8 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
                         ),
                     )
                 )
-        if semantic_model.dimensions:
             for dimension in semantic_model.dimensions:
+                custom_granularity_restricted_names_and_types[dimension.name] = SemanticModelElementType.DIMENSION.value
                 element_info_tuples.append(
                     (
                         dimension.reference,
@@ -151,22 +153,62 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
                         ),
                     )
                 )
-        name_to_type: Dict[ElementReference, str] = {}
 
-        for name, _type, context in element_info_tuples:
-            if name in name_to_type:
-                issues.append(
-                    ValidationError(
-                        context=context,
-                        message=f"In semantic model `{semantic_model.name}`, can't use name `{name.element_name}` for "
-                        f"a {_type} when it was already used for a {name_to_type[name]}",
+            # Verify uniqueness for this type within each semantic model
+            semantic_model_element_reference_to_type: Dict[ElementReference, str] = {}
+            for reference, _type, context in element_info_tuples:
+                if reference in semantic_model_element_reference_to_type:
+                    issues.append(
+                        ValidationError(
+                            context=context,
+                            message=f"In semantic model `{semantic_model.name}`, can't use name "
+                            f"`{reference.element_name}` for a {_type} when it was already used for a "
+                            f"{semantic_model_element_reference_to_type[reference]}",
+                        )
                     )
-                )
-            else:
-                name_to_type[name] = _type
+                else:
+                    semantic_model_element_reference_to_type[reference] = _type
 
-        for name, _, context in element_info_tuples:
-            issues += UniqueAndValidNameRule.check_valid_name(name=name.element_name, context=context)
+            for name, _, context in element_info_tuples:
+                issues += UniqueAndValidNameRule.check_valid_name(name=name.element_name, context=context)
+
+        for metric in semantic_manifest.metrics:
+            custom_granularity_restricted_names_and_types[metric.name] = SemanticManifestNodeType.METRIC.value
+
+        # Verify custom granularity names are unique across relevant elements
+        seen_custom_granularity_names: Set[str] = set()
+        duplicate_custom_granularity_names: Set[str] = set()
+        for time_spine in semantic_manifest.project_configuration.time_spines:
+            time_spine_context = ValidationIssueContext(
+                file_context=FileContext(),
+                object_name=time_spine.node_relation.alias,
+                object_type=SemanticManifestNodeType.TIME_SPINE.value,
+            )
+            for custom_granularity in time_spine.custom_granularities:
+                issues += UniqueAndValidNameRule.check_valid_name(
+                    name=custom_granularity.name, context=time_spine_context
+                )
+                if custom_granularity.name in custom_granularity_restricted_names_and_types:
+                    issues.append(
+                        ValidationError(
+                            context=time_spine_context,
+                            message=f"Can't use name `{custom_granularity.name}` for a custom granularity when it was "
+                            "already used for a "
+                            f"{custom_granularity_restricted_names_and_types[custom_granularity.name]}.",
+                        )
+                    )
+                if custom_granularity.name in seen_custom_granularity_names:
+                    duplicate_custom_granularity_names.add(custom_granularity.name)
+                seen_custom_granularity_names.add(custom_granularity.name)
+
+        if duplicate_custom_granularity_names:
+            issues.append(
+                ValidationError(
+                    context=time_spine_context,
+                    message=f"Custom granularity names must be unique, but found duplicate custom granularities with "
+                    f"the names {duplicate_custom_granularity_names}.",
+                )
+            )
 
         return issues
 
@@ -230,9 +272,7 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues = []
         issues += UniqueAndValidNameRule._validate_top_level_objects(semantic_manifest=semantic_manifest)
-
-        for semantic_model in semantic_manifest.semantic_models:
-            issues += UniqueAndValidNameRule._validate_semantic_model_elements(semantic_model=semantic_model)
+        issues += UniqueAndValidNameRule._validate_semantic_model_elements_and_time_spines(semantic_manifest)
 
         return issues
 
