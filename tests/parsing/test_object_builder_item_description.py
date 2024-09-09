@@ -19,9 +19,11 @@ def test_valid_object_builder_items() -> None:  # noqa: D
     valid_items = (
         "Dimension('listing__created_at', entity_path=['host'])",
         "Dimension('listing__created_at', entity_path=['host']).grain('day').date_part('day')",
+        "Dimension('metric_time').grain('martian_year')",
         "TimeDimension('listing__created_at', time_granularity_name='day', entity_path=['host'], date_part_name='day')",
         "Entity('listing__created_at', entity_path=['host'])",
         "Metric('bookings', group_by=['listing__created_at'])",
+        "TimeDimension('metric_time', time_granularity_name='martian_year')",
     )
     for valid_item in valid_items:
         logger.info(f"Checking {valid_item=}")
@@ -32,9 +34,7 @@ def test_invalid_object_builder_items() -> None:  # noqa: D
     text_processor = ObjectBuilderTextProcessor()
 
     invalid_items = (
-        "Dimension('listing__created_at').grain('invalid')",
         "Dimension('listing__created_at').date_part('invalid')",
-        "TimeDimension('listing__created_at', 'invalid', 'day')",
         "TimeDimension('listing__created_at', 'day', date_part_name='invalid')",
         "TimeDimension('listing__created_at', 'day', date_part_name='month').grain('month')",
         "TimeDimension('listing__created_at', 'day', date_part_name='month').date_part('month')",

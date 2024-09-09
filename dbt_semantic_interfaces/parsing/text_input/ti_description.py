@@ -7,7 +7,6 @@ from typing import Optional, Tuple
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.errors import InvalidQuerySyntax
 from dbt_semantic_interfaces.naming.dundered import StructuredDunderedName
-from dbt_semantic_interfaces.type_enums import TimeGranularity
 from dbt_semantic_interfaces.type_enums.date_part import DatePart
 
 
@@ -65,21 +64,13 @@ class ObjectBuilderItemDescription:
                 raise InvalidQuerySyntax("The entity path should not be specified for a metric.")
             if len(structured_item_name.entity_links) > 0:
                 raise InvalidQuerySyntax("The name of the metric should not have entity links.")
-        # Check that dimensions / time dimensions have a valid time granularity / date part.
+        # Check that dimensions / time dimensions have a valid date part.
         elif item_type is QueryItemType.DIMENSION or item_type is QueryItemType.TIME_DIMENSION:
-            if self.time_granularity_name is not None:
-                valid_time_granularity_names = set(time_granularity.value for time_granularity in TimeGranularity)
-                if self.time_granularity_name.lower() not in valid_time_granularity_names:
-                    raise InvalidQuerySyntax(
-                        f"{self.time_granularity_name!r} is not a valid time granularity. Valid values are"
-                        f" {valid_time_granularity_names}"
-                    )
-
             if self.date_part_name is not None:
                 valid_date_part_names = set(date_part.value for date_part in DatePart)
                 if self.date_part_name.lower() not in set(date_part.value for date_part in DatePart):
                     raise InvalidQuerySyntax(
-                        f"{self.time_granularity_name!r} is not a valid time granularity. Valid values are"
+                        f"{self.date_part_name!r} is not a valid date part. Valid values are"
                         f" {valid_date_part_names}"
                     )
 
