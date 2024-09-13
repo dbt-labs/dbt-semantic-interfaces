@@ -22,12 +22,18 @@ from dbt_semantic_interfaces.type_enums.date_part import DatePart
 class ParameterSetFactory:
     """Creates parameter sets for use in the Jinja sandbox.
 
-    This is ONLY to be used for parsing where filters, and then only for the purposes of extracting
-    some basic information about which elements are being accessed in the filter expression in the
-    small number of contexts where a more complete semantic layer implementation is not available.
+    This class does the following:
+      1. Parses element references (e.g., "{{ Dimension('listing__is_lux') }}") out of where filter expressions
+      2. Extracts reference attributes (e.g., grain for "{{ TimeDimension('metric_time', grain='martian_year') }}")
+      3. Allows use of standard time granularities in name strings, (e.g., "{{ Dimension('metric_time__year') }}")
 
-    In practice, today, this is used by the dbt core parser, which cannot take on a MetricFlow
-    dependency, in order to provide some DAG annotations around elements referenced in where filters.
+    This class does not do direct validation of any custom granularity values, nor does it allow for use of custom
+    granularities as parts of element reference names. So we can parse "{{ Dimension('shuttle__launch_time__year') }}"
+    into a valid TimeDimension object with yearly granularity, but we will not correctly parse something like
+    "{{Dimension('shuttle__launch_time__martian_year')}}" - this will return a dimension named `martian_year` with the
+    entity link path of ['shuttle', 'launch_time']. Since custom granularity names will not be allowed to be re-used
+    as dimension names this will fail to match anything defined in the semantic manifest, but the error management
+    experience will not be as clean and direct as it was for standard granularities.
     """
 
     @staticmethod
