@@ -73,8 +73,13 @@ class ParameterSetFactory:
         grain_parsed_from_name = (
             group_by_item_name.time_granularity.value if group_by_item_name.time_granularity else None
         )
-        grain_from_param = time_granularity_name
-        if grain_parsed_from_name and grain_from_param and grain_from_param != grain_parsed_from_name:
+        inputs_are_mismatched = (
+            grain_parsed_from_name is not None
+            and time_granularity_name is not None
+            and time_granularity_name != grain_parsed_from_name
+        )
+
+        if inputs_are_mismatched:
             raise ParseWhereFilterException(
                 f"Received different grains in `time_dimension_name` parameter ('{time_dimension_name}') "
                 f"and `time_granularity_name` parameter ('{time_granularity_name}'). Remove the grain suffix "
@@ -82,7 +87,7 @@ class ParameterSetFactory:
                 "parameter to specify the intendend grain."
             )
 
-        time_granularity_name = grain_parsed_from_name or grain_from_param
+        time_granularity_name = grain_parsed_from_name or time_granularity_name
 
         return TimeDimensionCallParameterSet(
             time_dimension_reference=TimeDimensionReference(element_name=group_by_item_name.element_name),
