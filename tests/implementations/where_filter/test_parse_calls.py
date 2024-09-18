@@ -69,7 +69,7 @@ def test_extract_dimension_with_grain_call_parameter_sets() -> None:  # noqa: D
             TimeDimensionCallParameterSet(
                 entity_path=(),
                 time_dimension_reference=TimeDimensionReference(element_name="metric_time"),
-                time_granularity=TimeGranularity.WEEK,
+                time_granularity_name=TimeGranularity.WEEK.value,
             ),
         ),
         entity_call_parameter_sets=(),
@@ -91,7 +91,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
                     EntityReference("listing"),
                     EntityReference("user"),
                 ),
-                time_granularity=TimeGranularity.MONTH,
+                time_granularity_name=TimeGranularity.MONTH.value,
             ),
         )
     )
@@ -110,7 +110,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
                     EntityReference("listing"),
                     EntityReference("user"),
                 ),
-                time_granularity=TimeGranularity.MONTH,
+                time_granularity_name=TimeGranularity.MONTH.value,
             ),
         )
     )
@@ -126,7 +126,7 @@ def test_extract_metric_time_dimension_call_parameter_sets() -> None:  # noqa: D
             TimeDimensionCallParameterSet(
                 time_dimension_reference=TimeDimensionReference(element_name="metric_time"),
                 entity_path=(),
-                time_granularity=TimeGranularity.MONTH,
+                time_granularity_name=TimeGranularity.MONTH.value,
             ),
         )
     )
@@ -216,7 +216,7 @@ def test_where_filter_interesection_extract_call_parameter_sets() -> None:
             TimeDimensionCallParameterSet(
                 time_dimension_reference=TimeDimensionReference(element_name="metric_time"),
                 entity_path=(),
-                time_granularity=TimeGranularity.MONTH,
+                time_granularity_name=TimeGranularity.MONTH.value,
             ),
         )
     )
@@ -269,7 +269,7 @@ def test_time_dimension_without_granularity() -> None:  # noqa: D
             TimeDimensionCallParameterSet(
                 entity_path=(EntityReference("booking"),),
                 time_dimension_reference=TimeDimensionReference(element_name="created_at"),
-                time_granularity=None,
+                time_granularity_name=None,
             ),
         ),
         entity_call_parameter_sets=(),

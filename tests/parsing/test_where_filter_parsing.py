@@ -185,7 +185,7 @@ def test_dimension_date_part() -> None:  # noqa
             TimeDimensionCallParameterSet(
                 time_dimension_reference=TimeDimensionReference("metric_time"),
                 entity_path=(),
-                time_granularity=TimeGranularity.WEEK,
+                time_granularity_name=TimeGranularity.WEEK.value,
             ),
         ),
         (
@@ -193,7 +193,7 @@ def test_dimension_date_part() -> None:  # noqa
             TimeDimensionCallParameterSet(
                 time_dimension_reference=TimeDimensionReference("metric_time"),
                 entity_path=(),
-                time_granularity=TimeGranularity.WEEK,
+                time_granularity_name=TimeGranularity.WEEK.value,
             ),
         ),
     ],

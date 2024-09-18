@@ -10,7 +10,6 @@ from dbt_semantic_interfaces.references import (
     MetricReference,
     TimeDimensionReference,
 )
-from dbt_semantic_interfaces.type_enums import TimeGranularity
 from dbt_semantic_interfaces.type_enums.date_part import DatePart
 
 
@@ -29,7 +28,7 @@ class TimeDimensionCallParameterSet:
 
     entity_path: Tuple[EntityReference, ...]
     time_dimension_reference: TimeDimensionReference
-    time_granularity: Optional[TimeGranularity] = None
+    time_granularity_name: Optional[str] = None
     date_part: Optional[DatePart] = None
 
 

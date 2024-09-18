@@ -20,7 +20,11 @@ class StructuredDunderedName:
     element_name: "ds"
     granularity: TimeGranularity.WEEK
 
-    The time granularity is part of legacy query syntax and there are plans to migrate away from this format.
+    The time granularity is part of legacy query syntax and there are plans to migrate away from this format. As such,
+    this will not be updated to allow for custom granularity values. This implies that any query paths that push named
+    parameters through this class will not support a custom grain reference of the form `metric_time__martian_year`,
+    and users wishing to use their martian year grain will have to explicitly reference it via a separate parameter
+    instead of gluing it onto the end of the name.
     """
 
     entity_links: Tuple[EntityReference, ...]

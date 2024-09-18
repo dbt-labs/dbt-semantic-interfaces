@@ -1,0 +1,6 @@
+kind: Features
+body: Allow filter parameters to accept custom granularities
+time: 2024-09-08T22:17:57.865557-07:00
+custom:
+    Author: tlento
+    Issue: "345"
