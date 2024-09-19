@@ -35,6 +35,10 @@ class PydanticTimeSpineCustomGranularityColumn(  # noqa: D101
     name: str
     column_name: Optional[str] = None
 
+    @property
+    def parsed_column_name(self) -> str:
+        return self.column_name or self.name
+
 
 class PydanticTimeSpine(HashableBaseModel, ProtocolHint[TimeSpine]):  # noqa: D101
     @override
