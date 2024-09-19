@@ -35,6 +35,15 @@ class PydanticTimeSpineCustomGranularityColumn(  # noqa: D101
     name: str
     column_name: Optional[str] = None
 
+    @property
+    def parsed_column_name(self) -> str:
+        """The name of the column in the time spine table that contains this custom granularity.
+
+        For convenience in writing configs, if there is no `column_name` set, we assume the `name`
+        is also the column name.
+        """
+        return self.column_name or self.name
+
 
 class PydanticTimeSpine(HashableBaseModel, ProtocolHint[TimeSpine]):  # noqa: D101
     @override
