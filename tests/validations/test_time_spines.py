@@ -233,7 +233,7 @@ def test_time_spines_with_invalid_names() -> None:  # noqa: D
                     primary_column=PydanticTimeSpinePrimaryColumn(name="ds", time_granularity=TimeGranularity.DAY),
                     custom_granularities=[
                         PydanticTimeSpineCustomGranularityColumn(name="retail_year"),
-                        PydanticTimeSpineCustomGranularityColumn(name="quarter"),  # todo
+                        PydanticTimeSpineCustomGranularityColumn(name="quarter"),
                         PydanticTimeSpineCustomGranularityColumn(name="semantic_model"),
                         PydanticTimeSpineCustomGranularityColumn(name="sum_measure"),
                         PydanticTimeSpineCustomGranularityColumn(name="dim"),
