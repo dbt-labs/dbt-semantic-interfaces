@@ -280,7 +280,7 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
                     continue
                 if time_dim_call_parameter_set.time_granularity_name not in valid_granularity_names:
                     issues.append(
-                        ValidationError(
+                        ValidationWarning(
                             context=context,
                             message=f"Filter for metric `{context.metric.metric_name}` is not valid. "
                             f"`{time_dim_call_parameter_set.time_granularity_name}` is not a valid granularity name. "

@@ -467,8 +467,10 @@ def test_where_filter_validations_invalid_granularity(  # noqa: D
         where_filters=[PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'cool') }}")]
     )
     validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
-    with pytest.raises(SemanticManifestValidationException, match="`cool` is not a valid granularity name"):
-        validator.checked_validations(manifest)
+    issues = validator.validate_semantic_manifest(manifest)
+    assert not issues.has_blocking_issues
+    assert len(issues.warnings) == 1
+    assert "`cool` is not a valid granularity name" in issues.warnings[0].message
 
 
 def test_conversion_metrics() -> None:  # noqa: D
