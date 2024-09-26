@@ -450,6 +450,27 @@ def test_where_filter_validations_bad_input_metric_filter(  # noqa: D
         validator.checked_validations(manifest)
 
 
+def test_where_filter_validations_invalid_granularity(  # noqa: D
+    simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
+) -> None:
+    manifest = deepcopy(simple_semantic_manifest__with_primary_transforms)
+
+    metric, _ = find_metric_with(
+        manifest,
+        lambda metric: metric.type_params is not None
+        and metric.type_params.metrics is not None
+        and len(metric.type_params.metrics) > 0,
+    )
+    assert metric.type_params.metrics is not None
+    input_metric = metric.type_params.metrics[0]
+    input_metric.filter = PydanticWhereFilterIntersection(
+        where_filters=[PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'cool') }}")]
+    )
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
+    with pytest.raises(SemanticManifestValidationException, match="`cool` is not a valid granularity name"):
+        validator.checked_validations(manifest)
+
+
 def test_conversion_metrics() -> None:  # noqa: D
     base_measure_name = "base_measure"
     conversion_measure_name = "conversion_measure"
