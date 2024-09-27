@@ -578,20 +578,49 @@ def test_conversion_metrics() -> None:  # noqa: D
                         )
                     ),
                 ),
+                metric_with_guaranteed_meta(
+                    name="filter_on_conversion_measure",
+                    type=MetricType.CONVERSION,
+                    type_params=PydanticMetricTypeParams(
+                        conversion_type_params=PydanticConversionTypeParams(
+                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
+                            conversion_measure=PydanticMetricInputMeasure(
+                                name=conversion_measure_name,
+                                filter=PydanticWhereFilterIntersection(
+                                    where_filters=[
+                                        PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}""")
+                                    ]
+                                ),
+                            ),
+                            window=window,
+                            entity=entity,
+                        )
+                    ),
+                ),
             ],
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
 
-    build_issues = result.errors
-    assert len(build_issues) == 5
+    build_issues = result.all_issues
+    assert len(result.errors) == 5
+    assert len(result.warnings) == 1
+
     expected_substr1 = f"{invalid_entity} not found in base semantic model"
     expected_substr2 = f"{invalid_entity} not found in conversion semantic model"
     expected_substr3 = "the measure must be COUNT/SUM(1)/COUNT_DISTINCT"
     expected_substr4 = "The provided constant property: bad_dim, cannot be found"
     expected_substr5 = "The provided constant property: bad_dim2, cannot be found"
+    expected_substr6 = "filter on a conversion input measure is not fully supported"
     missing_error_strings = set()
-    for expected_str in [expected_substr1, expected_substr2, expected_substr3, expected_substr4, expected_substr5]:
+    for expected_str in [
+        expected_substr1,
+        expected_substr2,
+        expected_substr3,
+        expected_substr4,
+        expected_substr5,
+        expected_substr6,
+    ]:
         if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
             missing_error_strings.add(expected_str)
     assert len(missing_error_strings) == 0, "Failed to match one or more expected errors: "
