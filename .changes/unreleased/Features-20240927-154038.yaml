@@ -1,0 +1,6 @@
+kind: Features
+body: Added validation warning when using filter on conversion input measure
+time: 2024-09-27T15:40:38.968626-04:00
+custom:
+    Author: WilliamDee
+    Issue: None
