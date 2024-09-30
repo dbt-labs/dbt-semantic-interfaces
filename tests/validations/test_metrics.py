@@ -617,7 +617,7 @@ def test_conversion_metrics() -> None:  # noqa: D
         "the measure must be COUNT/SUM(1)/COUNT_DISTINCT",
         "The provided constant property: bad_dim, cannot be found",
         "The provided constant property: bad_dim2, cannot be found",
-        "filter on a conversion input measure is not fully supported",
+        "filtering on a conversion input measure is not fully supported yet",
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
