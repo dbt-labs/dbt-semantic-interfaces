@@ -19,7 +19,8 @@ class DimensionCallParameterSet:
 
     entity_path: Tuple[EntityReference, ...]
     dimension_reference: DimensionReference
-    # TODO: MFS Jinja allows grain and date part in Dimension(...). Should we allow them here, too, for consistency?
+    time_granularity: Optional[TimeGranularity] = None
+    date_part: Optional[DatePart] = None
 
 
 @dataclass(frozen=True)
