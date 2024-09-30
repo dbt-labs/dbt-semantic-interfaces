@@ -11,6 +11,7 @@ from dbt_semantic_interfaces.protocols import (
     ConversionTypeParams,
     Dimension,
     Metric,
+    MetricInputMeasure,
     SemanticManifest,
     SemanticManifestT,
     SemanticModel,
@@ -494,10 +495,12 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     ) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
-        def _validate_measure(measure_reference: MeasureReference, semantic_model: SemanticModel) -> None:
+        def _validate_measure(
+            input_measure: MetricInputMeasure, semantic_model: SemanticModel, is_base_measure: bool = True
+        ) -> None:
             measure = None
             for model_measure in semantic_model.measures:
-                if model_measure.reference == measure_reference:
+                if model_measure.reference == input_measure.measure_reference:
                     measure = model_measure
                     break
 
@@ -519,17 +522,31 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                     )
                 )
 
+            if input_measure.filter is not None and not is_base_measure:
+                # Filters for conversion measure input are not fully supported.
+                issues.append(
+                    ValidationWarning(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric.metadata),
+                            metric=MetricModelReference(metric_name=metric.name),
+                        ),
+                        message=f"Measure input {measure.name} has a filter. For conversion metrics,"
+                        " filtering on a conversion input measure is not fully supported yet.",
+                    )
+                )
+
         conversion_type_params = metric.type_params.conversion_type_params
         assert (
             conversion_type_params is not None
         ), "For a conversion metric, type_params.conversion_type_params must exist."
         _validate_measure(
-            measure_reference=conversion_type_params.base_measure.measure_reference,
+            input_measure=conversion_type_params.base_measure,
             semantic_model=base_semantic_model,
         )
         _validate_measure(
-            measure_reference=conversion_type_params.conversion_measure.measure_reference,
+            input_measure=conversion_type_params.conversion_measure,
             semantic_model=conversion_semantic_model,
+            is_base_measure=False,
         )
         return issues
 

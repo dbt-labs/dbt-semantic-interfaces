@@ -1,4 +1,5 @@
 from copy import deepcopy
+from typing import List, Tuple
 
 import pytest
 
@@ -54,8 +55,19 @@ from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
+    ValidationIssue,
 )
 from tests.example_project_configuration import EXAMPLE_PROJECT_CONFIGURATION
+
+
+def check_error_in_issues(error_substrings: List[str], issues: Tuple[ValidationIssue, ...]) -> None:
+    """Check error substrings in build issues."""
+    missing_error_strings = set()
+    for expected_str in error_substrings:
+        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in issues):
+            missing_error_strings.add(expected_str)
+    assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
+    f"{missing_error_strings} in {set([x.as_readable_str() for x in issues])}"
 
 
 def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
@@ -328,14 +340,7 @@ def test_derived_metric() -> None:  # noqa: D
         "No input metrics found for derived metric",
         "No `expr` set for derived metric",
     ]
-    missing_error_strings = set()
-    for expected_str in expected_substrings:
-        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
-            missing_error_strings.add(expected_str)
-    assert len(missing_error_strings) == 0, (
-        f"Failed to match one or more expected errors: {missing_error_strings} in "
-        f"{set([x.as_readable_str() for x in build_issues])}"
-    )
+    check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
 
 def test_where_filter_validations_happy(  # noqa: D
@@ -578,24 +583,43 @@ def test_conversion_metrics() -> None:  # noqa: D
                         )
                     ),
                 ),
+                metric_with_guaranteed_meta(
+                    name="filter_on_conversion_measure",
+                    type=MetricType.CONVERSION,
+                    type_params=PydanticMetricTypeParams(
+                        conversion_type_params=PydanticConversionTypeParams(
+                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
+                            conversion_measure=PydanticMetricInputMeasure(
+                                name=conversion_measure_name,
+                                filter=PydanticWhereFilterIntersection(
+                                    where_filters=[
+                                        PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}""")
+                                    ]
+                                ),
+                            ),
+                            window=window,
+                            entity=entity,
+                        )
+                    ),
+                ),
             ],
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
 
-    build_issues = result.errors
-    assert len(build_issues) == 5
-    expected_substr1 = f"{invalid_entity} not found in base semantic model"
-    expected_substr2 = f"{invalid_entity} not found in conversion semantic model"
-    expected_substr3 = "the measure must be COUNT/SUM(1)/COUNT_DISTINCT"
-    expected_substr4 = "The provided constant property: bad_dim, cannot be found"
-    expected_substr5 = "The provided constant property: bad_dim2, cannot be found"
-    missing_error_strings = set()
-    for expected_str in [expected_substr1, expected_substr2, expected_substr3, expected_substr4, expected_substr5]:
-        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
-            missing_error_strings.add(expected_str)
-    assert len(missing_error_strings) == 0, "Failed to match one or more expected errors: "
-    f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
+    build_issues = result.all_issues
+    assert len(result.errors) == 5
+    assert len(result.warnings) == 1
+
+    expected_substrings = [
+        f"{invalid_entity} not found in base semantic model",
+        f"{invalid_entity} not found in conversion semantic model",
+        "the measure must be COUNT/SUM(1)/COUNT_DISTINCT",
+        "The provided constant property: bad_dim, cannot be found",
+        "The provided constant property: bad_dim2, cannot be found",
+        "filtering on a conversion input measure is not fully supported yet",
+    ]
+    check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
 
 def test_cumulative_metrics() -> None:  # noqa: D
@@ -715,17 +739,14 @@ def test_cumulative_metrics() -> None:  # noqa: D
 
     build_issues = validation_results.all_issues
     assert len(build_issues) == 4
-    expected_substr1 = "Both window and grain_to_date set for cumulative metric. Please set one or the other."
-    expected_substr2 = "Got differing values for `window`"
-    expected_substr3 = "Got differing values for `grain_to_date`"
-    expected_substr4 = "Cumulative fields `type_params.window` and `type_params.grain_to_date` have been moved"
-    expected_substr5 = str(sorted({"what_a_metric", "dis_bad", "woooooo", "metric1", "metric2"}))
-    missing_error_strings = set()
-    for expected_str in [expected_substr1, expected_substr2, expected_substr3, expected_substr4, expected_substr5]:
-        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
-            missing_error_strings.add(expected_str)
-    assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
-    f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
+    expected_substrings = [
+        "Both window and grain_to_date set for cumulative metric. Please set one or the other.",
+        "Got differing values for `window`",
+        "Got differing values for `grain_to_date`",
+        "Cumulative fields `type_params.window` and `type_params.grain_to_date` have been moved",
+        str(sorted({"what_a_metric", "dis_bad", "woooooo", "metric1", "metric2"})),
+    ]
+    check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
 
 def test_time_granularity() -> None:
@@ -829,11 +850,8 @@ def test_time_granularity() -> None:
 
     build_issues = validation_results.all_issues
     assert len(build_issues) == 2
-    expected_substr1 = "`time_granularity` for metric 'month_metric_with_invalid_time_granularity' must be >= MONTH."
-    expected_substr2 = "`time_granularity` for metric 'derived_metric_with_invalid_time_granularity' must be >= MONTH."
-    missing_error_strings = set()
-    for expected_str in [expected_substr1, expected_substr2]:
-        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in build_issues):
-            missing_error_strings.add(expected_str)
-    assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
-    f"{missing_error_strings} in {set([x.as_readable_str() for x in build_issues])}"
+    expected_substrings = [
+        "`time_granularity` for metric 'month_metric_with_invalid_time_granularity' must be >= MONTH.",
+        "`time_granularity` for metric 'derived_metric_with_invalid_time_granularity' must be >= MONTH.",
+    ]
+    check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
