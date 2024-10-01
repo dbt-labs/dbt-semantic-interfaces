@@ -273,13 +273,13 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
         issues: List[ValidationIssue] = []
 
         valid_granularity_names = [
-            standard_granularity.name for standard_granularity in TimeGranularity
+            standard_granularity.value for standard_granularity in TimeGranularity
         ] + custom_granularity_names
         for _, parameter_set in filter_expression_parameter_sets:
             for time_dim_call_parameter_set in parameter_set.time_dimension_call_parameter_sets:
                 if not time_dim_call_parameter_set.time_granularity_name:
                     continue
-                if time_dim_call_parameter_set.time_granularity_name not in valid_granularity_names:
+                if time_dim_call_parameter_set.time_granularity_name.lower() not in valid_granularity_names:
                     issues.append(
                         ValidationWarning(
                             context=context,

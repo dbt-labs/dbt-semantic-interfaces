@@ -469,7 +469,11 @@ def test_where_filter_validations_invalid_granularity(  # noqa: D
     assert metric.type_params.metrics is not None
     input_metric = metric.type_params.metrics[0]
     input_metric.filter = PydanticWhereFilterIntersection(
-        where_filters=[PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'cool') }}")]
+        where_filters=[
+            PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'cool') }}"),
+            PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'month') }}"),
+            PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'MONTH') }}"),
+        ]
     )
     validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     issues = validator.validate_semantic_manifest(manifest)
