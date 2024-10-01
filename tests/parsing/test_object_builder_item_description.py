@@ -24,6 +24,8 @@ def test_valid_object_builder_items() -> None:  # noqa: D
         "Entity('listing__created_at', entity_path=['host'])",
         "Metric('bookings', group_by=['listing__created_at'])",
         "TimeDimension('metric_time', time_granularity_name='martian_year')",
+        "TimeDimension('metric_time', time_granularity_name='month')",
+        "TimeDimension('metric_time', time_granularity_name='MONTH')",
     )
     for valid_item in valid_items:
         logger.info(f"Checking {valid_item=}")
