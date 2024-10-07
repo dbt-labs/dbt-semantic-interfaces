@@ -28,23 +28,10 @@ class TimeSpineRule(SemanticManifestValidationRule[SemanticManifestT], Generic[S
         if not semantic_manifest.semantic_models:
             return issues
 
-        time_spines = semantic_manifest.project_configuration.time_spines
-        if not time_spines:
-            docs_message = "See documentation to configure: https://docs.getdbt.com/docs/build/metricflow-time-spine"
-            # If they have the old time spine configured and need to migrate
-            if semantic_manifest.project_configuration.time_spine_table_configurations:
-                issues.append(
-                    ValidationWarning(
-                        message="Time spines without YAML configuration are in the process of deprecation. Please add "
-                        "YAML configuration for your 'metricflow_time_spine' model. " + docs_message
-                    )
-                )
-            return issues
-
         # Verify that there is only one time spine per granularity
         time_spines_by_granularity: Dict[TimeGranularity, List[TimeSpine]] = {}
         granularities_with_multiple_time_spines: Set[TimeGranularity] = set()
-        for time_spine in time_spines:
+        for time_spine in semantic_manifest.project_configuration.time_spines:
             granularity = time_spine.primary_column.time_granularity
             if granularity in time_spines_by_granularity:
                 time_spines_by_granularity[granularity].append(time_spine)
