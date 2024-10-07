@@ -12,7 +12,6 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.node_relation import PydanticNodeRelation
 from dbt_semantic_interfaces.implementations.project_configuration import (
     PydanticProjectConfiguration,
-    PydanticTimeSpineTableConfiguration,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
@@ -73,38 +72,6 @@ def test_valid_time_spines() -> None:  # noqa: D
         ),
     )
     SemanticManifestValidator[PydanticSemanticManifest]().checked_validations(semantic_manifest)
-
-
-def test_only_legacy_time_spine() -> None:  # noqa: D
-    validator = SemanticManifestValidator[PydanticSemanticManifest]()
-    semantic_manifest = PydanticSemanticManifest(
-        semantic_models=[
-            semantic_model_with_guaranteed_meta(
-                name="sum_measure",
-                measures=[
-                    PydanticMeasure(name="foo", agg=AggregationType.SUM, agg_time_dimension="dim", create_metric=True)
-                ],
-                dimensions=[
-                    PydanticDimension(
-                        name="dim",
-                        type=DimensionType.TIME,
-                        type_params=PydanticDimensionTypeParams(time_granularity=TimeGranularity.SECOND),
-                    )
-                ],
-                entities=[PydanticEntity(name="entity", type=EntityType.PRIMARY)],
-            ),
-        ],
-        metrics=[],
-        project_configuration=PydanticProjectConfiguration(
-            time_spine_table_configurations=[
-                PydanticTimeSpineTableConfiguration(location="hurrr", column_name="fun_col", grain=TimeGranularity.DAY)
-            ]
-        ),
-    )
-    issues = validator.validate_semantic_manifest(semantic_manifest)
-    assert not issues.has_blocking_issues
-    assert len(issues.warnings) == 1
-    assert "Time spines without YAML configuration are in the process of deprecation." in issues.warnings[0].message
 
 
 def test_duplicate_time_spine_granularity() -> None:  # noqa: D
