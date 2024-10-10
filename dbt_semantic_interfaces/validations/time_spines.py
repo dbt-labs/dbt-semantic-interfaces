@@ -28,10 +28,14 @@ class TimeSpineRule(SemanticManifestValidationRule[SemanticManifestT], Generic[S
         if not semantic_manifest.semantic_models:
             return issues
 
+        time_spines = semantic_manifest.project_configuration.time_spines
+        if not time_spines:
+            return issues
+
         # Verify that there is only one time spine per granularity
         time_spines_by_granularity: Dict[TimeGranularity, List[TimeSpine]] = {}
         granularities_with_multiple_time_spines: Set[TimeGranularity] = set()
-        for time_spine in semantic_manifest.project_configuration.time_spines:
+        for time_spine in time_spines:
             granularity = time_spine.primary_column.time_granularity
             if granularity in time_spines_by_granularity:
                 time_spines_by_granularity[granularity].append(time_spine)

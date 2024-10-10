@@ -10,7 +10,7 @@
 
 # dbt-semantic-interfaces
 
-This repo contains the shared semantic classes, default validation, and tests designed to be used by both the dbt-core and MetricFlow projects. By centralizing these shared resources, we aim to maintain consistency and reduce code duplication across both projects. 
+This repo contains the shared semantic classes, default validation, and tests designed to be used by both the dbt-core and MetricFlow projects. By centralizing these shared resources, we aim to maintain consistency and reduce code duplication across both projects.
 
 ## Features
 - Protocols for shared semantic classes: Define the interfaces and common attributes that must be implemented by the objects in both projects.
