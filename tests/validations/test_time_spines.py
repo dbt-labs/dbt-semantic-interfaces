@@ -127,6 +127,42 @@ def test_no_warning_for_legacy_time_spine() -> None:  # noqa: D
     assert len(issues.warnings) == 0
 
 
+def test_no_time_spine_config() -> None:  # noqa: D
+    validator = SemanticManifestValidator[PydanticSemanticManifest]()
+    semantic_manifest = PydanticSemanticManifest(
+        semantic_models=[
+            semantic_model_with_guaranteed_meta(
+                name="sum_measure",
+                dimensions=[
+                    PydanticDimension(
+                        name="dim",
+                        type=DimensionType.TIME,
+                        description="",
+                        metadata=None,
+                        type_params=PydanticDimensionTypeParams(time_granularity=TimeGranularity.SECOND),
+                    )
+                ],
+                entities=[PydanticEntity(name="entity", type=EntityType.PRIMARY)],
+            ),
+        ],
+        metrics=[
+            PydanticMetric(
+                name="metric",
+                description=None,
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name="sum_measure")),
+            ),
+        ],
+        project_configuration=PydanticProjectConfiguration(
+            time_spine_table_configurations=[],
+            time_spines=[],
+        ),
+    )
+    issues = validator.validate_semantic_manifest(semantic_manifest)
+    assert not issues.has_blocking_issues
+    assert len(issues.warnings) == 0
+
+
 def test_duplicate_time_spine_granularity() -> None:  # noqa: D
     validator = SemanticManifestValidator[PydanticSemanticManifest]()
     semantic_manifest = PydanticSemanticManifest(
