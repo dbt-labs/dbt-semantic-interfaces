@@ -1,5 +1,5 @@
 import traceback
-from typing import Dict, Generic, List, Optional, Sequence, Set, Tuple
+from typing import Dict, Generic, List, Optional, Sequence, Tuple
 
 from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
 from dbt_semantic_interfaces.errors import ParsingException
@@ -48,7 +48,6 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        metrics_using_old_params: Set[str] = set()
         for metric in semantic_manifest.metrics or []:
             if metric.type != MetricType.CUMULATIVE:
                 continue
@@ -60,9 +59,6 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
             for field in ("window", "grain_to_date"):
                 type_params_field_value = getattr(metric.type_params, field)
-                # Warn that the old type_params structure has been deprecated.
-                if type_params_field_value:
-                    metrics_using_old_params.add(metric.name)
 
                 # Warn that window or grain_to_date is mismatched across params.
                 cumulative_type_params_field_value = (
@@ -115,19 +111,6 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                             extra_detail="".join(traceback.format_tb(e.__traceback__)),
                         )
                     )
-        if metrics_using_old_params:
-            issues.append(
-                ValidationWarning(
-                    context=metric_context,
-                    message=(
-                        "Cumulative fields `type_params.window` and `type_params.grain_to_date` have been moved and "
-                        "will soon be deprecated. Please nest those values under "
-                        "`type_params.cumulative_type_params.window` and "
-                        "`type_params.cumulative_type_params.grain_to_date`. Metrics using old fields: "
-                        f"{sorted(metrics_using_old_params)}"
-                    ),
-                )
-            )
 
         return issues
 

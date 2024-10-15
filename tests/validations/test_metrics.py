@@ -66,8 +66,10 @@ def check_error_in_issues(error_substrings: List[str], issues: Tuple[ValidationI
     for expected_str in error_substrings:
         if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in issues):
             missing_error_strings.add(expected_str)
-    assert len(missing_error_strings) == 0, "Failed to match one or more expected issues: "
-    f"{missing_error_strings} in {set([x.as_readable_str() for x in issues])}"
+    assert len(missing_error_strings) == 0, (
+        "Failed to match one or more expected issues: "
+        + f"{missing_error_strings} in {set([x.as_readable_str() for x in issues])}"
+    )
 
 
 def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
@@ -742,13 +744,11 @@ def test_cumulative_metrics() -> None:  # noqa: D
     )
 
     build_issues = validation_results.all_issues
-    assert len(build_issues) == 4
+    assert len(build_issues) == 3
     expected_substrings = [
         "Both window and grain_to_date set for cumulative metric. Please set one or the other.",
         "Got differing values for `window`",
         "Got differing values for `grain_to_date`",
-        "Cumulative fields `type_params.window` and `type_params.grain_to_date` have been moved",
-        str(sorted({"what_a_metric", "dis_bad", "woooooo", "metric1", "metric2"})),
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
