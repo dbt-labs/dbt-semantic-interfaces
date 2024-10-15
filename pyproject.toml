@@ -55,7 +55,6 @@ all = ["pre-commit run --all-files"]
 
 [tool.hatch.envs.dev-env]
 description = "Env for running development commands like pytest / pre-commit"
-python = "3.8"
 dependencies = [
   "pytest>=7.3,<8",
   "pytest-xdist>=3.2,<4",
