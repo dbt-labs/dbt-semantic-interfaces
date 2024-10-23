@@ -1,12 +1,17 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import Any, Dict, Optional
+
+from pydantic import Field
+from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
+from dbt_semantic_interfaces.protocols.dimension import DimensionConfig
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     TimeDimensionReference,
@@ -37,6 +42,16 @@ class PydanticDimensionTypeParams(HashableBaseModel):
     validity_params: Optional[PydanticDimensionValidityParams] = None
 
 
+class PydanticDimensionConfig(HashableBaseModel, ProtocolHint[DimensionConfig]):
+    """PydanticDimension config."""
+
+    @override
+    def _implements_protocol(self) -> DimensionConfig:  # noqa: D
+        return self
+
+    meta: Dict[str, Any] = Field(default_factory=dict)
+
+
 class PydanticDimension(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a dimension."""
 
@@ -48,6 +63,7 @@ class PydanticDimension(HashableBaseModel, ModelWithMetadataParsing):
     expr: Optional[str] = None
     metadata: Optional[PydanticMetadata]
     label: Optional[str] = None
+    config: Optional[PydanticDimensionConfig]
 
     @property
     def reference(self) -> DimensionReference:  # noqa: D

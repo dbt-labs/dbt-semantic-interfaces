@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Optional, Protocol, Sequence
+from typing import Any, Dict, Optional, Protocol, Sequence
 
 from dbt_semantic_interfaces.references import MeasureReference
 from dbt_semantic_interfaces.type_enums import AggregationType
@@ -42,6 +42,16 @@ class MeasureAggregationParameters(Protocol):
     @property
     @abstractmethod
     def use_approximate_percentile(self) -> bool:  # noqa: D
+        pass
+
+
+class MeasureConfig(Protocol):  # noqa: D
+    """The config property allows you to configure additional resources/metadata."""
+
+    @property
+    @abstractmethod
+    def meta(self) -> Dict[str, Any]:
+        """The meta field can be used to set metadata for a resource."""
         pass
 
 
@@ -97,4 +107,9 @@ class Measure(Protocol):
     @abstractmethod
     def label(self) -> Optional[str]:
         """Returns a string representing a human readable label for the measure."""
+        pass
+
+    @property
+    @abstractmethod
+    def config(self) -> Optional[MeasureConfig]:  # noqa: D
         pass

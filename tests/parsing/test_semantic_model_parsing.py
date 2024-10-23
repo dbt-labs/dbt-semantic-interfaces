@@ -110,7 +110,9 @@ def test_base_semantic_model_entity_parsing() -> None:
               role: test_role
               expr: example_id
               label: {label}
-
+              config:
+                  meta:
+                    random: metadata
         """
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
@@ -206,7 +208,9 @@ def test_base_semantic_model_measure_parsing() -> None:
               expr: example_input
               description: {description}
               label: {label}
-
+              config:
+                  meta:
+                    random: metadata
         """
     )
     file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
@@ -325,6 +329,9 @@ def test_semantic_model_categorical_dimension_parsing() -> None:
             - name: example_categorical_dimension
               type: categorical
               expr: dimension_input
+              config:
+                meta:
+                  random: metadata
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)

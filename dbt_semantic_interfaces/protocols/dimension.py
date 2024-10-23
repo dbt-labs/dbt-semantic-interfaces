@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Optional, Protocol
+from typing import Any, Dict, Optional, Protocol
 
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.references import (
@@ -43,6 +43,16 @@ class DimensionTypeParams(Protocol):
     @property
     @abstractmethod
     def validity_params(self) -> Optional[DimensionValidityParams]:  # noqa: D
+        pass
+
+
+class DimensionConfig(Protocol):  # noqa: D
+    """The config property allows you to configure additional resources/metadata."""
+
+    @property
+    @abstractmethod
+    def meta(self) -> Dict[str, Any]:
+        """The meta field can be used to set metadata for a resource."""
         pass
 
 
@@ -106,4 +116,9 @@ class Dimension(Protocol):
     @abstractmethod
     def label(self) -> Optional[str]:
         """Returns a string representing a human readable label for the dimension."""
+        pass
+
+    @property
+    @abstractmethod
+    def config(self) -> Optional[DimensionConfig]:  # noqa: D
         pass

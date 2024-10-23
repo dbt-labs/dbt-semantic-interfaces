@@ -1,12 +1,16 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
+
+from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
+from dbt_semantic_interfaces.protocols.measure import MeasureConfig
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
 from dbt_semantic_interfaces.references import MeasureReference
 from dbt_semantic_interfaces.type_enums import AggregationType
 from dsi_pydantic_shim import Field
@@ -33,6 +37,16 @@ class PydanticMeasureAggregationParameters(HashableBaseModel):
     use_approximate_percentile: bool = False
 
 
+class PydanticMeasureConfig(HashableBaseModel, ProtocolHint[MeasureConfig]):
+    """PydanticMeasure config."""
+
+    @override
+    def _implements_protocol(self) -> MeasureConfig:  # noqa: D
+        return self
+
+    meta: Dict[str, Any] = Field(default_factory=dict)
+
+
 class PydanticMeasure(HashableBaseModel, ModelWithMetadataParsing):
     """Describes a measure."""
 
@@ -46,6 +60,7 @@ class PydanticMeasure(HashableBaseModel, ModelWithMetadataParsing):
     non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters] = None
     agg_time_dimension: Optional[str] = None
     label: Optional[str] = None
+    config: Optional[PydanticMeasureConfig] = None
 
     @property
     def reference(self) -> MeasureReference:  # noqa: D

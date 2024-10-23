@@ -135,6 +135,19 @@
             ],
             "type": "object"
         },
+        "dimension_config_schema": {
+            "$id": "dimension_config_schema",
+            "additionalProperties": false,
+            "properties": {
+                "meta": {
+                    "propertyNames": {
+                        "type": "string"
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
         "dimension_schema": {
             "$id": "dimension_schema",
             "additionalProperties": false,
@@ -151,6 +164,9 @@
                 }
             ],
             "properties": {
+                "config": {
+                    "$ref": "#/definitions/dimension_config_schema"
+                },
                 "description": {
                     "type": "string"
                 },
@@ -227,10 +243,26 @@
             ],
             "type": "object"
         },
+        "entity_config_schema": {
+            "$id": "entity_config_schema",
+            "additionalProperties": false,
+            "properties": {
+                "meta": {
+                    "propertyNames": {
+                        "type": "string"
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
         "entity_schema": {
             "$id": "entity_schema",
             "additionalProperties": false,
             "properties": {
+                "config": {
+                    "$ref": "#/definitions/entity_config_schema"
+                },
                 "entity": {
                     "type": "string"
                 },
@@ -337,6 +369,19 @@
                 "type"
             ]
         },
+        "measure_config_schema": {
+            "$id": "measure_config_schema",
+            "additionalProperties": false,
+            "properties": {
+                "meta": {
+                    "propertyNames": {
+                        "type": "string"
+                    },
+                    "type": "object"
+                }
+            },
+            "type": "object"
+        },
         "measure_schema": {
             "$id": "measure_schema",
             "additionalProperties": false,
@@ -369,6 +414,9 @@
                 "agg_time_dimension": {
                     "pattern": "(?!.*__).*^[a-z][a-z0-9_]*[a-z0-9]$",
                     "type": "string"
+                },
+                "config": {
+                    "$ref": "#/definitions/measure_config_schema"
                 },
                 "create_metric": {
                     "type": "boolean"
