@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
-from dbt_semantic_interfaces.protocols.meta import ConfigMeta
+from dbt_semantic_interfaces.protocols.meta import PydanticSemanticLayerElementConfig
 from dbt_semantic_interfaces.references import MeasureReference
 from dbt_semantic_interfaces.type_enums import AggregationType
 
@@ -102,5 +102,5 @@ class Measure(Protocol):
 
     @property
     @abstractmethod
-    def config(self) -> Optional[ConfigMeta]:  # noqa: D
+    def config(self) -> Optional[PydanticSemanticLayerElementConfig]:  # noqa: D
         pass
