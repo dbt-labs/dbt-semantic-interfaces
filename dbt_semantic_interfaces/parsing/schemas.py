@@ -161,6 +161,16 @@ metric_type_params_schema = {
     "additionalProperties": False,
 }
 
+
+entity_config_schema = {
+    "$id": "entity_config_schema",
+    "type": "object",
+    "properties": {
+        "meta": {"type": "object", "propertyNames": {"type": "string"}},
+    },
+    "additionalProperties": False,
+}
+
 entity_schema = {
     "$id": "entity_schema",
     "type": "object",
@@ -174,6 +184,7 @@ entity_schema = {
         "expr": {"type": ["string", "boolean"]},
         "entity": {"type": "string"},
         "label": {"type": "string"},
+        "config": {"$ref": "entity_config_schema"},
     },
     "additionalProperties": False,
     "required": ["name", "type"],
@@ -226,6 +237,15 @@ aggregation_type_params_schema = {
     "additionalProperties": False,
 }
 
+measure_config_schema = {
+    "$id": "measure_config_schema",
+    "type": "object",
+    "properties": {
+        "meta": {"type": "object", "propertyNames": {"type": "string"}},
+    },
+    "additionalProperties": False,
+}
+
 measure_schema = {
     "$id": "measure_schema",
     "type": "object",
@@ -248,9 +268,19 @@ measure_schema = {
         },
         "description": {"type": "string"},
         "label": {"type": "string"},
+        "config": {"$ref": "measure_config_schema"},
     },
     "additionalProperties": False,
     "required": ["name", "agg"],
+}
+
+dimension_config_schema = {
+    "$id": "dimension_config_schema",
+    "type": "object",
+    "properties": {
+        "meta": {"type": "object", "propertyNames": {"type": "string"}},
+    },
+    "additionalProperties": False,
 }
 
 dimension_schema = {
@@ -267,6 +297,7 @@ dimension_schema = {
         "expr": {"type": ["string", "boolean"]},
         "type_params": {"$ref": "dimension_type_params_schema"},
         "label": {"type": "string"},
+        "config": {"$ref": "dimension_config_schema"},
     },
     # dimension must have type_params if its a time dimension
     "anyOf": [{"not": {"$ref": "#/definitions/is-time-dimension"}}, {"required": ["type_params"]}],
@@ -529,6 +560,9 @@ schema_store = {
     saved_query_query_params_schema["$id"]: saved_query_query_params_schema,
     semantic_model_config_schema["$id"]: semantic_model_config_schema,
     metric_config_schema["$id"]: metric_config_schema,
+    dimension_config_schema["$id"]: dimension_config_schema,
+    entity_config_schema["$id"]: entity_config_schema,
+    measure_config_schema["$id"]: measure_config_schema,
 }
 
 resources: List[Tuple[str, Resource]] = [(str(k), DRAFT7.create_resource(v)) for k, v in schema_store.items()]
