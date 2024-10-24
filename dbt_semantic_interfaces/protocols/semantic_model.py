@@ -1,11 +1,12 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Dict, Optional, Protocol, Sequence, TypeVar
+from typing import Optional, Protocol, Sequence, TypeVar
 
 from dbt_semantic_interfaces.protocols.dimension import Dimension
 from dbt_semantic_interfaces.protocols.entity import Entity
 from dbt_semantic_interfaces.protocols.measure import Measure
+from dbt_semantic_interfaces.protocols.meta import ConfigMeta
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.node_relation import NodeRelation
 from dbt_semantic_interfaces.references import (
@@ -24,16 +25,6 @@ class SemanticModelDefaults(Protocol):
     @abstractmethod
     def agg_time_dimension(self) -> Optional[str]:
         """The aggregation time dimension to use for a measure if one was not specified."""
-        pass
-
-
-class SemanticModelConfig(Protocol):  # noqa: D
-    """The config property allows you to configure additional resources/metadata."""
-
-    @property
-    @abstractmethod
-    def meta(self) -> Dict[str, Any]:
-        """The meta field can be used to set metadata for a resource."""
         pass
 
 
@@ -148,7 +139,7 @@ class SemanticModel(Protocol):
 
     @property
     @abstractmethod
-    def config(self) -> Optional[SemanticModelConfig]:  # noqa: D
+    def config(self) -> Optional[ConfigMeta]:  # noqa: D
         pass
 
     @abstractmethod

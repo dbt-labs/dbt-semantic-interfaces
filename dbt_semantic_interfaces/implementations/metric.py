@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, Sequence, Set
+from typing import Dict, List, Optional, Sequence, Set
 
 from typing_extensions import override
 
@@ -12,11 +12,14 @@ from dbt_semantic_interfaces.implementations.base import (
     PydanticCustomInputParser,
     PydanticParseableValueType,
 )
+from dbt_semantic_interfaces.implementations.element_config import (
+    SemanticLayerElementConfig,
+)
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
-from dbt_semantic_interfaces.protocols import Metric, MetricConfig, ProtocolHint
+from dbt_semantic_interfaces.protocols import Metric, ProtocolHint
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
     ConversionCalculationType,
@@ -183,14 +186,6 @@ class PydanticMetricTypeParams(HashableBaseModel):
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
 
 
-class PydanticMetricConfig(HashableBaseModel, ProtocolHint[MetricConfig]):  # noqa: D
-    @override
-    def _implements_protocol(self) -> MetricConfig:  # noqa: D
-        return self
-
-    meta: Dict[str, Any] = Field(default_factory=dict)
-
-
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[Metric]):
     """Describes a metric."""
 
@@ -205,7 +200,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     filter: Optional[PydanticWhereFilterIntersection]
     metadata: Optional[PydanticMetadata]
     label: Optional[str] = None
-    config: Optional[PydanticMetricConfig]
+    config: Optional[SemanticLayerElementConfig]
     time_granularity: Optional[TimeGranularity] = None
 
     @property
