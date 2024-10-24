@@ -23,6 +23,7 @@ from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
 )
 from dbt_semantic_interfaces.protocols import SemanticManifestT
 from dbt_semantic_interfaces.protocols.saved_query import SavedQuery
+from dbt_semantic_interfaces.type_enums.time_granularity import TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
     SavedQueryContext,
@@ -30,6 +31,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationRule,
     ValidationError,
     ValidationIssue,
+    ValidationWarning,
     generate_exception_issue,
     validate_safely,
 )
@@ -114,7 +116,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
 
     @staticmethod
     @validate_safely("Validate the where field in a saved query.")
-    def _check_where(saved_query: SavedQuery) -> Sequence[ValidationIssue]:
+    def _check_where(saved_query: SavedQuery, custom_granularity_names: list[str]) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
         if saved_query.query_params.where is None:
             return issues
@@ -136,7 +138,37 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
                         },
                     )
                 )
+            else:
+                issues += SavedQueryRule._check_where_timespine(saved_query, custom_granularity_names)
 
+        return issues
+
+    def _check_where_timespine(
+        saved_query: SavedQuery, custom_granularity_names: list[str]
+    ) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        valid_granularity_names = [
+            standard_granularity.name for standard_granularity in TimeGranularity
+        ] + custom_granularity_names
+        for where_filter in saved_query.query_params.where.where_filters:
+            for time_dim_call_parameter_set in where_filter.call_parameter_sets.time_dimension_call_parameter_sets:
+                if not time_dim_call_parameter_set.time_granularity_name:
+                    continue
+                if time_dim_call_parameter_set.time_granularity_name not in valid_granularity_names:
+                    issues.append(
+                        ValidationWarning(
+                            context=SavedQueryContext(
+                                file_context=FileContext.from_metadata(metadata=saved_query.metadata),
+                                element_type=SavedQueryElementType.WHERE,
+                                element_value=where_filter.where_sql_template,
+                            ),
+                            # message=f"Filter for metric `{context.metric.metric_name}` is not valid. "
+                            message=f"Filter for saved query `{saved_query.name}` is not valid. "
+                            f"`{time_dim_call_parameter_set.time_granularity_name}` is not a valid granularity name. "
+                            f"Valid granularity options: {valid_granularity_names}",
+                        )
+                    )
         return issues
 
     @staticmethod
@@ -280,6 +312,11 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
             for entity in semantic_model.entities:
                 valid_group_by_element_names.add(entity.name)
 
+        custom_granularity_names = [
+            granularity.name
+            for time_spine in semantic_manifest.project_configuration.time_spines
+            for granularity in time_spine.custom_granularities
+        ]
         for saved_query in semantic_manifest.saved_queries:
             issues += SavedQueryRule._check_metrics(
                 valid_metric_names=valid_metric_names,
@@ -289,7 +326,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
                 valid_group_by_element_names=valid_group_by_element_names,
                 saved_query=saved_query,
             )
-            issues += SavedQueryRule._check_where(saved_query)
+            issues += SavedQueryRule._check_where(saved_query, custom_granularity_names)
             issues += SavedQueryRule._check_order_by(saved_query)
             issues += SavedQueryRule._check_limit(saved_query)
         return issues
