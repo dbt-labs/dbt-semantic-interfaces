@@ -3,7 +3,7 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
-from dbt_semantic_interfaces.protocols.meta import PydanticSemanticLayerElementConfig
+from dbt_semantic_interfaces.protocols.meta import SemanticLayerElementConfig
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
@@ -308,7 +308,7 @@ class Metric(Protocol):
 
     @property
     @abstractmethod
-    def config(self) -> Optional[PydanticSemanticLayerElementConfig]:  # noqa: D
+    def config(self) -> Optional[SemanticLayerElementConfig]:  # noqa: D
         pass
 
     @property

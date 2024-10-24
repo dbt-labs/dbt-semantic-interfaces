@@ -127,7 +127,7 @@ SIMPLE_METRIC_STRATEGY = builds(
     filter=builds(PydanticWhereFilter) | none(),
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
-    config=builds(SemanticLayerElementConfig),
+    config=builds(PydanticSemanticLayerElementConfig),
 )
 
 SAVED_QUERY_STRATEGY = builds(

@@ -6,7 +6,7 @@ from typing import Optional, Protocol, Sequence, TypeVar
 from dbt_semantic_interfaces.protocols.dimension import Dimension
 from dbt_semantic_interfaces.protocols.entity import Entity
 from dbt_semantic_interfaces.protocols.measure import Measure
-from dbt_semantic_interfaces.protocols.meta import PydanticSemanticLayerElementConfig
+from dbt_semantic_interfaces.protocols.meta import SemanticLayerElementConfig
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.node_relation import NodeRelation
 from dbt_semantic_interfaces.references import (
@@ -139,7 +139,7 @@ class SemanticModel(Protocol):
 
     @property
     @abstractmethod
-    def config(self) -> Optional[PydanticSemanticLayerElementConfig]:  # noqa: D
+    def config(self) -> Optional[SemanticLayerElementConfig]:  # noqa: D
         pass
 
     @abstractmethod
