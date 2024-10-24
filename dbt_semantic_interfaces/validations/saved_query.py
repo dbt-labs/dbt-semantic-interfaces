@@ -146,12 +146,17 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
     def _check_where_timespine(
         saved_query: SavedQuery, custom_granularity_names: list[str]
     ) -> Sequence[ValidationIssue]:
+        where_param = saved_query.query_params.where
+        if where_param is None:
+            return []
+
         issues: List[ValidationIssue] = []
 
         valid_granularity_names = [
             standard_granularity.name for standard_granularity in TimeGranularity
         ] + custom_granularity_names
-        for where_filter in saved_query.query_params.where.where_filters:
+
+        for where_filter in where_param.where_filters:
             for time_dim_call_parameter_set in where_filter.call_parameter_sets.time_dimension_call_parameter_sets:
                 if not time_dim_call_parameter_set.time_granularity_name:
                     continue
