@@ -9,7 +9,7 @@ from dbt_semantic_interfaces.implementations.base import (
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.implementations.element_config import (
-    SemanticLayerElementConfig,
+    PydanticSemanticLayerElementConfig,
 )
 from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
@@ -59,7 +59,7 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
     label: Optional[str] = None
 
     metadata: Optional[PydanticMetadata]
-    config: Optional[SemanticLayerElementConfig]
+    config: Optional[PydanticSemanticLayerElementConfig]
 
     @property
     def entity_references(self) -> List[LinkableElementReference]:  # noqa: D

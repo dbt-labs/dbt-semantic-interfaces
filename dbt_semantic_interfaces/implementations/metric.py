@@ -13,7 +13,7 @@ from dbt_semantic_interfaces.implementations.base import (
     PydanticParseableValueType,
 )
 from dbt_semantic_interfaces.implementations.element_config import (
-    SemanticLayerElementConfig,
+    PydanticSemanticLayerElementConfig,
 )
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
@@ -200,7 +200,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     filter: Optional[PydanticWhereFilterIntersection]
     metadata: Optional[PydanticMetadata]
     label: Optional[str] = None
-    config: Optional[SemanticLayerElementConfig]
+    config: Optional[PydanticSemanticLayerElementConfig]
     time_granularity: Optional[TimeGranularity] = None
 
     @property
