@@ -1,20 +1,11 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Dict, Optional, Protocol
+from typing import Optional, Protocol
 
+from dbt_semantic_interfaces.protocols.meta import ConfigMeta
 from dbt_semantic_interfaces.references import EntityReference
 from dbt_semantic_interfaces.type_enums import EntityType
-
-
-class EntityConfig(Protocol):  # noqa: D
-    """The config property allows you to configure additional resources/metadata."""
-
-    @property
-    @abstractmethod
-    def meta(self) -> Dict[str, Any]:
-        """The meta field can be used to set metadata for a resource."""
-        pass
 
 
 class Entity(Protocol):
@@ -73,5 +64,5 @@ class Entity(Protocol):
 
     @property
     @abstractmethod
-    def config(self) -> Optional[EntityConfig]:  # noqa: D
+    def config(self) -> Optional[ConfigMeta]:  # noqa: D
         pass

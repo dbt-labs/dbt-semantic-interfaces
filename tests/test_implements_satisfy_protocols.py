@@ -3,20 +3,18 @@ from typing import List, Protocol, runtime_checkable
 from hypothesis import given
 from hypothesis.strategies import booleans, builds, from_type, just, lists, none, text
 
+from dbt_semantic_interfaces.implementations.element_config import (
+    SemanticLayerElementConfig,
+)
 from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimension,
-    PydanticDimensionConfig,
     PydanticDimensionTypeParams,
     PydanticDimensionValidityParams,
 )
-from dbt_semantic_interfaces.implementations.elements.entity import (
-    PydanticEntity,
-    PydanticEntityConfig,
-)
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import (
     PydanticMeasure,
     PydanticMeasureAggregationParameters,
-    PydanticMeasureConfig,
     PydanticNonAdditiveDimensionParameters,
 )
 from dbt_semantic_interfaces.implementations.export import PydanticExport
@@ -71,7 +69,7 @@ CATEGORICAL_DIMENSION_STRATEGY = builds(
     expr=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
-    config=builds(PydanticDimensionConfig),
+    config=builds(SemanticLayerElementConfig),
 )
 
 DIMENSION_VALIDITY_PARAMS_STRATEGY = builds(
@@ -88,7 +86,7 @@ TIME_DIMENSION_STRATEGY = builds(
     expr=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
-    config=builds(PydanticDimensionConfig),
+    config=builds(SemanticLayerElementConfig),
 )
 
 DIMENSION_STRATEGY = TIME_DIMENSION_STRATEGY | CATEGORICAL_DIMENSION_STRATEGY
@@ -100,7 +98,7 @@ ENTITY_STRATEGY = builds(
     expr=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
-    config=builds(PydanticEntityConfig),
+    config=builds(SemanticLayerElementConfig),
 )
 
 MEASURE_STRATEGY = builds(
@@ -112,7 +110,7 @@ MEASURE_STRATEGY = builds(
     non_additive_dimesnion=builds(PydanticNonAdditiveDimensionParameters) | none(),
     agg_time_dimension=OPTIONAL_STR_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
-    config=builds(PydanticMeasureConfig),
+    config=builds(SemanticLayerElementConfig),
 )
 
 SEMANTIC_MODEL_STRATEGY = builds(
