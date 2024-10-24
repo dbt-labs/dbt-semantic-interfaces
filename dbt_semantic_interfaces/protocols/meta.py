@@ -2,7 +2,7 @@ from abc import abstractmethod
 from typing import Any, Dict, Protocol
 
 
-class PydanticSemanticLayerElementConfig(Protocol):  # noqa: D
+class SemanticLayerElementConfig(Protocol):  # noqa: D
     """The config property allows you to configure additional resources/metadata."""
 
     @property

@@ -7,7 +7,7 @@ from dbt_semantic_interfaces.implementations.base import (
     ModelWithMetadataParsing,
 )
 from dbt_semantic_interfaces.implementations.element_config import (
-    SemanticLayerElementConfig,
+    PydanticSemanticLayerElementConfig,
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import MeasureReference
@@ -49,7 +49,7 @@ class PydanticMeasure(HashableBaseModel, ModelWithMetadataParsing):
     non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters] = None
     agg_time_dimension: Optional[str] = None
     label: Optional[str] = None
-    config: Optional[SemanticLayerElementConfig] = None
+    config: Optional[PydanticSemanticLayerElementConfig] = None
 
     @property
     def reference(self) -> MeasureReference:  # noqa: D

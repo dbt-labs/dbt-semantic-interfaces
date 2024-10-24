@@ -4,7 +4,7 @@ from hypothesis import given
 from hypothesis.strategies import booleans, builds, from_type, just, lists, none, text
 
 from dbt_semantic_interfaces.implementations.element_config import (
-    SemanticLayerElementConfig,
+    PydanticSemanticLayerElementConfig,
 )
 from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimension,
@@ -68,7 +68,7 @@ CATEGORICAL_DIMENSION_STRATEGY = builds(
     expr=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
-    config=builds(SemanticLayerElementConfig),
+    config=builds(PydanticSemanticLayerElementConfig),
 )
 
 DIMENSION_VALIDITY_PARAMS_STRATEGY = builds(
@@ -85,7 +85,7 @@ TIME_DIMENSION_STRATEGY = builds(
     expr=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
-    config=builds(SemanticLayerElementConfig),
+    config=builds(PydanticSemanticLayerElementConfig),
 )
 
 DIMENSION_STRATEGY = TIME_DIMENSION_STRATEGY | CATEGORICAL_DIMENSION_STRATEGY
@@ -97,7 +97,7 @@ ENTITY_STRATEGY = builds(
     expr=OPTIONAL_STR_STRATEGY,
     metadata=OPTIONAL_METADATA_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
-    config=builds(SemanticLayerElementConfig),
+    config=builds(PydanticSemanticLayerElementConfig),
 )
 
 MEASURE_STRATEGY = builds(
@@ -109,7 +109,7 @@ MEASURE_STRATEGY = builds(
     non_additive_dimesnion=builds(PydanticNonAdditiveDimensionParameters) | none(),
     agg_time_dimension=OPTIONAL_STR_STRATEGY,
     label=OPTIONAL_STR_STRATEGY,
-    config=builds(SemanticLayerElementConfig),
+    config=builds(PydanticSemanticLayerElementConfig),
 )
 
 SEMANTIC_MODEL_STRATEGY = builds(
