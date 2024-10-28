@@ -25,6 +25,9 @@ from dbt_semantic_interfaces.implementations.semantic_model import (
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
+from dbt_semantic_interfaces.validations.validator_helpers import (
+    SemanticManifestValidationResults,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -169,3 +172,39 @@ def semantic_model_with_guaranteed_meta(
         dimensions=dimensions,
         metadata=metadata,
     )
+
+
+def check_only_one_error_with_message(  # noqa: D
+    results: SemanticManifestValidationResults, target_message: str
+) -> None:
+    assert len(results.warnings) == 0
+    assert len(results.errors) == 1
+    assert len(results.future_errors) == 0
+
+    found_match = results.errors[0].message.find(target_message) != -1
+    # Adding this dict to the assert so that when it does not match, pytest prints the expected and actual values.
+    assert {
+        "expected": target_message,
+        "actual": results.errors[0].message,
+    } and found_match
+
+
+def check_only_one_warning_with_message(  # noqa: D
+    results: SemanticManifestValidationResults, target_message: str
+) -> None:
+    assert len(results.errors) == 0
+    assert len(results.warnings) == 1
+    assert len(results.future_errors) == 0
+
+    found_match = results.warnings[0].message.find(target_message) != -1
+    # Adding this dict to the assert so that when it does not match, pytest prints the expected and actual values.
+    assert {
+        "expected": target_message,
+        "actual": results.warnings[0].message,
+    } and found_match
+
+
+def check_no_errors_or_warnings(results: SemanticManifestValidationResults) -> None:  # noqa: D
+    assert len(results.errors) == 0
+    assert len(results.warnings) == 0
+    assert len(results.future_errors) == 0

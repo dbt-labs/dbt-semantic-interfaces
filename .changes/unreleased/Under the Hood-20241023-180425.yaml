@@ -1,5 +1,5 @@
 kind: Under the Hood
-body: Added validation warnings for invalid time spines in where filters of saved queries.
+body: Added validation warnings for invalid granularity names in where filters of saved queries.
 time: 2024-10-23T18:04:25.235887-07:00
 custom:
     Author: theyostalservice
