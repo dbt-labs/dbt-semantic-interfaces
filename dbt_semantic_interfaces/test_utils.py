@@ -27,6 +27,7 @@ from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
 from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationResults,
+    ValidationIssue,
 )
 
 logger = logging.getLogger(__name__)
@@ -174,37 +175,62 @@ def semantic_model_with_guaranteed_meta(
     )
 
 
+def _assert_expected_validation_message(  # noqa: D
+    issues: Sequence[ValidationIssue],
+    message_fragment: str,
+) -> None:
+    found_match = any([issue.message.find(message_fragment) != -1 for issue in issues])
+    # Adding this dict to the assert so that when it does not match, pytest prints the expected and actual values.
+    assert {
+        "expected": message_fragment,
+        "actual_messages": [issue.message for issue in issues],
+    } and found_match
+
+
+def check_expected_issues(  # noqa: D
+    results: SemanticManifestValidationResults,
+    num_expected_errors: int = 0,
+    num_expected_warnings: int = 0,
+    expected_error_msgs: Sequence[str] = [],
+    expected_warning_msgs: Sequence[str] = [],
+) -> None:
+    """Validates the number, type, and content of ValidationIssues.
+
+    Currently assumes zero future_errors as there are no future_errors
+    implemented, but this function can be expanded to cover those if needed.
+    """
+    assert len(results.warnings) == num_expected_warnings
+    assert len(results.errors) == num_expected_errors
+    assert len(results.future_errors) == 0, "validation function expects zero future_errors to be implemented."
+
+    for expected_error_msg in expected_error_msgs:
+        _assert_expected_validation_message(issues=results.errors, message_fragment=expected_error_msg)
+    for expected_warning_msg in expected_warning_msgs:
+        _assert_expected_validation_message(issues=results.warnings, message_fragment=expected_warning_msg)
+
+
 def check_only_one_error_with_message(  # noqa: D
     results: SemanticManifestValidationResults, target_message: str
 ) -> None:
-    assert len(results.warnings) == 0
-    assert len(results.errors) == 1
-    assert len(results.future_errors) == 0
-
-    found_match = results.errors[0].message.find(target_message) != -1
-    # Adding this dict to the assert so that when it does not match, pytest prints the expected and actual values.
-    assert {
-        "expected": target_message,
-        "actual": results.errors[0].message,
-    } and found_match
+    check_expected_issues(
+        results=results,
+        num_expected_errors=1,
+        expected_error_msgs=[target_message],
+    )
 
 
 def check_only_one_warning_with_message(  # noqa: D
     results: SemanticManifestValidationResults, target_message: str
 ) -> None:
-    assert len(results.errors) == 0
-    assert len(results.warnings) == 1
-    assert len(results.future_errors) == 0
-
-    found_match = results.warnings[0].message.find(target_message) != -1
-    # Adding this dict to the assert so that when it does not match, pytest prints the expected and actual values.
-    assert {
-        "expected": target_message,
-        "actual": results.warnings[0].message,
-    } and found_match
+    check_expected_issues(
+        results=results,
+        num_expected_warnings=1,
+        expected_warning_msgs=[target_message],
+    )
 
 
 def check_no_errors_or_warnings(results: SemanticManifestValidationResults) -> None:  # noqa: D
-    assert len(results.errors) == 0
-    assert len(results.warnings) == 0
-    assert len(results.future_errors) == 0
+    # no num arguments required since all defaults are zero
+    check_expected_issues(
+        results=results,
+    )

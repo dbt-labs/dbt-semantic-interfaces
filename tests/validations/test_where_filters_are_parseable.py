@@ -26,9 +26,7 @@ from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
 )
-from dbt_semantic_interfaces.validations.where_filters import (
-    WhereFiltersAreParseableRule,
-)
+from dbt_semantic_interfaces.validations.where_filters import WhereFiltersAreParseable
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +39,7 @@ logger = logging.getLogger(__name__)
 def test_metric_where_filter_validations_happy(  # noqa: D
     simple_semantic_manifest__with_primary_transforms: PydanticSemanticManifest,
 ) -> None:
-    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     results = validator.validate_semantic_manifest(simple_semantic_manifest__with_primary_transforms)
     assert not results.has_blocking_issues
 
@@ -55,7 +53,7 @@ def test_where_filter_validations_bad_base_filter(  # noqa: D
     assert metric.filter is not None
     assert len(metric.filter.where_filters) > 0
     metric.filter.where_filters[0].where_sql_template = "{{ dimension('too', 'many', 'variables', 'to', 'handle') }}"
-    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(SemanticManifestValidationException, match=f"trying to parse filter of metric `{metric.name}`"):
         validator.checked_validations(manifest)
 
@@ -74,7 +72,7 @@ def test_where_filter_validations_bad_measure_filter(  # noqa: D
             PydanticWhereFilter(where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}")
         ]
     )
-    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(
         SemanticManifestValidationException,
         match=f"trying to parse filter of measure input `{metric.type_params.measure.name}` on metric `{metric.name}`",
@@ -96,7 +94,7 @@ def test_where_filter_validations_bad_numerator_filter(  # noqa: D
             PydanticWhereFilter(where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}")
         ]
     )
-    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(
         SemanticManifestValidationException, match=f"trying to parse the numerator filter on metric `{metric.name}`"
     ):
@@ -117,7 +115,7 @@ def test_where_filter_validations_bad_denominator_filter(  # noqa: D
             PydanticWhereFilter(where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}")
         ]
     )
-    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(
         SemanticManifestValidationException, match=f"trying to parse the denominator filter on metric `{metric.name}`"
     ):
@@ -142,7 +140,7 @@ def test_where_filter_validations_bad_input_metric_filter(  # noqa: D
             PydanticWhereFilter(where_sql_template="{{ dimension('too', 'many', 'variables', 'to', 'handle') }}")
         ]
     )
-    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     with pytest.raises(
         SemanticManifestValidationException,
         match=f"trying to parse filter for input metric `{input_metric.name}` on metric `{metric.name}`",
@@ -170,7 +168,7 @@ def test_metric_where_filter_validations_invalid_granularity(  # noqa: D
             PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'MONTH') }}"),
         ]
     )
-    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     issues = validator.validate_semantic_manifest(manifest)
     assert not issues.has_blocking_issues
     assert len(issues.warnings) == 1
@@ -203,7 +201,7 @@ def test_saved_query_with_happy_filter(  # noqa: D
         ),
     ]
 
-    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     check_no_errors_or_warnings(manifest_validator.validate_semantic_manifest(manifest))
 
 
@@ -228,7 +226,7 @@ def test_saved_query_validates_granularity_name_despite_case(  # noqa: D
         ),
     ]
 
-    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     check_no_errors_or_warnings(manifest_validator.validate_semantic_manifest(manifest))
 
 
@@ -250,7 +248,7 @@ def test_invalid_where_in_saved_query(  # noqa: D
         ),
     ]
 
-    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     check_only_one_error_with_message(
         manifest_validator.validate_semantic_manifest(manifest),
         "trying to parse a filter in saved query",
@@ -278,7 +276,7 @@ def test_saved_query_where_filter_validations_invalid_granularity(  # noqa: D
         ),
     ]
 
-    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     check_only_one_warning_with_message(
         manifest_validator.validate_semantic_manifest(manifest),
         "is not a valid granularity name",
@@ -302,7 +300,7 @@ def test_metric_filter_error(  # noqa: D
         ),
     ]
 
-    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseableRule()])
+    manifest_validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
     check_only_one_error_with_message(
         manifest_validator.validate_semantic_manifest(manifest),
         "An error occurred while trying to parse a filter in saved query",

@@ -46,9 +46,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationResults,
     SemanticManifestValidationRule,
 )
-from dbt_semantic_interfaces.validations.where_filters import (
-    WhereFiltersAreParseableRule,
-)
+from dbt_semantic_interfaces.validations.where_filters import WhereFiltersAreParseable
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +86,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         SemanticModelDefaultsRule[SemanticManifestT](),
         PrimaryEntityRule[SemanticManifestT](),
         PrimaryEntityDimensionPairs[SemanticManifestT](),
-        WhereFiltersAreParseableRule[SemanticManifestT](),
+        WhereFiltersAreParseable[SemanticManifestT](),
         SavedQueryRule[SemanticManifestT](),
         MetricLabelsRule[SemanticManifestT](),
         SemanticModelLabelsRule[SemanticManifestT](),
