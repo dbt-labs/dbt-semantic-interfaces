@@ -1,5 +1,5 @@
 import traceback
-from enum import StrEnum, auto
+from enum import Enum
 from typing import Generic, List, Sequence, Tuple
 
 from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
@@ -21,11 +21,11 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 )
 
 
-class SemanticManifestNodeType(StrEnum):
+class SemanticManifestNodeType(Enum):
     """Types of objects to validate (used for validation messages)."""
 
-    SAVED_QUERY = auto()
-    METRIC = auto()
+    SAVED_QUERY = "saved query"
+    METRIC = "metric"
 
 
 class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
