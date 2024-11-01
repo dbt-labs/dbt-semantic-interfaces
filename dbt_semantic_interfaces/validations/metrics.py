@@ -37,6 +37,11 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     validate_safely,
 )
 
+# Avoids breaking change from moving this class out of this file.
+from dbt_semantic_interfaces.validations.where_filters import (
+    WhereFiltersAreParseable,  # noQa
+)
+
 
 class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that cumulative metrics are configured properly."""
