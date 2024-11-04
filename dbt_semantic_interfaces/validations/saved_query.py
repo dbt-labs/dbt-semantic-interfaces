@@ -113,33 +113,6 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
         return issues
 
     @staticmethod
-    @validate_safely("Validate the where field in a saved query.")
-    def _check_where(saved_query: SavedQuery) -> Sequence[ValidationIssue]:
-        issues: List[ValidationIssue] = []
-        if saved_query.query_params.where is None:
-            return issues
-        for where_filter in saved_query.query_params.where.where_filters:
-            try:
-                where_filter.call_parameter_sets
-            except Exception as e:
-                issues.append(
-                    generate_exception_issue(
-                        what_was_being_done=f"trying to parse a filter in saved query `{saved_query.name}`",
-                        e=e,
-                        context=SavedQueryContext(
-                            file_context=FileContext.from_metadata(metadata=saved_query.metadata),
-                            element_type=SavedQueryElementType.WHERE,
-                            element_value=where_filter.where_sql_template,
-                        ),
-                        extras={
-                            "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                        },
-                    )
-                )
-
-        return issues
-
-    @staticmethod
     def _parse_query_item(
         saved_query: SavedQuery,
         text_processor: ObjectBuilderTextProcessor,
@@ -289,7 +262,6 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
                 valid_group_by_element_names=valid_group_by_element_names,
                 saved_query=saved_query,
             )
-            issues += SavedQueryRule._check_where(saved_query)
             issues += SavedQueryRule._check_order_by(saved_query)
             issues += SavedQueryRule._check_limit(saved_query)
         return issues

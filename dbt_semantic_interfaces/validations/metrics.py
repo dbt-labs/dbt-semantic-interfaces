@@ -1,7 +1,6 @@
 import traceback
-from typing import Dict, Generic, List, Optional, Sequence, Tuple
+from typing import Dict, Generic, List, Optional, Sequence
 
-from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
 from dbt_semantic_interfaces.errors import ParsingException
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
@@ -35,8 +34,12 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     ValidationError,
     ValidationIssue,
     ValidationWarning,
-    generate_exception_issue,
     validate_safely,
+)
+
+# Avoids breaking change from moving this class out of this file.
+from dbt_semantic_interfaces.validations.where_filters import (
+    WhereFiltersAreParseable,  # noQa
 )
 
 
@@ -241,177 +244,6 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
             issues += DerivedMetricRule._validate_alias_collision(metric=metric)
             issues += DerivedMetricRule._validate_time_offset_params(metric=metric)
             issues += DerivedMetricRule._validate_expr(metric=metric)
-        return issues
-
-
-class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
-    """Validates that all Metric WhereFilters are parseable."""
-
-    @staticmethod
-    def _validate_time_granularity_names(
-        context: MetricContext,
-        filter_expression_parameter_sets: Sequence[Tuple[str, FilterCallParameterSets]],
-        custom_granularity_names: List[str],
-    ) -> Sequence[ValidationIssue]:
-        issues: List[ValidationIssue] = []
-
-        valid_granularity_names = [
-            standard_granularity.value for standard_granularity in TimeGranularity
-        ] + custom_granularity_names
-        for _, parameter_set in filter_expression_parameter_sets:
-            for time_dim_call_parameter_set in parameter_set.time_dimension_call_parameter_sets:
-                if not time_dim_call_parameter_set.time_granularity_name:
-                    continue
-                if time_dim_call_parameter_set.time_granularity_name.lower() not in valid_granularity_names:
-                    issues.append(
-                        ValidationWarning(
-                            context=context,
-                            message=f"Filter for metric `{context.metric.metric_name}` is not valid. "
-                            f"`{time_dim_call_parameter_set.time_granularity_name}` is not a valid granularity name. "
-                            f"Valid granularity options: {valid_granularity_names}",
-                        )
-                    )
-        return issues
-
-    @staticmethod
-    @validate_safely(
-        whats_being_done="running model validation ensuring a metric's filter properties are configured properly"
-    )
-    def _validate_metric(metric: Metric, custom_granularity_names: List[str]) -> Sequence[ValidationIssue]:  # noqa: D
-        issues: List[ValidationIssue] = []
-        context = MetricContext(
-            file_context=FileContext.from_metadata(metadata=metric.metadata),
-            metric=MetricModelReference(metric_name=metric.name),
-        )
-
-        if metric.filter is not None:
-            try:
-                metric.filter.filter_expression_parameter_sets
-            except Exception as e:
-                issues.append(
-                    generate_exception_issue(
-                        what_was_being_done=f"trying to parse filter of metric `{metric.name}`",
-                        e=e,
-                        context=context,
-                        extras={
-                            "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                        },
-                    )
-                )
-            else:
-                issues += WhereFiltersAreParseable._validate_time_granularity_names(
-                    context=context,
-                    filter_expression_parameter_sets=metric.filter.filter_expression_parameter_sets,
-                    custom_granularity_names=custom_granularity_names,
-                )
-
-        if metric.type_params:
-            measure = metric.type_params.measure
-            if measure is not None and measure.filter is not None:
-                try:
-                    measure.filter.filter_expression_parameter_sets
-                except Exception as e:
-                    issues.append(
-                        generate_exception_issue(
-                            what_was_being_done=f"trying to parse filter of measure input `{measure.name}` "
-                            f"on metric `{metric.name}`",
-                            e=e,
-                            context=context,
-                            extras={
-                                "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                            },
-                        )
-                    )
-                else:
-                    issues += WhereFiltersAreParseable._validate_time_granularity_names(
-                        context=context,
-                        filter_expression_parameter_sets=measure.filter.filter_expression_parameter_sets,
-                        custom_granularity_names=custom_granularity_names,
-                    )
-
-            numerator = metric.type_params.numerator
-            if numerator is not None and numerator.filter is not None:
-                try:
-                    numerator.filter.filter_expression_parameter_sets
-                except Exception as e:
-                    issues.append(
-                        generate_exception_issue(
-                            what_was_being_done=f"trying to parse the numerator filter on metric `{metric.name}`",
-                            e=e,
-                            context=context,
-                            extras={
-                                "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                            },
-                        )
-                    )
-                else:
-                    issues += WhereFiltersAreParseable._validate_time_granularity_names(
-                        context=context,
-                        filter_expression_parameter_sets=numerator.filter.filter_expression_parameter_sets,
-                        custom_granularity_names=custom_granularity_names,
-                    )
-
-            denominator = metric.type_params.denominator
-            if denominator is not None and denominator.filter is not None:
-                try:
-                    denominator.filter.filter_expression_parameter_sets
-                except Exception as e:
-                    issues.append(
-                        generate_exception_issue(
-                            what_was_being_done=f"trying to parse the denominator filter on metric `{metric.name}`",
-                            e=e,
-                            context=context,
-                            extras={
-                                "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                            },
-                        )
-                    )
-                else:
-                    issues += WhereFiltersAreParseable._validate_time_granularity_names(
-                        context=context,
-                        filter_expression_parameter_sets=denominator.filter.filter_expression_parameter_sets,
-                        custom_granularity_names=custom_granularity_names,
-                    )
-
-            for input_metric in metric.type_params.metrics or []:
-                if input_metric.filter is not None:
-                    try:
-                        input_metric.filter.filter_expression_parameter_sets
-                    except Exception as e:
-                        issues.append(
-                            generate_exception_issue(
-                                what_was_being_done=f"trying to parse filter for input metric `{input_metric.name}` "
-                                f"on metric `{metric.name}`",
-                                e=e,
-                                context=context,
-                                extras={
-                                    "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                                },
-                            )
-                        )
-                    else:
-                        issues += WhereFiltersAreParseable._validate_time_granularity_names(
-                            context=context,
-                            filter_expression_parameter_sets=input_metric.filter.filter_expression_parameter_sets,
-                            custom_granularity_names=custom_granularity_names,
-                        )
-
-            # TODO: Are saved query filters being validated? Task: SL-2932
-        return issues
-
-    @staticmethod
-    @validate_safely(whats_being_done="running manifest validation ensuring all metric where filters are parseable")
-    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
-        issues: List[ValidationIssue] = []
-        custom_granularity_names = [
-            granularity.name
-            for time_spine in semantic_manifest.project_configuration.time_spines
-            for granularity in time_spine.custom_granularities
-        ]
-        for metric in semantic_manifest.metrics or []:
-            issues += WhereFiltersAreParseable._validate_metric(
-                metric=metric, custom_granularity_names=custom_granularity_names
-            )
         return issues
 
 
