@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Optional, Tuple
+from typing import Optional, Sequence, Tuple
 
 from dbt_semantic_interfaces.naming.keywords import DUNDER
 from dbt_semantic_interfaces.references import EntityReference
@@ -19,20 +19,14 @@ class StructuredDunderedName:
     entity_links: ["listing"]
     element_name: "ds"
     granularity: TimeGranularity.WEEK
-
-    The time granularity is part of legacy query syntax and there are plans to migrate away from this format. As such,
-    this will not be updated to allow for custom granularity values. This implies that any query paths that push named
-    parameters through this class will not support a custom grain reference of the form `metric_time__martian_year`,
-    and users wishing to use their martian year grain will have to explicitly reference it via a separate parameter
-    instead of gluing it onto the end of the name.
     """
 
     entity_links: Tuple[EntityReference, ...]
     element_name: str
-    time_granularity: Optional[TimeGranularity] = None
+    time_granularity: Optional[str] = None
 
     @staticmethod
-    def parse_name(name: str) -> StructuredDunderedName:
+    def parse_name(name: str, custom_granularity_names: Sequence[str] = ()) -> StructuredDunderedName:
         """Construct from a string like 'listing__ds__month'."""
         name_parts = name.split(DUNDER)
 
@@ -40,11 +34,17 @@ class StructuredDunderedName:
         if len(name_parts) == 1:
             return StructuredDunderedName((), name_parts[0])
 
-        associated_granularity = None
-        granularity: TimeGranularity
+        associated_granularity: Optional[str] = None
         for granularity in TimeGranularity:
             if name_parts[-1] == granularity.value:
-                associated_granularity = granularity
+                associated_granularity = granularity.value
+                break
+
+        if associated_granularity is None:
+            for custom_grain in custom_granularity_names:
+                if name_parts[-1] == custom_grain:
+                    associated_granularity = custom_grain
+                    break
 
         # Has a time granularity
         if associated_granularity:
@@ -69,7 +69,7 @@ class StructuredDunderedName:
         """Return the full name form. e.g. ds or listing__ds__month."""
         items = [entity_reference.element_name for entity_reference in self.entity_links] + [self.element_name]
         if self.time_granularity:
-            items.append(self.time_granularity.value)
+            items.append(self.time_granularity)
         return DUNDER.join(items)
 
     @property
@@ -82,7 +82,7 @@ class StructuredDunderedName:
     @property
     def dundered_name_without_entity(self) -> str:
         """Return the name without the entity. e.g. listing__ds__month -> ds__month."""
-        return DUNDER.join((self.element_name,) + ((self.time_granularity.value,) if self.time_granularity else ()))
+        return DUNDER.join((self.element_name,) + ((self.time_granularity,) if self.time_granularity else ()))
 
     @property
     def entity_prefix(self) -> Optional[str]:
@@ -91,52 +91,3 @@ class StructuredDunderedName:
             return DUNDER.join(tuple(entity_reference.element_name for entity_reference in self.entity_links))
 
         return None
-
-
-class DunderedNameFormatter:
-    """Helps to parse names into StructuredDunderedName and vice versa."""
-
-    @staticmethod
-    def parse_name(name: str) -> StructuredDunderedName:
-        """Construct from a string like 'listing__ds__month'."""
-        name_parts = name.split(DUNDER)
-
-        # No dunder, e.g. "ds"
-        if len(name_parts) == 1:
-            return StructuredDunderedName((), name_parts[0])
-
-        associated_granularity = None
-        granularity: TimeGranularity
-        for granularity in TimeGranularity:
-            if name_parts[-1] == granularity.value:
-                associated_granularity = granularity
-
-        # Has a time granularity
-        if associated_granularity:
-            #  e.g. "ds__month"
-            if len(name_parts) == 2:
-                return StructuredDunderedName((), name_parts[0], associated_granularity)
-            # e.g. "messages__ds__month"
-            return StructuredDunderedName(
-                entity_links=tuple(EntityReference(element_name=entity_name) for entity_name in name_parts[:-2]),
-                element_name=name_parts[-2],
-                time_granularity=associated_granularity,
-            )
-        # e.g. "messages__ds"
-        else:
-            return StructuredDunderedName(
-                entity_links=tuple(EntityReference(element_name=entity_name) for entity_name in name_parts[:-1]),
-                element_name=name_parts[-1],
-            )
-
-    @staticmethod
-    def create_structured_name(  # noqa: D
-        element_name: str,
-        entity_links: Tuple[EntityReference, ...] = (),
-        time_granularity: Optional[TimeGranularity] = None,
-    ) -> StructuredDunderedName:
-        return StructuredDunderedName(
-            entity_links=entity_links,
-            element_name=element_name,
-            time_granularity=time_granularity,
-        )
