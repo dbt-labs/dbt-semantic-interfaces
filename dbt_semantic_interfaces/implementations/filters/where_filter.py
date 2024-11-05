@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import textwrap
 import traceback
-from typing import Callable, Generator, List, Tuple
+from typing import Callable, Generator, List, Sequence, Tuple
 
 from typing_extensions import Self
 
@@ -49,9 +49,10 @@ class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
         else:
             raise ValueError(f"Expected input to be of type string, but got type {type(input)} with value: {input}")
 
-    @property
-    def call_parameter_sets(self) -> FilterCallParameterSets:  # noqa: D
-        return WhereFilterParser.parse_call_parameter_sets(self.where_sql_template)
+    def call_parameter_sets(self, custom_granularity_names: Sequence[str]) -> FilterCallParameterSets:  # noqa: D
+        return WhereFilterParser.parse_call_parameter_sets(
+            where_sql_template=self.where_sql_template, custom_granularity_names=custom_granularity_names
+        )
 
 
 class PydanticWhereFilterIntersection(HashableBaseModel):
@@ -115,14 +116,20 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
                 f"or dict but got {type(input)} with value {input}"
             )
 
-    @property
-    def filter_expression_parameter_sets(self) -> List[Tuple[str, FilterCallParameterSets]]:
+    def filter_expression_parameter_sets(
+        self, custom_granularity_names: Sequence[str]
+    ) -> List[Tuple[str, FilterCallParameterSets]]:
         """Gets the call parameter sets for each filter expression."""
         filter_parameter_sets: List[Tuple[str, FilterCallParameterSets]] = []
         invalid_filter_expressions: List[Tuple[str, Exception]] = []
         for where_filter in self.where_filters:
             try:
-                filter_parameter_sets.append((where_filter.where_sql_template, where_filter.call_parameter_sets))
+                filter_parameter_sets.append(
+                    (
+                        where_filter.where_sql_template,
+                        where_filter.call_parameter_sets(custom_granularity_names=custom_granularity_names),
+                    )
+                )
             except Exception as e:
                 invalid_filter_expressions.append((where_filter.where_sql_template, e))
 
