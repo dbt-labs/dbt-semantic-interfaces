@@ -286,6 +286,19 @@
                 },
                 "schema": {
                     "type": "string"
+                },
+                "tags": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ]
                 }
             },
             "required": [

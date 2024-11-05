@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Optional, Protocol
+from typing import List, Optional, Protocol
 
 from dbt_semantic_interfaces.type_enums.export_destination_type import (
     ExportDestinationType,
@@ -41,4 +41,10 @@ class ExportConfig(Protocol):
     @abstractmethod
     def alias(self) -> Optional[str]:
         """Name for table/filte export is written to. Defaults to export name."""
+        pass
+
+    @property
+    @abstractmethod
+    def tags(self) -> Optional[List[str]]:
+        """List of tags to be used as part of resource selection in dbt."""
         pass

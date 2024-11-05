@@ -159,27 +159,49 @@ def test_saved_query_exports() -> None:
                 export_as: VIEW
                 schema: my_schema
                 alias: my_view_name
+                tags:
+                  - "tag_1"
             - name: test_exports2
               config:
                 export_as: table
+                tags:
+                  - "tag_2_A"
+                  - "tag_2_B"
         """
     )
+    # tags: "tag_1"
+    # tags:
+    #       - "tag_2_B"
+    #       - "tag_2_A"
+
+    # - name: test_exports3
+    #   config:
+    #     export_as: table
+
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
     build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    print(build_result.issues)
 
     assert len(build_result.semantic_manifest.saved_queries) == 1
     saved_query = build_result.semantic_manifest.saved_queries[0]
     assert saved_query.exports and len(saved_query.exports) == 2
     names_to_exports = {export.name: export for export in saved_query.exports}
     assert set(names_to_exports.keys()) == {"test_exports1", "test_exports2"}
+    # assert set(names_to_exports.keys()) == {"test_exports1", "test_exports2", "test_exports3"}
 
     export1_config = names_to_exports["test_exports1"].config
     assert export1_config.export_as == ExportDestinationType.VIEW
     assert export1_config.schema_name == "my_schema"
     assert export1_config.alias == "my_view_name"
+    assert export1_config.tags == ["tag_1"]
 
     export2_config = names_to_exports["test_exports2"].config
     assert export2_config.export_as == ExportDestinationType.TABLE
     assert export2_config.schema_name is None
     assert export2_config.alias is None
+    assert export2_config.tags == ["tag_2_A", "tag_2_B"]
+
+    # export3_no_tags_config = names_to_exports["test_exports3"].config
+    # assert export2_config.export_as == ExportDestinationType.TABLE
+    # assert export3_no_tags_config.tags is None

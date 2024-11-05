@@ -409,6 +409,15 @@ export_config_schema = {
         "export_as": {"enum": export_destination_type_values},
         "schema": {"type": "string"},
         "alias": {"type": "string"},
+        "tags": {
+            "oneOf": [
+                {"type": "string"},
+                {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+            ],
+        },
     },
     "required": ["export_as"],
     "additionalProperties": False,

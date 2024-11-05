@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Optional
+from typing import List, Optional
 
 from typing_extensions import override
 
@@ -31,6 +31,7 @@ class PydanticExportConfig(HashableBaseModel, ProtocolHint[ExportConfig]):
     export_as: ExportDestinationType
     schema_name: Optional[str] = Field(alias="schema", default=None)
     alias: Optional[str] = None
+    tags: Optional[List[str]] = Field(default_factory=list)
 
 
 class PydanticExport(HashableBaseModel, ProtocolHint[Export]):
