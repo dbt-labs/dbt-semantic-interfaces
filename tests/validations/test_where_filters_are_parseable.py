@@ -166,6 +166,7 @@ def test_metric_where_filter_validations_invalid_granularity(  # noqa: D
             PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'cool') }}"),
             PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'month') }}"),
             PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'MONTH') }}"),
+            PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'martian_day') }}"),
         ]
     )
     validator = SemanticManifestValidator[PydanticSemanticManifest]([WhereFiltersAreParseable()])
@@ -195,6 +196,7 @@ def test_saved_query_with_happy_filter(  # noqa: D
                 where=PydanticWhereFilterIntersection(
                     where_filters=[
                         PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'hour') }}"),
+                        PydanticWhereFilter(where_sql_template="{{ TimeDimension('metric_time', 'martian_day') }}"),
                     ]
                 ),
             ),

@@ -196,6 +196,22 @@ def test_dimension_date_part() -> None:  # noqa
                 time_granularity_name=TimeGranularity.WEEK.value,
             ),
         ),
+        (
+            "{{ TimeDimension('metric_time__martian_week') }} > '2023-01-01'",
+            TimeDimensionCallParameterSet(
+                time_dimension_reference=TimeDimensionReference("metric_time"),
+                entity_path=(),
+                time_granularity_name="martian_week",
+            ),
+        ),
+        (
+            "{{ TimeDimension('metric_time', time_granularity_name='martian_week') }} > '2023-01-01'",
+            TimeDimensionCallParameterSet(
+                time_dimension_reference=TimeDimensionReference("metric_time"),
+                entity_path=(),
+                time_granularity_name="martian_week",
+            ),
+        ),
     ],
 )
 def test_time_dimension_grain(  # noqa
