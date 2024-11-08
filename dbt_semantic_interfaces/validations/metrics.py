@@ -51,6 +51,12 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
+        custom_granularity_names = [
+            granularity.name
+            for time_spine in semantic_manifest.project_configuration.time_spines
+            for granularity in time_spine.custom_granularities
+        ]
+
         for metric in semantic_manifest.metrics or []:
             if metric.type != MetricType.CUMULATIVE:
                 continue
@@ -105,7 +111,7 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 try:
                     window_str = f"{window.count} {window.granularity}"
                     # TODO: Should not call an implementation class.
-                    PydanticMetricTimeWindow.parse(window=window_str, custom_granularity_names=())
+                    PydanticMetricTimeWindow.parse(window=window_str, custom_granularity_names=custom_granularity_names)
                 except ParsingException as e:
                     issues.append(
                         ValidationError(
@@ -252,14 +258,16 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the params of metric are valid if it is a conversion metric")
-    def _validate_type_params(metric: Metric, conversion_type_params: ConversionTypeParams) -> List[ValidationIssue]:
+    def _validate_type_params(
+        metric: Metric, conversion_type_params: ConversionTypeParams, custom_granularity_names: Sequence[str]
+    ) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         window = conversion_type_params.window
         if window:
             try:
                 window_str = f"{window.count} {window.granularity}"
-                PydanticMetricTimeWindow.parse(window=window_str, custom_granularity_names=())
+                PydanticMetricTimeWindow.parse(window=window_str, custom_granularity_names=custom_granularity_names)
             except ParsingException as e:
                 issues.append(
                     ValidationError(
@@ -421,6 +429,12 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
+        custom_granularity_names = [
+            granularity.name
+            for time_spine in semantic_manifest.project_configuration.time_spines
+            for granularity in time_spine.custom_granularities
+        ]
+
         for metric in semantic_manifest.metrics or []:
             if metric.type == MetricType.CONVERSION:
                 # Validates that the measure exists and corresponds to a semantic model
@@ -461,7 +475,9 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                     conversion_semantic_model=conversion_semantic_model,
                 )
                 issues += ConversionMetricRule._validate_type_params(
-                    metric=metric, conversion_type_params=metric.type_params.conversion_type_params
+                    metric=metric,
+                    conversion_type_params=metric.type_params.conversion_type_params,
+                    custom_granularity_names=custom_granularity_names,
                 )
                 issues += ConversionMetricRule._validate_constant_properties(
                     metric=metric,
