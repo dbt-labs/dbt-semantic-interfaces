@@ -50,7 +50,6 @@ class ParameterSetFactory:
         time_granularity_name: Optional[str] = None,
         entity_path: Sequence[str] = (),
         date_part_name: Optional[str] = None,
-        custom_granularity_names: Sequence[str] = (),
     ) -> TimeDimensionCallParameterSet:
         """Gets called by Jinja when rendering {{ TimeDimension(...) }}.
 
