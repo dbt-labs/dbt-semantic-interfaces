@@ -107,7 +107,7 @@ class MetricInput(Protocol):
 
     @property
     @abstractmethod
-    def offset_to_grain(self) -> Optional[TimeGranularity]:  # noqa: D
+    def offset_to_grain(self) -> Optional[str]:  # noqa: D
         pass
 
     @property
@@ -194,7 +194,7 @@ class CumulativeTypeParams(Protocol):
 
     @property
     @abstractmethod
-    def grain_to_date(self) -> Optional[TimeGranularity]:  # noqa: D
+    def grain_to_date(self) -> Optional[str]:  # noqa: D
         pass
 
     @property
@@ -333,7 +333,7 @@ class Metric(Protocol):
 
     @property
     @abstractmethod
-    def time_granularity(self) -> Optional[TimeGranularity]:
+    def time_granularity(self) -> Optional[str]:
         """Default grain used for the metric.
 
         This will be used in a couple of circumstances:

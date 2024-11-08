@@ -135,7 +135,7 @@ class PydanticMetricInput(HashableBaseModel):
     filter: Optional[PydanticWhereFilterIntersection]
     alias: Optional[str]
     offset_window: Optional[PydanticMetricTimeWindow]
-    offset_to_grain: Optional[TimeGranularity]
+    offset_to_grain: Optional[str]
 
     @property
     def as_reference(self) -> MetricReference:
@@ -163,7 +163,7 @@ class PydanticCumulativeTypeParams(HashableBaseModel):
     """Type params to provide context for cumulative metrics properties."""
 
     window: Optional[PydanticMetricTimeWindow]
-    grain_to_date: Optional[TimeGranularity]
+    grain_to_date: Optional[str]
     period_agg: PeriodAggregation = PeriodAggregation.FIRST
 
 
@@ -174,7 +174,9 @@ class PydanticMetricTypeParams(HashableBaseModel):
     numerator: Optional[PydanticMetricInput]
     denominator: Optional[PydanticMetricInput]
     expr: Optional[str]
+    # Legacy, supports custom grain through PydanticMetricTimeWindow changes (should deprecate though)
     window: Optional[PydanticMetricTimeWindow]
+    # Legacy, will not support custom granularity
     grain_to_date: Optional[TimeGranularity]
     metrics: Optional[List[PydanticMetricInput]]
     conversion_type_params: Optional[PydanticConversionTypeParams]
@@ -206,7 +208,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     metadata: Optional[PydanticMetadata]
     label: Optional[str] = None
     config: Optional[PydanticMetricConfig]
-    time_granularity: Optional[TimeGranularity] = None
+    time_granularity: Optional[str] = None
 
     @property
     def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:
