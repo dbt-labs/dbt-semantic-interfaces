@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional
+from typing import Any, List, Optional, Union
 
-from typing_extensions import override
+from typing_extensions import Self, override
 
 from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
@@ -35,7 +35,11 @@ class PydanticSavedQueryQueryParams(HashableBaseModel, ProtocolHint[SavedQueryQu
     where: Optional[PydanticWhereFilterIntersection] = None
 
 
-class PydanticSavedQuery(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[SavedQuery]):
+class PydanticSavedQuery(
+    HashableBaseModel,
+    ModelWithMetadataParsing,
+    ProtocolHint[SavedQuery],
+):
     """Pydantic implementation of SavedQuery."""
 
     @override
@@ -48,3 +52,15 @@ class PydanticSavedQuery(HashableBaseModel, ModelWithMetadataParsing, ProtocolHi
     metadata: Optional[PydanticMetadata] = None
     label: Optional[str] = None
     exports: List[PydanticExport] = Field(default_factory=list)
+    tags: Union[str, List[str]] = Field(
+        default_factory=list,
+    )
+
+    @classmethod
+    def parse_obj(cls, input: Any) -> Self:  # noqa
+        if isinstance(input, dict):
+            if isinstance(input.get("tags"), str):
+                input["tags"] = [input["tags"]]
+            if isinstance(input.get("tags"), list):
+                input["tags"].sort()
+        return super(HashableBaseModel, cls).parse_obj(input)

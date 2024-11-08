@@ -489,6 +489,15 @@ saved_query_schema = {
         "query_params": {"$ref": "saved_query_query_params_schema"},
         "label": {"type": "string"},
         "exports": {"type": "array", "items": {"$ref": "export_schema"}},
+        "tags": {
+            "oneOf": [
+                {"type": "string"},
+                {
+                    "type": "array",
+                    "items": {"type": "string"},
+                },
+            ],
+        },
     },
     "required": ["name", "query_params"],
     "additionalProperties": False,

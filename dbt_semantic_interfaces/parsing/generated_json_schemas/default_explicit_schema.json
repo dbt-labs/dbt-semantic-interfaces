@@ -705,6 +705,19 @@
                 },
                 "query_params": {
                     "$ref": "#/definitions/saved_query_query_params_schema"
+                },
+                "tags": {
+                    "oneOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "items": {
+                                "type": "string"
+                            },
+                            "type": "array"
+                        }
+                    ]
                 }
             },
             "required": [

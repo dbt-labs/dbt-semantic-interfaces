@@ -173,6 +173,118 @@ def test_saved_query_where() -> None:
     assert where == saved_query.query_params.where.where_filters[0].where_sql_template
 
 
+def test_saved_query_with_single_tag_string() -> None:
+    """Test for parsing a single string (not a list) tag in a saved query."""
+    yaml_contents = textwrap.dedent(
+        """\
+        saved_query:
+          name: test_saved_query_group_bys
+          tags: "tag_1"
+          query_params:
+              metrics:
+                - test_metric_a
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    assert len(build_result.semantic_manifest.saved_queries) == 1
+    saved_query = build_result.semantic_manifest.saved_queries[0]
+    assert saved_query.tags is not None
+    assert len(saved_query.tags) == 1
+    assert saved_query.tags == ["tag_1"]
+
+
+def test_saved_query_with_multiline_list_of_tags() -> None:
+    """Test for parsing a multiline list of tags in a saved query."""
+    yaml_contents = textwrap.dedent(
+        """\
+        saved_query:
+          name: test_saved_query_group_bys
+          tags: ["tag_1", "tag_2"]
+          query_params:
+              metrics:
+                - test_metric_a
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    assert len(build_result.semantic_manifest.saved_queries) == 1
+    saved_query = build_result.semantic_manifest.saved_queries[0]
+    assert saved_query.tags is not None
+    assert len(saved_query.tags) == 2
+    assert saved_query.tags == ["tag_1", "tag_2"]
+
+
+def test_saved_query_with_single_line_list_of_tags() -> None:
+    """Test for parsing a single-line list of tags in a saved query."""
+    yaml_contents = textwrap.dedent(
+        """\
+        saved_query:
+          name: test_saved_query_group_bys
+          tags:
+            - "tag_1"
+            - "tag_2"
+          query_params:
+              metrics:
+                - test_metric_a
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    assert len(build_result.semantic_manifest.saved_queries) == 1
+    saved_query = build_result.semantic_manifest.saved_queries[0]
+    assert saved_query.tags is not None
+    assert len(saved_query.tags) == 2
+    assert saved_query.tags == ["tag_1", "tag_2"]
+
+
+def test_saved_query_tags_are_sorted() -> None:
+    """Test tags in a saved query are SORTED after parsing."""
+    yaml_contents = textwrap.dedent(
+        """\
+        saved_query:
+          name: test_saved_query_group_bys
+          tags:
+            - "tag_2"
+            - "tag_1"
+          query_params:
+              metrics:
+                - test_metric_a
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    assert len(build_result.semantic_manifest.saved_queries) == 1
+    saved_query = build_result.semantic_manifest.saved_queries[0]
+    assert saved_query.tags is not None
+    assert len(saved_query.tags) == 2
+    assert saved_query.tags == ["tag_1", "tag_2"]
+
+
+def test_saved_query_with_no_tags_defaults_to_empty_list() -> None:
+    """Test tags in a saved query will default to empty list if missing."""
+    yaml_contents = textwrap.dedent(
+        """\
+        saved_query:
+          name: test_saved_query_group_bys
+          query_params:
+              metrics:
+                - test_metric_a
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    assert len(build_result.semantic_manifest.saved_queries) == 1
+    saved_query = build_result.semantic_manifest.saved_queries[0]
+    assert saved_query.tags is not None
+    assert saved_query.tags == []
+
+
 def test_saved_query_exports() -> None:
     """Test for parsing exports referenced in a saved query."""
     yaml_contents = textwrap.dedent(
