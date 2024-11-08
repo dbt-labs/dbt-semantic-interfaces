@@ -71,7 +71,7 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
     """Describes the window of time the metric should be accumulated over, e.g., '1 day', '2 weeks', etc."""
 
     count: int
-    granularity: TimeGranularity
+    granularity: str
 
     @classmethod
     def _from_yaml_value(cls, input: PydanticParseableValueType) -> PydanticMetricTimeWindow:
@@ -87,13 +87,14 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
                 f"type {type(input)} with value: {input}"
             )
 
+    @property
+    def is_standard_granularity(self) -> bool:
+        """Returns whether the window uses standard TimeGranularity."""
+        return self.granularity in {item.value for item in TimeGranularity}
+
     @staticmethod
     def parse(window: str) -> PydanticMetricTimeWindow:
-        """Returns window values if parsing succeeds, None otherwise.
-
-        Output of the form: (<time unit count>, <time granularity>, <error message>) - error message is None if window
-        is formatted properly
-        """
+        """Returns window values if parsing succeeds, None otherwise."""
         parts = window.split(" ")
         if len(parts) != 2:
             raise ParsingException(
@@ -103,13 +104,12 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
 
         granularity = parts[1]
         # if we switched to python 3.9 this could just be `granularity = parts[0].removesuffix('s')
-        if granularity.endswith("s"):
-            # months -> month
-            granularity = granularity[:-1]
-        if granularity not in [item.value for item in TimeGranularity]:
-            raise ParsingException(
-                f"Invalid time granularity {granularity} in cumulative metric window string: ({window})",
-            )
+        standard_time_granularities = {item.value for item in TimeGranularity}
+        if granularity in standard_time_granularities or granularity[:-1] in standard_time_granularities:
+            if granularity.endswith("s"):
+                # months -> month
+                granularity = granularity[:-1]
+        # If not standard granularity, it may be a custom grain, so validations/transformation happens later
 
         count = parts[0]
         if not count.isdigit():
@@ -117,7 +117,7 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
 
         return PydanticMetricTimeWindow(
             count=int(count),
-            granularity=TimeGranularity(granularity),
+            granularity=granularity,
         )
 
 
