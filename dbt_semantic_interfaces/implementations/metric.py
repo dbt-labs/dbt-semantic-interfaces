@@ -80,7 +80,7 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         The MetricTimeWindow is always expected to be provided as a string in user-defined YAML configs.
         """
         if isinstance(input, str):
-            return PydanticMetricTimeWindow.parse(input)
+            return PydanticMetricTimeWindow.parse(window=input, custom_granularity_names=(), strict=False)
         else:
             raise ValueError(
                 f"MetricTimeWindow inputs from model configs are expected to always be of type string, but got "
@@ -92,10 +92,19 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         """Returns whether the window uses standard TimeGranularity."""
         return self.granularity in {item.value for item in TimeGranularity}
 
+    @property
+    def window_string(self) -> str:
+        """Returns the string value of the time window."""
+        return f"{self.count} {self.granularity}"
+
     @staticmethod
-    def parse(window: str) -> PydanticMetricTimeWindow:
-        """Returns window values if parsing succeeds, None otherwise."""
-        parts = window.split(" ")
+    def parse(window: str, custom_granularity_names: Sequence[str], strict: bool = True) -> PydanticMetricTimeWindow:
+        """Returns window values if parsing succeeds, None otherwise.
+
+        If strict=True, then the granularity in the window must exist as a valid granularity.
+        Use strict=True for when you have all valid granularities, otherwise use strict=False.
+        """
+        parts = window.lower().split(" ")
         if len(parts) != 2:
             raise ParsingException(
                 f"Invalid window ({window}) in cumulative metric. Should be of the form `<count> <granularity>`, "
@@ -103,13 +112,19 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
             )
 
         granularity = parts[1]
+
+        valid_time_granularities = {item.value for item in TimeGranularity} | set(custom_granularity_names)
+
         # if we switched to python 3.9 this could just be `granularity = parts[0].removesuffix('s')
-        standard_time_granularities = {item.value for item in TimeGranularity}
-        if granularity in standard_time_granularities or granularity[:-1] in standard_time_granularities:
-            if granularity.endswith("s"):
-                # months -> month
-                granularity = granularity[:-1]
-        # If not standard granularity, it may be a custom grain, so validations/transformation happens later
+        if granularity.endswith("s") and granularity[:-1] in valid_time_granularities:
+            # months -> month
+            granularity = granularity[:-1]
+
+        if strict and granularity not in valid_time_granularities:
+            raise ParsingException(
+                f"Invalid time granularity {granularity} in metric window string: ({window})",
+            )
+        # If not strict and not standard granularity, it may be a custom grain, so validations happens later
 
         count = parts[0]
         if not count.isdigit():

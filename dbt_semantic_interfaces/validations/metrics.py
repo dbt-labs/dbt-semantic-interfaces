@@ -90,7 +90,7 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
             window = metric.type_params.window
             if metric.type_params.cumulative_type_params and metric.type_params.cumulative_type_params.window:
                 window = metric.type_params.cumulative_type_params.window
-            grain_to_date = metric.type_params.grain_to_date
+            grain_to_date = metric.type_params.grain_to_date.value if metric.type_params.grain_to_date else None
             if metric.type_params.cumulative_type_params and metric.type_params.cumulative_type_params.grain_to_date:
                 grain_to_date = metric.type_params.cumulative_type_params.grain_to_date
             if window and grain_to_date:
@@ -103,9 +103,9 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
             if window:
                 try:
-                    window_str = f"{window.count} {window.granularity.value}"
+                    window_str = f"{window.count} {window.granularity}"
                     # TODO: Should not call an implementation class.
-                    PydanticMetricTimeWindow.parse(window_str)
+                    PydanticMetricTimeWindow.parse(window=window_str, custom_granularity_names=())
                 except ParsingException as e:
                     issues.append(
                         ValidationError(
@@ -258,8 +258,8 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         window = conversion_type_params.window
         if window:
             try:
-                window_str = f"{window.count} {window.granularity.value}"
-                PydanticMetricTimeWindow.parse(window_str)
+                window_str = f"{window.count} {window.granularity}"
+                PydanticMetricTimeWindow.parse(window=window_str, custom_granularity_names=())
             except ParsingException as e:
                 issues.append(
                     ValidationError(
@@ -532,11 +532,11 @@ class MetricTimeGranularityRule(SemanticManifestValidationRule[SemanticManifestT
                 )
                 return issues
             valid_granularities = [
-                granularity.name
+                granularity.value
                 for granularity in TimeGranularity
                 if granularity.to_int() >= min_queryable_granularity.to_int()
             ]
-            if metric.time_granularity.name not in valid_granularities:
+            if metric.time_granularity not in valid_granularities:
                 issues.append(
                     ValidationError(
                         context=context,
@@ -544,7 +544,7 @@ class MetricTimeGranularityRule(SemanticManifestValidationRule[SemanticManifestT
                             f"`time_granularity` for metric '{metric.name}' must be >= "
                             f"{min_queryable_granularity.name}. Valid options are those that are >= the largest "
                             f"granularity defined for the metric's measures' agg_time_dimensions. Got: "
-                            f"{metric.time_granularity.name}. Valid options: {valid_granularities}"
+                            f"{metric.time_granularity}. Valid options: {valid_granularities}"
                         ),
                     )
                 )

@@ -77,6 +77,11 @@ class MetricTimeWindow(Protocol):
 
     @property
     @abstractmethod
+    def window_string(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
     def is_standard_granularity(self) -> bool:  # noqa: D
         pass
 
