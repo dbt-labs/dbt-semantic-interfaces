@@ -24,7 +24,7 @@ from dbt_semantic_interfaces.implementations.semantic_model import (
     PydanticSemanticModel,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
-from dbt_semantic_interfaces.type_enums import MetricType, TimeGranularity
+from dbt_semantic_interfaces.type_enums import MetricType
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationResults,
     ValidationIssue,
@@ -127,7 +127,7 @@ def metric_with_guaranteed_meta(
     type_params: PydanticMetricTypeParams,
     metadata: PydanticMetadata = default_meta(),
     description: str = "adhoc metric",
-    time_granularity: Optional[TimeGranularity] = None,
+    time_granularity: Optional[str] = None,
 ) -> PydanticMetric:
     """Creates a metric with the given input.
 

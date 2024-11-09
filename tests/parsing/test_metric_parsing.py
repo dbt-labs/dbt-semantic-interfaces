@@ -224,7 +224,7 @@ def test_cumulative_window_metric_parsing() -> None:
     assert metric.name == "cumulative_test"
     assert metric.type is MetricType.CUMULATIVE
     assert metric.type_params.measure == PydanticMetricInputMeasure(name="cumulative_measure")
-    assert metric.type_params.window == PydanticMetricTimeWindow(count=7, granularity=TimeGranularity.DAY)
+    assert metric.type_params.window == PydanticMetricTimeWindow(count=7, granularity=TimeGranularity.DAY.value)
 
 
 def test_grain_to_date_metric_parsing() -> None:
@@ -281,7 +281,7 @@ def test_derived_metric_offset_window_parsing() -> None:
     assert metric.type_params.metrics and len(metric.type_params.metrics) == 2
     metric1, metric2 = metric.type_params.metrics
     assert metric1.offset_window is None
-    assert metric2.offset_window == PydanticMetricTimeWindow(count=14, granularity=TimeGranularity.DAY)
+    assert metric2.offset_window == PydanticMetricTimeWindow(count=14, granularity=TimeGranularity.DAY.value)
     assert metric1.alias is None
     assert metric2.alias == "bookings_2_weeks_ago"
     assert metric.type_params.expr == "bookings / bookings_2_weeks_ago"
@@ -315,7 +315,7 @@ def test_derive_metric_offset_to_grain_parsing() -> None:
     assert metric.type_params.metrics and len(metric.type_params.metrics) == 2
     metric1, metric2 = metric.type_params.metrics
     assert metric1.offset_to_grain is None
-    assert metric2.offset_to_grain == TimeGranularity.MONTH
+    assert metric2.offset_to_grain == TimeGranularity.MONTH.value
     assert metric1.alias is None
     assert metric2.alias == "bookings_at_start_of_month"
     assert metric.type_params.expr == "bookings / bookings_at_start_of_month"
@@ -449,7 +449,7 @@ def test_conversion_metric_parsing() -> None:
         name="conversions"
     )
     assert metric.type_params.conversion_type_params.window == PydanticMetricTimeWindow(
-        count=7, granularity=TimeGranularity.DAY
+        count=7, granularity=TimeGranularity.DAY.value
     )
     assert metric.type_params.conversion_type_params.entity == "user"
     assert metric.type_params.conversion_type_params.calculation == ConversionCalculationType.CONVERSION_RATE
@@ -536,26 +536,6 @@ def test_invalid_cumulative_metric_window_format_parsing_error() -> None:
     build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
     assert build_result.issues.has_blocking_issues
     assert "Invalid window" in str(SemanticManifestValidationException(build_result.issues.all_issues))
-
-
-def test_invalid_cumulative_metric_window_granularity_parsing_error() -> None:
-    """Test for errror detection when parsing malformed cumulative metric window entries."""
-    yaml_contents = textwrap.dedent(
-        """\
-        metric:
-          name: invalid_cumulative_granularity_test
-          type: cumulative
-          type_params:
-            measure:
-              name: cumulative_measure
-            window: "7 moons"
-        """
-    )
-    file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
-
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
-    assert build_result.issues.has_blocking_issues
-    assert "Invalid time granularity" in str(SemanticManifestValidationException(build_result.issues.all_issues))
 
 
 def test_invalid_cumulative_metric_window_count_parsing_error() -> None:
