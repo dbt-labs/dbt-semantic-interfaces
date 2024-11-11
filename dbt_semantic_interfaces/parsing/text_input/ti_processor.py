@@ -10,9 +10,6 @@ from jinja2.sandbox import SandboxedEnvironment
 from typing_extensions import override
 
 from dbt_semantic_interfaces.errors import InvalidQuerySyntax
-from dbt_semantic_interfaces.parsing.text_input.description_renderer import (
-    QueryItemDescriptionRenderer,
-)
 from dbt_semantic_interfaces.parsing.text_input.rendering_helper import (
     ObjectBuilderJinjaRenderHelper,
 )
@@ -77,34 +74,6 @@ class ObjectBuilderTextProcessor:
         )
         return description_collector.collected_descriptions()
 
-    def render_template(
-        self,
-        jinja_template: str,
-        renderer: QueryItemDescriptionRenderer,
-        valid_method_mapping: ValidMethodMapping,
-    ) -> str:
-        """Renders the Jinja template using the specified renderer.
-
-        Args:
-            jinja_template: A Jinja template string like `{{ Dimension('listing__country') }} = 'US'`.
-            renderer: The renderer to use for rendering each item.
-            valid_method_mapping: Mapping from the builder object to the valid methods. See
-            `ConfiguredValidMethodMapping`.
-
-        Returns:
-            The rendered Jinja template.
-
-        Raises:
-            QueryItemJinjaException: See definition.
-            InvalidBuilderMethodException: See definition.
-        """
-        render_processor = _RendererProcessor(renderer)
-        return self._process_template(
-            jinja_template=jinja_template,
-            valid_method_mapping=valid_method_mapping,
-            description_processor=render_processor,
-        )
-
     def _process_template(
         self,
         jinja_template: str,
@@ -161,18 +130,3 @@ class _CollectDescriptionProcessor(ObjectBuilderItemDescriptionProcessor):
             self._items.append(item_description)
 
         return ""
-
-
-class _RendererProcessor(ObjectBuilderItemDescriptionProcessor):
-    """Processor that renders the descriptions in a Jinja template using the given renderer.
-
-    This is just a pass-through, but it allows `QueryItemDescriptionRenderer` to be a facade that has more appropriate
-    method names.
-    """
-
-    def __init__(self, renderer: QueryItemDescriptionRenderer) -> None:  # noqa: D107
-        self._renderer = renderer
-
-    @override
-    def process_description(self, item_description: ObjectBuilderItemDescription) -> str:
-        return self._renderer.render_description(item_description)
