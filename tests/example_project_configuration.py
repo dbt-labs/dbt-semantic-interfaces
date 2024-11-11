@@ -51,6 +51,14 @@ EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE = YamlConfigFile(
               primary_column:
                 name: ds_day
                 time_granularity: day
+            - node_relation:
+                schema_name: stuffs
+                alias: week_time_spine
+              primary_column:
+                name: ds
+                time_granularity: week
+              custom_granularities:
+                - name: martian_week
         """
     ),
 )

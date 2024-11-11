@@ -39,7 +39,9 @@ class WhereFilterParser:
             raise ParseWhereFilterException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
 
     @staticmethod
-    def parse_call_parameter_sets(where_sql_template: str) -> FilterCallParameterSets:
+    def parse_call_parameter_sets(
+        where_sql_template: str, custom_granularity_names: Sequence[str]
+    ) -> FilterCallParameterSets:
         """Return the result of extracting the semantic objects referenced in the where SQL template string."""
         descriptions = WhereFilterParser.parse_item_descriptions(where_sql_template)
 
@@ -63,6 +65,7 @@ class WhereFilterParser:
                             time_granularity_name=description.time_granularity_name,
                             entity_path=description.entity_path,
                             date_part_name=description.date_part_name,
+                            custom_granularity_names=custom_granularity_names,
                         )
                     )
                 else:
@@ -79,6 +82,7 @@ class WhereFilterParser:
                         time_granularity_name=description.time_granularity_name,
                         entity_path=description.entity_path,
                         date_part_name=description.date_part_name,
+                        custom_granularity_names=custom_granularity_names,
                     )
                 )
             elif item_type is QueryItemType.ENTITY:

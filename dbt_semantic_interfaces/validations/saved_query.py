@@ -49,14 +49,18 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
 
     @staticmethod
     @validate_safely("Validate the group-by field in a saved query.")
-    def _check_group_bys(valid_group_by_element_names: Set[str], saved_query: SavedQuery) -> Sequence[ValidationIssue]:
+    def _check_group_bys(
+        valid_group_by_element_names: Set[str], saved_query: SavedQuery, custom_granularity_names: Sequence[str]
+    ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         for group_by_item in saved_query.query_params.group_by:
             # TODO: Replace with more appropriate abstractions once available.
             parameter_sets: FilterCallParameterSets
             try:
-                parameter_sets = WhereFilterParser.parse_call_parameter_sets("{{" + group_by_item + "}}")
+                parameter_sets = WhereFilterParser.parse_call_parameter_sets(
+                    where_sql_template="{{" + group_by_item + "}}", custom_granularity_names=custom_granularity_names
+                )
             except Exception as e:
                 issues.append(
                     generate_exception_issue(
@@ -110,33 +114,6 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
                         ),
                     )
                 )
-        return issues
-
-    @staticmethod
-    @validate_safely("Validate the where field in a saved query.")
-    def _check_where(saved_query: SavedQuery) -> Sequence[ValidationIssue]:
-        issues: List[ValidationIssue] = []
-        if saved_query.query_params.where is None:
-            return issues
-        for where_filter in saved_query.query_params.where.where_filters:
-            try:
-                where_filter.call_parameter_sets
-            except Exception as e:
-                issues.append(
-                    generate_exception_issue(
-                        what_was_being_done=f"trying to parse a filter in saved query `{saved_query.name}`",
-                        e=e,
-                        context=SavedQueryContext(
-                            file_context=FileContext.from_metadata(metadata=saved_query.metadata),
-                            element_type=SavedQueryElementType.WHERE,
-                            element_value=where_filter.where_sql_template,
-                        ),
-                        extras={
-                            "traceback": "".join(traceback.format_tb(e.__traceback__)),
-                        },
-                    )
-                )
-
         return issues
 
     @staticmethod
@@ -272,6 +249,11 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
     @validate_safely("Validate all saved queries in a semantic manifest.")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
+        custom_granularity_names = [
+            granularity.name
+            for time_spine in semantic_manifest.project_configuration.time_spines
+            for granularity in time_spine.custom_granularities
+        ]
         valid_metric_names = {metric.name for metric in semantic_manifest.metrics}
         valid_group_by_element_names = valid_metric_names.union({METRIC_TIME_ELEMENT_NAME})
         for semantic_model in semantic_manifest.semantic_models:
@@ -288,8 +270,8 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
             issues += SavedQueryRule._check_group_bys(
                 valid_group_by_element_names=valid_group_by_element_names,
                 saved_query=saved_query,
+                custom_granularity_names=custom_granularity_names,
             )
-            issues += SavedQueryRule._check_where(saved_query)
             issues += SavedQueryRule._check_order_by(saved_query)
             issues += SavedQueryRule._check_limit(saved_query)
         return issues
