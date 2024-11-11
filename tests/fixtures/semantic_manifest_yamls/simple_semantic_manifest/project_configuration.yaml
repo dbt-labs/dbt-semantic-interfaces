@@ -11,3 +11,11 @@ project_configuration:
       primary_column:
         name: ds_day
         time_granularity: day
+    - node_relation:
+        alias: mf_time_spine
+        schema_name: stufffs
+      primary_column:
+        name: ds
+        time_granularity: day
+      custom_granularities:
+        - name: martian_day

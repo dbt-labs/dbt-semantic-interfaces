@@ -7,7 +7,7 @@ from dbt_semantic_interfaces.call_parameter_sets import (
     ParseWhereFilterException,
     TimeDimensionCallParameterSet,
 )
-from dbt_semantic_interfaces.naming.dundered import DunderedNameFormatter
+from dbt_semantic_interfaces.naming.dundered import StructuredDunderedName
 from dbt_semantic_interfaces.naming.keywords import is_metric_time_name
 from dbt_semantic_interfaces.references import (
     DimensionReference,
@@ -46,6 +46,7 @@ class ParameterSetFactory:
     @staticmethod
     def create_time_dimension(
         time_dimension_name: str,
+        custom_granularity_names: Sequence[str],
         time_granularity_name: Optional[str] = None,
         entity_path: Sequence[str] = (),
         date_part_name: Optional[str] = None,
@@ -65,14 +66,14 @@ class ParameterSetFactory:
         for parsing where filters. When we solve the problems with our current where filter spec this will
         persist as a backwards compatibility model, but nothing more.
         """
-        group_by_item_name = DunderedNameFormatter.parse_name(time_dimension_name)
+        group_by_item_name = StructuredDunderedName.parse_name(
+            name=time_dimension_name, custom_granularity_names=custom_granularity_names
+        )
         if len(group_by_item_name.entity_links) != 1 and not is_metric_time_name(group_by_item_name.element_name):
             raise ParseWhereFilterException(
                 ParameterSetFactory._exception_message_for_incorrect_format(time_dimension_name)
             )
-        grain_parsed_from_name = (
-            group_by_item_name.time_granularity.value if group_by_item_name.time_granularity else None
-        )
+        grain_parsed_from_name = group_by_item_name.time_granularity
         inputs_are_mismatched = (
             grain_parsed_from_name is not None
             and time_granularity_name is not None
@@ -101,7 +102,7 @@ class ParameterSetFactory:
     @staticmethod
     def create_dimension(dimension_name: str, entity_path: Sequence[str] = ()) -> DimensionCallParameterSet:
         """Gets called by Jinja when rendering {{ Dimension(...) }}."""
-        group_by_item_name = DunderedNameFormatter.parse_name(dimension_name)
+        group_by_item_name = StructuredDunderedName.parse_name(name=dimension_name, custom_granularity_names=())
 
         if len(group_by_item_name.entity_links) != 1 and not is_metric_time_name(group_by_item_name.element_name):
             raise ParseWhereFilterException(ParameterSetFactory._exception_message_for_incorrect_format(dimension_name))
@@ -116,7 +117,7 @@ class ParameterSetFactory:
     @staticmethod
     def create_entity(entity_name: str, entity_path: Sequence[str] = ()) -> EntityCallParameterSet:
         """Gets called by Jinja when rendering {{ Entity(...) }}."""
-        structured_dundered_name = DunderedNameFormatter.parse_name(entity_name)
+        structured_dundered_name = StructuredDunderedName.parse_name(name=entity_name, custom_granularity_names=())
         if structured_dundered_name.time_granularity is not None:
             raise ParseWhereFilterException(
                 f"Name is in an incorrect format: {repr(entity_name)}. " f"It should not contain a time grain suffix."

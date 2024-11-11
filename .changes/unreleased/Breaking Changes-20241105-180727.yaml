@@ -1,0 +1,6 @@
+kind: Breaking Changes
+body: Update PydanticWhereFilter.call_parameter_sets and PydanticWhereFilterIntersection.filter_expression_parameter_sets from property to a method
+time: 2024-11-05T18:07:27.325103-05:00
+custom:
+    Author: WilliamDee
+    Issue: None

@@ -13,9 +13,8 @@ class WhereFilter(Protocol):
         """A template that describes how to render the SQL for a WHERE clause."""
         pass
 
-    @property
     @abstractmethod
-    def call_parameter_sets(self) -> FilterCallParameterSets:
+    def call_parameter_sets(self, custom_granularity_names: Sequence[str]) -> FilterCallParameterSets:
         """Describe calls like 'dimension(...)' in the SQL template."""
         pass
 
@@ -41,9 +40,10 @@ class WhereFilterIntersection(Protocol):
         """The collection of WhereFilters to be applied to the input data set."""
         pass
 
-    @property
     @abstractmethod
-    def filter_expression_parameter_sets(self) -> Sequence[Tuple[str, FilterCallParameterSets]]:
+    def filter_expression_parameter_sets(
+        self, custom_granularity_names: Sequence[str]
+    ) -> Sequence[Tuple[str, FilterCallParameterSets]]:
         """Mapping from distinct filter expressions to the call parameter sets associated with them.
 
         We use a tuple, rather than a Mapping, in case the call parameter sets may vary between
