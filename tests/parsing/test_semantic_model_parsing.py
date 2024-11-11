@@ -538,3 +538,75 @@ def test_semantic_model_dimension_validity_params_parsing() -> None:
     assert end_dimension.type_params.validity_params is not None
     assert end_dimension.type_params.validity_params.is_start is False
     assert end_dimension.type_params.validity_params.is_end is True
+
+
+def test_semantic_model_element_config_merging() -> None:
+    """Test for merging element config metadata from semantic model into dimension, entity, and measure objects."""
+    yaml_contents = textwrap.dedent(
+        """\
+        semantic_model:
+          name: sm
+          config:
+            meta:
+              sm_metadata: asdf
+          node_relation:
+            alias: source_table
+            schema_name: some_schema
+          dimensions:
+            - name: dim_0
+              type: time
+              type_params:
+                time_granularity: day
+              config:
+                meta:
+                  sm_metadata: qwer
+                  dim_metadata: fdsa
+            - name: dim_1
+              type: time
+              type_params:
+                time_granularity: day
+              config:
+                meta:
+                  dim_metadata: mlkj
+                  sm_metadata: zxcv
+            - name: dim_2
+              type: time
+              type_params:
+                time_granularity: day
+          entities:
+            - name: entity_0
+              type: primary
+              config:
+                meta:
+                  sm_metadata: hjkl
+          measures:
+            - name: measure_0
+              agg: count_distinct
+              config:
+                meta:
+                  sm_metadata: ijkl
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+
+    assert len(build_result.semantic_manifest.semantic_models) == 1
+    semantic_model = build_result.semantic_manifest.semantic_models[0]
+    assert semantic_model.config is not None
+    assert semantic_model.config.meta["sm_metadata"] == "asdf"
+    assert len(semantic_model.dimensions) == 3
+    assert semantic_model.dimensions[0].config is not None
+    assert semantic_model.dimensions[0].config.meta["sm_metadata"] == "qwer"
+    assert semantic_model.dimensions[0].config.meta["dim_metadata"] == "fdsa"
+    assert semantic_model.dimensions[1].config is not None
+    assert semantic_model.dimensions[1].config.meta["sm_metadata"] == "zxcv"
+    assert semantic_model.dimensions[1].config.meta["dim_metadata"] == "mlkj"
+    assert semantic_model.dimensions[2].config is not None
+    assert semantic_model.dimensions[2].config.meta["sm_metadata"] == "asdf"
+    assert len(semantic_model.entities) == 1
+    assert semantic_model.entities[0].config is not None
+    assert semantic_model.entities[0].config.meta["sm_metadata"] == "hjkl"
+    assert len(semantic_model.measures) == 1
+    assert semantic_model.measures[0].config is not None
+    assert semantic_model.measures[0].config.meta["sm_metadata"] == "ijkl"
