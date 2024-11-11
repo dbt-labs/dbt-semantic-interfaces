@@ -120,6 +120,35 @@ def test_saved_query_group_by() -> None:
     )
 
 
+def test_saved_query_group_by_with_custom_grain() -> None:
+    """Test for parsing group_bys in a saved query."""
+    yaml_contents = textwrap.dedent(
+        """\
+        saved_query:
+          name: test_saved_query_group_bys
+          query_params:
+              metrics:
+                - test_metric_a
+              group_by:
+                - TimeDimension('test_entity__metric_time', 'martian_week')
+                - Dimension('test_entity__metric_time__martian_week')
+
+        """
+    )
+    file = YamlConfigFile(filepath="test_dir/inline_for_test", contents=yaml_contents)
+
+    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+
+    assert len(build_result.semantic_manifest.saved_queries) == 1
+    saved_query = build_result.semantic_manifest.saved_queries[0]
+    assert len(saved_query.query_params.group_by) == 2
+    print(saved_query.query_params.group_by)
+    assert {
+        "TimeDimension('test_entity__metric_time', 'martian_week')",
+        "Dimension('test_entity__metric_time__martian_week')",
+    } == set(saved_query.query_params.group_by)
+
+
 def test_saved_query_where() -> None:
     """Test for parsing where clause in a saved query."""
     where = "Dimension(test_entity__test_dimension) == true"

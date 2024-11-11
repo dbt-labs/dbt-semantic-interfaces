@@ -56,13 +56,14 @@ class ObjectBuilderItemDescription:
         else:
             assert_values_exhausted(item_type)
 
-        structured_item_name = StructuredDunderedName.parse_name(self.item_name)
-
         # Check that metrics do not have an entity prefix or entity path.
         if item_type is QueryItemType.METRIC:
             if len(self.entity_path) > 0:
                 raise InvalidQuerySyntax("The entity path should not be specified for a metric.")
-            if len(structured_item_name.entity_links) > 0:
+            if (
+                len(StructuredDunderedName.parse_name(name=self.item_name, custom_granularity_names=()).entity_links)
+                > 0
+            ):
                 raise InvalidQuerySyntax("The name of the metric should not have entity links.")
         # Check that dimensions / time dimensions have a valid date part.
         elif item_type is QueryItemType.DIMENSION or item_type is QueryItemType.TIME_DIMENSION:

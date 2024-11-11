@@ -27,7 +27,6 @@ from dbt_semantic_interfaces.validations.metrics import (
     ConversionMetricRule,
     CumulativeMetricRule,
     DerivedMetricRule,
-    WhereFiltersAreParseable,
 )
 from dbt_semantic_interfaces.validations.non_empty import NonEmptyRule
 from dbt_semantic_interfaces.validations.primary_entity import PrimaryEntityRule
@@ -47,6 +46,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationResults,
     SemanticManifestValidationRule,
 )
+from dbt_semantic_interfaces.validations.where_filters import WhereFiltersAreParseable
 
 logger = logging.getLogger(__name__)
 

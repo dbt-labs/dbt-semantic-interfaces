@@ -34,7 +34,7 @@ def test_extract_dimension_call_parameter_sets() -> None:  # noqa: D
                 AND {{ Dimension('user__country', entity_path=['listing']) }} == 'US'\
                 """
         )
-    ).call_parameter_sets
+    ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == FilterCallParameterSets(
         dimension_call_parameter_sets=(
@@ -61,7 +61,7 @@ def test_extract_dimension_with_grain_call_parameter_sets() -> None:  # noqa: D
                 {{ Dimension('metric_time').grain('WEEK') }} > 2023-09-18
             """
         )
-    ).call_parameter_sets
+    ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == FilterCallParameterSets(
         dimension_call_parameter_sets=(),
@@ -81,7 +81,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
         where_sql_template=(
             """{{ TimeDimension('user__created_at', 'month', entity_path=['listing']) }} = '2020-01-01'"""
         )
-    ).call_parameter_sets
+    ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == FilterCallParameterSets(
         time_dimension_call_parameter_sets=(
@@ -100,7 +100,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
         where_sql_template=(
             """{{ TimeDimension('user__created_at__month', entity_path=['listing']) }} = '2020-01-01'"""
         )
-    ).call_parameter_sets
+    ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == FilterCallParameterSets(
         time_dimension_call_parameter_sets=(
@@ -119,7 +119,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
 def test_extract_metric_time_dimension_call_parameter_sets() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
         where_sql_template="""{{ TimeDimension('metric_time', 'month') }} = '2020-01-01'"""
-    ).call_parameter_sets
+    ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == FilterCallParameterSets(
         time_dimension_call_parameter_sets=(
@@ -137,7 +137,7 @@ def test_extract_entity_call_parameter_sets() -> None:  # noqa: D
         where_sql_template=(
             """{{ Entity('listing') }} AND {{ Entity('user', entity_path=['listing']) }} == 'TEST_USER_ID'"""
         )
-    ).call_parameter_sets
+    ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == FilterCallParameterSets(
         dimension_call_parameter_sets=(),
@@ -157,7 +157,7 @@ def test_extract_entity_call_parameter_sets() -> None:  # noqa: D
 def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
         where_sql_template=("{{ Metric('bookings', group_by=['listing']) }} > 2")
-    ).call_parameter_sets
+    ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == FilterCallParameterSets(
         dimension_call_parameter_sets=(),
@@ -172,7 +172,7 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
 
     parse_result = PydanticWhereFilter(
         where_sql_template=("{{ Metric('bookings', group_by=['listing', 'metric_time']) }} > 2")
-    ).call_parameter_sets
+    ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == FilterCallParameterSets(
         dimension_call_parameter_sets=(),
@@ -186,7 +186,9 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
     )
 
     with pytest.raises(ParseWhereFilterException):
-        PydanticWhereFilter(where_sql_template=("{{ Metric('bookings') }} > 2")).call_parameter_sets
+        PydanticWhereFilter(where_sql_template=("{{ Metric('bookings') }} > 2")).call_parameter_sets(
+            custom_granularity_names=()
+        )
 
 
 def test_invalid_entity_name_error() -> None:
@@ -194,7 +196,7 @@ def test_invalid_entity_name_error() -> None:
     bad_entity_filter = PydanticWhereFilter(where_sql_template="{{ Entity('is_food_order__day' )}}")
 
     with pytest.raises(ParseWhereFilterException, match="Name is in an incorrect format"):
-        bad_entity_filter.call_parameter_sets
+        bad_entity_filter.call_parameter_sets(custom_granularity_names=())
 
 
 def test_where_filter_interesection_extract_call_parameter_sets() -> None:
@@ -209,7 +211,7 @@ def test_where_filter_interesection_extract_call_parameter_sets() -> None:
     )
     filter_intersection = PydanticWhereFilterIntersection(where_filters=[time_filter, entity_filter])
 
-    parse_result = dict(filter_intersection.filter_expression_parameter_sets)
+    parse_result = dict(filter_intersection.filter_expression_parameter_sets(custom_granularity_names=()))
 
     assert parse_result.get(time_filter.where_sql_template) == FilterCallParameterSets(
         time_dimension_call_parameter_sets=(
@@ -250,7 +252,7 @@ def test_where_filter_intersection_error_collection() -> None:
     )
 
     with pytest.raises(ParseWhereFilterException) as exc_info:
-        filter_intersection.filter_expression_parameter_sets
+        filter_intersection.filter_expression_parameter_sets(custom_granularity_names=())
 
     error_string = str(exc_info.value)
     # These are a little too implementation-specific, but it demonstrates that we are collecting the errors we find.
@@ -261,7 +263,7 @@ def test_where_filter_intersection_error_collection() -> None:
 def test_time_dimension_without_granularity() -> None:  # noqa: D
     parse_result = PydanticWhereFilter(
         where_sql_template="{{ TimeDimension('booking__created_at') }} > 2023-09-18"
-    ).call_parameter_sets
+    ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == FilterCallParameterSets(
         dimension_call_parameter_sets=(),
@@ -270,6 +272,24 @@ def test_time_dimension_without_granularity() -> None:  # noqa: D
                 entity_path=(EntityReference("booking"),),
                 time_dimension_reference=TimeDimensionReference(element_name="created_at"),
                 time_granularity_name=None,
+            ),
+        ),
+        entity_call_parameter_sets=(),
+    )
+
+
+def test_time_dimension_with_custom_granularity() -> None:  # noqa: D
+    parse_result = PydanticWhereFilter(
+        where_sql_template="{{ TimeDimension('booking__created_at', 'martian_week') }} > 2023-09-18"
+    ).call_parameter_sets(custom_granularity_names=("martian_week",))
+
+    assert parse_result == FilterCallParameterSets(
+        dimension_call_parameter_sets=(),
+        time_dimension_call_parameter_sets=(
+            TimeDimensionCallParameterSet(
+                entity_path=(EntityReference("booking"),),
+                time_dimension_reference=TimeDimensionReference(element_name="created_at"),
+                time_granularity_name="martian_week",
             ),
         ),
         entity_call_parameter_sets=(),
