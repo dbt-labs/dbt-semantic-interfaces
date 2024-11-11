@@ -212,7 +212,7 @@ def test_cumulative_window_metric_parsing() -> None:
           type_params:
             measure:
               name: cumulative_measure
-            window: "7 days"
+            window: "7 Days"
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -237,7 +237,7 @@ def test_grain_to_date_metric_parsing() -> None:
           type_params:
             measure:
               name: cumulative_measure
-            grain_to_date: "week"
+            grain_to_date: "weEk"
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)

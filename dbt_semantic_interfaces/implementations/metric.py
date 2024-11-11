@@ -80,7 +80,7 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         The MetricTimeWindow is always expected to be provided as a string in user-defined YAML configs.
         """
         if isinstance(input, str):
-            return PydanticMetricTimeWindow.parse(window=input, custom_granularity_names=(), strict=False)
+            return PydanticMetricTimeWindow.parse(window=input.lower(), custom_granularity_names=(), strict=False)
         else:
             raise ValueError(
                 f"MetricTimeWindow inputs from model configs are expected to always be of type string, but got "
@@ -90,7 +90,7 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
     @property
     def is_standard_granularity(self) -> bool:
         """Returns whether the window uses standard TimeGranularity."""
-        return self.granularity in {item.value for item in TimeGranularity}
+        return self.granularity.casefold() in {item.value.casefold() for item in TimeGranularity}
 
     @property
     def window_string(self) -> str:
@@ -113,7 +113,9 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
 
         granularity = parts[1]
 
-        valid_time_granularities = {item.value for item in TimeGranularity} | set(custom_granularity_names)
+        valid_time_granularities = {item.value.lower() for item in TimeGranularity} | set(
+            c.lower() for c in custom_granularity_names
+        )
 
         # if we switched to python 3.9 this could just be `granularity = parts[0].removesuffix('s')
         if granularity.endswith("s") and granularity[:-1] in valid_time_granularities:
