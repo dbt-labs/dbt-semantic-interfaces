@@ -65,11 +65,6 @@ class RemovePluralFromWindowGranularityRule(ProtocolHint[SemanticManifestTransfo
                 for input_metric in matched_metric.input_metrics:
                     if input_metric.offset_window:
                         input_metric.offset_window = reparse_window(input_metric.offset_window)
-                    RemovePluralFromWindowGranularityRule._update_metric(
-                        semantic_manifest=semantic_manifest,
-                        metric_name=input_metric.name,
-                        custom_granularity_names=custom_granularity_names,
-                    )
             elif matched_metric.type is MetricType.SIMPLE:
                 pass
             else:
