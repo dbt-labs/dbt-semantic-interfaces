@@ -3,11 +3,17 @@ import os
 import traceback
 from dataclasses import dataclass
 from string import Template
-from typing import Dict, List, Optional, Type, Union
+from typing import Dict, List, Optional, Sequence, Type, Union
 
 from jsonschema import exceptions
 
 from dbt_semantic_interfaces.errors import ParsingException
+from dbt_semantic_interfaces.implementations.element_config import (
+    PydanticSemanticLayerElementConfig,
+)
+from dbt_semantic_interfaces.implementations.elements.dimension import PydanticDimension
+from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.project_configuration import (
     PydanticProjectConfiguration,
@@ -334,7 +340,20 @@ def parse_config_yaml(
                     results.append(metric_class.parse_obj(object_cfg))
                 elif document_type == SEMANTIC_MODEL_TYPE:
                     semantic_model_validator.validate(config_document[document_type])
-                    results.append(semantic_model_class.parse_obj(object_cfg))
+                    sm = semantic_model_class.parse_obj(object_cfg)
+                    # Combine configs according to the behavior documented here https://docs.getdbt.com/reference/configs-and-properties#combining-configs
+                    elements: Sequence[Union[PydanticDimension, PydanticEntity, PydanticMeasure]] = [
+                        *sm.dimensions,
+                        *sm.entities,
+                        *sm.measures,
+                    ]
+                    for element in elements:
+                        if sm.config is not None:
+                            if element.config is None:
+                                element.config = PydanticSemanticLayerElementConfig(meta=sm.config.meta)
+                            else:
+                                element.config.meta = {**sm.config.meta, **element.config.meta}
+                    results.append(sm)
                 elif document_type == PROJECT_CONFIGURATION_TYPE:
                     project_configuration_validator.validate(config_document[document_type])
                     results.append(project_configuration_class.parse_obj(object_cfg))
