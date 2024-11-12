@@ -6,6 +6,9 @@ from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
+from dbt_semantic_interfaces.implementations.element_config import (
+    PydanticSemanticLayerElementConfig,
+)
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import (
     DimensionReference,
@@ -48,6 +51,7 @@ class PydanticDimension(HashableBaseModel, ModelWithMetadataParsing):
     expr: Optional[str] = None
     metadata: Optional[PydanticMetadata]
     label: Optional[str] = None
+    config: Optional[PydanticSemanticLayerElementConfig]
 
     @property
     def reference(self) -> DimensionReference:  # noqa: D

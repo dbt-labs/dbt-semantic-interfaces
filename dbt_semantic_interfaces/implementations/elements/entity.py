@@ -6,6 +6,9 @@ from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
+from dbt_semantic_interfaces.implementations.element_config import (
+    PydanticSemanticLayerElementConfig,
+)
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import EntityReference
 from dbt_semantic_interfaces.type_enums import EntityType
@@ -21,6 +24,7 @@ class PydanticEntity(HashableBaseModel, ModelWithMetadataParsing):
     expr: Optional[str] = None
     metadata: Optional[PydanticMetadata] = None
     label: Optional[str] = None
+    config: Optional[PydanticSemanticLayerElementConfig]
 
     @property
     def reference(self) -> EntityReference:  # noqa: D

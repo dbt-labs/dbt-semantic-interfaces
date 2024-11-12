@@ -6,6 +6,9 @@ from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     ModelWithMetadataParsing,
 )
+from dbt_semantic_interfaces.implementations.element_config import (
+    PydanticSemanticLayerElementConfig,
+)
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.references import MeasureReference
 from dbt_semantic_interfaces.type_enums import AggregationType
@@ -46,6 +49,7 @@ class PydanticMeasure(HashableBaseModel, ModelWithMetadataParsing):
     non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters] = None
     agg_time_dimension: Optional[str] = None
     label: Optional[str] = None
+    config: Optional[PydanticSemanticLayerElementConfig] = None
 
     @property
     def reference(self) -> MeasureReference:  # noqa: D
