@@ -1,6 +1,6 @@
 [project]
 name = "dbt-semantic-interfaces"
-version = "0.8.0"
+version = "0.8.1"
 description = 'The shared semantic layer definitions that dbt-core and MetricFlow use'
 readme = "README.md"
 requires-python = ">=3.8"

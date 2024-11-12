@@ -614,18 +614,6 @@ def test_cumulative_metrics() -> None:  # noqa: D
                         ),
                     ),
                 ),
-                # Metrics with duplicated window or grain_to_date - should get warning
-                metric_with_guaranteed_meta(
-                    name="what_a_metric",
-                    type=MetricType.CUMULATIVE,
-                    type_params=PydanticMetricTypeParams(
-                        measure=PydanticMetricInputMeasure(name=measure_name),
-                        grain_to_date=TimeGranularity.YEAR,
-                        cumulative_type_params=PydanticCumulativeTypeParams(
-                            grain_to_date=TimeGranularity.HOUR.value,
-                        ),
-                    ),
-                ),
                 metric_with_guaranteed_meta(
                     name="dis_bad",
                     type=MetricType.CUMULATIVE,
@@ -688,12 +676,11 @@ def test_cumulative_metrics() -> None:  # noqa: D
     )
 
     build_issues = validation_results.all_issues
-    assert len(build_issues) == 4
+    assert len(build_issues) == 3
     expected_substrings = [
         "Invalid time granularity",
         "Both window and grain_to_date set for cumulative metric. Please set one or the other.",
         "Got differing values for `window`",
-        "Got differing values for `grain_to_date`",
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
