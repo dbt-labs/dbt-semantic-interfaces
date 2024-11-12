@@ -1,8 +1,9 @@
 from __future__ import annotations
 
 from abc import abstractmethod
-from typing import Any, Dict, Optional, Protocol, Sequence
+from typing import Optional, Protocol, Sequence
 
+from dbt_semantic_interfaces.protocols.meta import SemanticLayerElementConfig
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
@@ -263,16 +264,6 @@ class MetricTypeParams(Protocol):
         pass
 
 
-class MetricConfig(Protocol):  # noqa: D
-    """The config property allows you to configure additional resources/metadata."""
-
-    @property
-    @abstractmethod
-    def meta(self) -> Dict[str, Any]:
-        """The meta field can be used to set metadata for a resource."""
-        pass
-
-
 class Metric(Protocol):
     """Describes a metric."""
 
@@ -327,7 +318,7 @@ class Metric(Protocol):
 
     @property
     @abstractmethod
-    def config(self) -> Optional[MetricConfig]:  # noqa: D
+    def config(self) -> Optional[SemanticLayerElementConfig]:  # noqa: D
         pass
 
     @property
