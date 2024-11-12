@@ -573,6 +573,13 @@ def test_semantic_model_element_config_merging() -> None:
               type: time
               type_params:
                 time_granularity: day
+            - name: dim_3
+              type: time
+              type_params:
+                time_granularity: day
+              config:
+                meta:
+                  dim_metadata: gfds
           entities:
             - name: entity_0
               type: primary
@@ -595,7 +602,7 @@ def test_semantic_model_element_config_merging() -> None:
     semantic_model = build_result.semantic_manifest.semantic_models[0]
     assert semantic_model.config is not None
     assert semantic_model.config.meta["sm_metadata"] == "asdf"
-    assert len(semantic_model.dimensions) == 3
+    assert len(semantic_model.dimensions) == 4
     assert semantic_model.dimensions[0].config is not None
     assert semantic_model.dimensions[0].config.meta["sm_metadata"] == "qwer"
     assert semantic_model.dimensions[0].config.meta["dim_metadata"] == "fdsa"
@@ -604,6 +611,9 @@ def test_semantic_model_element_config_merging() -> None:
     assert semantic_model.dimensions[1].config.meta["dim_metadata"] == "mlkj"
     assert semantic_model.dimensions[2].config is not None
     assert semantic_model.dimensions[2].config.meta["sm_metadata"] == "asdf"
+    assert semantic_model.dimensions[3].config is not None
+    assert semantic_model.dimensions[3].config.meta["dim_metadata"] == "gfds"
+    assert semantic_model.dimensions[3].config.meta["sm_metadata"] == "asdf"
     assert len(semantic_model.entities) == 1
     assert semantic_model.entities[0].config is not None
     assert semantic_model.entities[0].config.meta["sm_metadata"] == "hjkl"
