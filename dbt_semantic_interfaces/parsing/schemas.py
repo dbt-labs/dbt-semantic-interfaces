@@ -123,7 +123,7 @@ cumulative_type_params_schema = {
     "type": "object",
     "properties": {
         "window": {"type": "string"},
-        "grain_to_date": {"enum": time_granularity_values},
+        "grain_to_date": {"type": "string"},
         "period_agg": {"enum": period_agg_values},
     },
     "additionalProperties": False,
@@ -335,7 +335,7 @@ metric_schema = {
         "description": {"type": "string"},
         "label": {"type": "string"},
         "config": {"$ref": "metric_config_schema"},
-        "time_granularity": {"enum": time_granularity_values},
+        "time_granularity": {"type": "string"},
     },
     "additionalProperties": False,
     "required": ["name", "type", "type_params"],

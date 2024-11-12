@@ -77,30 +77,7 @@
             "additionalProperties": false,
             "properties": {
                 "grain_to_date": {
-                    "enum": [
-                        "NANOSECOND",
-                        "MICROSECOND",
-                        "MILLISECOND",
-                        "SECOND",
-                        "MINUTE",
-                        "HOUR",
-                        "DAY",
-                        "WEEK",
-                        "MONTH",
-                        "QUARTER",
-                        "YEAR",
-                        "nanosecond",
-                        "microsecond",
-                        "millisecond",
-                        "second",
-                        "minute",
-                        "hour",
-                        "day",
-                        "week",
-                        "month",
-                        "quarter",
-                        "year"
-                    ]
+                    "type": "string"
                 },
                 "period_agg": {
                     "enum": [
@@ -536,30 +513,7 @@
                     "type": "string"
                 },
                 "time_granularity": {
-                    "enum": [
-                        "NANOSECOND",
-                        "MICROSECOND",
-                        "MILLISECOND",
-                        "SECOND",
-                        "MINUTE",
-                        "HOUR",
-                        "DAY",
-                        "WEEK",
-                        "MONTH",
-                        "QUARTER",
-                        "YEAR",
-                        "nanosecond",
-                        "microsecond",
-                        "millisecond",
-                        "second",
-                        "minute",
-                        "hour",
-                        "day",
-                        "week",
-                        "month",
-                        "quarter",
-                        "year"
-                    ]
+                    "type": "string"
                 },
                 "type": {
                     "enum": [

@@ -22,6 +22,9 @@ from dbt_semantic_interfaces.transformations.cumulative_type_params import (
 )
 from dbt_semantic_interfaces.transformations.names import LowerCaseNamesRule
 from dbt_semantic_interfaces.transformations.proxy_measure import CreateProxyMeasureRule
+from dbt_semantic_interfaces.transformations.remove_plural_from_window_granularity import (
+    RemovePluralFromWindowGranularityRule,
+)
 from dbt_semantic_interfaces.transformations.rule_set import (
     SemanticManifestTransformRuleSet,
 )
@@ -54,6 +57,7 @@ class PydanticSemanticManifestTransformRuleSet(
             ConvertMedianToPercentileRule(),
             AddInputMetricMeasuresRule(),
             SetCumulativeTypeParamsRule(),
+            RemovePluralFromWindowGranularityRule(),
         )
 
     @property
