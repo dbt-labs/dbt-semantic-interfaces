@@ -71,7 +71,7 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
     """Describes the window of time the metric should be accumulated over, e.g., '1 day', '2 weeks', etc."""
 
     count: int
-    granularity: TimeGranularity
+    granularity: str
 
     @classmethod
     def _from_yaml_value(cls, input: PydanticParseableValueType) -> PydanticMetricTimeWindow:
@@ -80,21 +80,31 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         The MetricTimeWindow is always expected to be provided as a string in user-defined YAML configs.
         """
         if isinstance(input, str):
-            return PydanticMetricTimeWindow.parse(input)
+            return PydanticMetricTimeWindow.parse(window=input.lower(), custom_granularity_names=(), strict=False)
         else:
             raise ValueError(
                 f"MetricTimeWindow inputs from model configs are expected to always be of type string, but got "
                 f"type {type(input)} with value: {input}"
             )
 
+    @property
+    def is_standard_granularity(self) -> bool:
+        """Returns whether the window uses standard TimeGranularity."""
+        return self.granularity.casefold() in {item.value.casefold() for item in TimeGranularity}
+
+    @property
+    def window_string(self) -> str:
+        """Returns the string value of the time window."""
+        return f"{self.count} {self.granularity}"
+
     @staticmethod
-    def parse(window: str) -> PydanticMetricTimeWindow:
+    def parse(window: str, custom_granularity_names: Sequence[str], strict: bool = True) -> PydanticMetricTimeWindow:
         """Returns window values if parsing succeeds, None otherwise.
 
-        Output of the form: (<time unit count>, <time granularity>, <error message>) - error message is None if window
-        is formatted properly
+        If strict=True, then the granularity in the window must exist as a valid granularity.
+        Use strict=True for when you have all valid granularities, otherwise use strict=False.
         """
-        parts = window.split(" ")
+        parts = window.lower().split(" ")
         if len(parts) != 2:
             raise ParsingException(
                 f"Invalid window ({window}) in cumulative metric. Should be of the form `<count> <granularity>`, "
@@ -102,14 +112,21 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
             )
 
         granularity = parts[1]
+
+        valid_time_granularities = {item.value.lower() for item in TimeGranularity} | set(
+            c.lower() for c in custom_granularity_names
+        )
+
         # if we switched to python 3.9 this could just be `granularity = parts[0].removesuffix('s')
-        if granularity.endswith("s"):
+        if granularity.endswith("s") and granularity[:-1] in valid_time_granularities:
             # months -> month
             granularity = granularity[:-1]
-        if granularity not in [item.value for item in TimeGranularity]:
+
+        if strict and granularity not in valid_time_granularities:
             raise ParsingException(
-                f"Invalid time granularity {granularity} in cumulative metric window string: ({window})",
+                f"Invalid time granularity {granularity} in metric window string: ({window})",
             )
+        # If not strict and not standard granularity, it may be a custom grain, so validations happens later
 
         count = parts[0]
         if not count.isdigit():
@@ -117,7 +134,7 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
 
         return PydanticMetricTimeWindow(
             count=int(count),
-            granularity=TimeGranularity(granularity),
+            granularity=granularity,
         )
 
 
@@ -135,7 +152,7 @@ class PydanticMetricInput(HashableBaseModel):
     filter: Optional[PydanticWhereFilterIntersection]
     alias: Optional[str]
     offset_window: Optional[PydanticMetricTimeWindow]
-    offset_to_grain: Optional[TimeGranularity]
+    offset_to_grain: Optional[str]
 
     @property
     def as_reference(self) -> MetricReference:
@@ -163,7 +180,7 @@ class PydanticCumulativeTypeParams(HashableBaseModel):
     """Type params to provide context for cumulative metrics properties."""
 
     window: Optional[PydanticMetricTimeWindow]
-    grain_to_date: Optional[TimeGranularity]
+    grain_to_date: Optional[str]
     period_agg: PeriodAggregation = PeriodAggregation.FIRST
 
 
@@ -174,7 +191,9 @@ class PydanticMetricTypeParams(HashableBaseModel):
     numerator: Optional[PydanticMetricInput]
     denominator: Optional[PydanticMetricInput]
     expr: Optional[str]
+    # Legacy, supports custom grain through PydanticMetricTimeWindow changes (should deprecate though)
     window: Optional[PydanticMetricTimeWindow]
+    # Legacy, will not support custom granularity
     grain_to_date: Optional[TimeGranularity]
     metrics: Optional[List[PydanticMetricInput]]
     conversion_type_params: Optional[PydanticConversionTypeParams]
@@ -206,7 +225,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     metadata: Optional[PydanticMetadata]
     label: Optional[str] = None
     config: Optional[PydanticMetricConfig]
-    time_granularity: Optional[TimeGranularity] = None
+    time_granularity: Optional[str] = None
 
     @property
     def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:

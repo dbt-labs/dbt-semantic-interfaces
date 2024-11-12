@@ -36,6 +36,6 @@ class SetCumulativeTypeParamsRule(ProtocolHint[SemanticManifestTransformRule[Pyd
                 if metric.type_params.window and not metric.type_params.cumulative_type_params.window:
                     metric.type_params.cumulative_type_params.window = metric.type_params.window
                 if metric.type_params.grain_to_date and not metric.type_params.cumulative_type_params.grain_to_date:
-                    metric.type_params.cumulative_type_params.grain_to_date = metric.type_params.grain_to_date
+                    metric.type_params.cumulative_type_params.grain_to_date = metric.type_params.grain_to_date.value
 
         return semantic_manifest
