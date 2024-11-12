@@ -76,7 +76,8 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                     else None
                 )
                 if (
-                    type_params_field_value
+                    field == "window"
+                    and type_params_field_value
                     and cumulative_type_params_field_value
                     and cumulative_type_params_field_value != type_params_field_value
                 ):
