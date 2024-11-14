@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import Any, List, Optional, Union
 
 from typing_extensions import Self, override
@@ -58,9 +59,10 @@ class PydanticSavedQuery(
 
     @classmethod
     def parse_obj(cls, input: Any) -> Self:  # noqa
-        if isinstance(input, dict):
-            if isinstance(input.get("tags"), str):
-                input["tags"] = [input["tags"]]
-            if isinstance(input.get("tags"), list):
-                input["tags"].sort()
-        return super(HashableBaseModel, cls).parse_obj(input)
+        data = deepcopy(input)
+        if isinstance(data, dict):
+            if isinstance(data.get("tags"), str):
+                data["tags"] = [data["tags"]]
+            if isinstance(data.get("tags"), list):
+                data["tags"].sort()
+        return super(HashableBaseModel, cls).parse_obj(data)
