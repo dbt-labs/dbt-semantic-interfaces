@@ -1,0 +1,6 @@
+kind: Features
+body: Add "tags" to SavedQuery nodes, similar to existing nodes' tags.
+time: 2024-11-13T11:06:48.562566-08:00
+custom:
+    Author: theyostalservice
+    Issue: "369"

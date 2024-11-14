@@ -73,3 +73,9 @@ class SavedQuery(Protocol):
     def exports(self) -> Sequence[Export]:
         """Exports that can run using this saved query."""
         pass
+
+    @property
+    @abstractmethod
+    def tags(self) -> Sequence[str]:
+        """List of tags to be used as part of resource selection in dbt."""
+        pass
