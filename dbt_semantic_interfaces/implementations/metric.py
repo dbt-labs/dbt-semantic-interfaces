@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Sequence, Set
+from copy import deepcopy
+from typing import Any, Dict, List, Optional, Sequence, Set
 
 from typing_extensions import override
 
@@ -221,6 +222,26 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     label: Optional[str] = None
     config: Optional[PydanticSemanticLayerElementConfig]
     time_granularity: Optional[str] = None
+
+    @classmethod
+    def parse_obj(cls, input: Any) -> PydanticMetric:
+        data = deepcopy(input)
+
+        # Ensure grain_to_date is lowercased
+        type_params = data.get("type_params", {})
+        grain_to_date = type_params.get("cumulative_type_params", {}).get("grain_to_date")
+        if isinstance(grain_to_date, str):
+            data["type_params"]["cumulative_type_params"]["grain_to_date"] = grain_to_date.lower()
+
+        # Ensure offset_to_grain is lowercased
+        input_metrics = type_params.get("metrics", [])
+        if input_metrics:
+            for input_metric in input_metrics:
+                offset_to_grain = input_metric.get("offset_to_grain")
+                if offset_to_grain and isinstance(offset_to_grain, str):
+                    input_metric["offset_to_grain"] = offset_to_grain.lower()
+
+        return super(HashableBaseModel, cls).parse_obj(data)
 
     @property
     def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:
