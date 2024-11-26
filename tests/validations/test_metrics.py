@@ -328,12 +328,38 @@ def test_derived_metric() -> None:  # noqa: D
                         ],
                     ),
                 ),
+                metric_with_guaranteed_meta(
+                    name="has_custom_grain_offset_window",  # this is valid
+                    type=MetricType.DERIVED,
+                    type_params=PydanticMetricTypeParams(
+                        expr="random_metric * 2",
+                        metrics=[
+                            PydanticMetricInput(
+                                name="random_metric",
+                                offset_window=PydanticMetricTimeWindow.parse("3 martian_weeks"),
+                            )
+                        ],
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="has_custom_offset_to_grain",
+                    type=MetricType.DERIVED,
+                    type_params=PydanticMetricTypeParams(
+                        expr="random_metric * 2",
+                        metrics=[
+                            PydanticMetricInput(
+                                name="random_metric",
+                                offset_to_grain="martian_week",
+                            )
+                        ],
+                    ),
+                ),
             ],
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
     build_issues = validation_results.all_issues
-    assert len(build_issues) == 7
+    assert len(build_issues) == 8
     expected_substrings = [
         "is already being used. Please choose another alias",
         "does not exist as a configured metric in the model",
@@ -341,7 +367,9 @@ def test_derived_metric() -> None:  # noqa: D
         "is not used in `expr`",
         "No input metrics found for derived metric",
         "No `expr` set for derived metric",
-        "Invalid time granularity",
+        "Invalid time granularity 'weekies' in window: '3 weekies'",
+        "Custom granularities are not supported",
+        "Invalid time granularity found in `offset_to_grain`: 'martian_week'",
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
@@ -518,7 +546,7 @@ def test_conversion_metrics() -> None:  # noqa: D
     )
 
     build_issues = result.all_issues
-    assert len(result.errors) == 6
+    assert len(result.errors) == 8
     assert len(result.warnings) == 1
 
     expected_substrings = [
@@ -528,7 +556,9 @@ def test_conversion_metrics() -> None:  # noqa: D
         "The provided constant property: bad_dim, cannot be found",
         "The provided constant property: bad_dim2, cannot be found",
         "filtering on a conversion input measure is not fully supported yet",
-        "Invalid time granularity",
+        "Invalid time granularity 'moons' in window",
+        "Invalid time granularity 'martian_week' in window: '7 martian_weeks'",
+        "Invalid time granularity 'martian_week' in window: '7 martian_week'",
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
@@ -661,17 +691,38 @@ def test_cumulative_metrics() -> None:  # noqa: D
                         ),
                     ),
                 ),
+                metric_with_guaranteed_meta(
+                    name="custom_grain_to_date",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        cumulative_type_params=PydanticCumulativeTypeParams(
+                            grain_to_date="3 martian_weeks",
+                        ),
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="custom_window_old",
+                    type=MetricType.CUMULATIVE,
+                    type_params=PydanticMetricTypeParams(
+                        measure=PydanticMetricInputMeasure(name=measure_name),
+                        window=PydanticMetricTimeWindow.parse(window="5 martian_week"),
+                    ),
+                ),
             ],
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
 
     build_issues = validation_results.all_issues
-    assert len(build_issues) == 3
+    assert len(build_issues) == 7
     expected_substrings = [
         "Invalid time granularity",
         "Both window and grain_to_date set for cumulative metric. Please set one or the other.",
         "Got differing values for `window`",
+        "Invalid time granularity 'martian_week' in window: '3 martian_weeks'",
+        "Invalid time granularity 'martian_week' in window: '3 martian_week'",
+        "Invalid time granularity 'martian_week' in window: '5 martian_week'",
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
