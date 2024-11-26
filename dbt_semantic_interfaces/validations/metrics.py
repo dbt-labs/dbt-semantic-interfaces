@@ -1,16 +1,12 @@
-import traceback
 from typing import Dict, Generic, List, Optional, Sequence
 
-from dbt_semantic_interfaces.errors import ParsingException
-from dbt_semantic_interfaces.implementations.metric import (
-    PydanticMetric,
-    PydanticMetricTimeWindow,
-)
+from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.protocols import (
     ConversionTypeParams,
     Dimension,
     Metric,
     MetricInputMeasure,
+    MetricTimeWindow,
     SemanticManifest,
     SemanticManifestT,
     SemanticModel,
@@ -46,9 +42,9 @@ from dbt_semantic_interfaces.validations.where_filters import (
 class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that cumulative metrics are configured properly."""
 
-    @staticmethod
+    @classmethod
     @validate_safely(whats_being_done="running model validation ensuring cumulative metrics are valid")
-    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(cls, semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
         custom_granularity_names = [
@@ -109,19 +105,31 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 )
 
             if window:
-                try:
-                    # TODO: Should not call an implementation class.
-                    PydanticMetricTimeWindow.parse(
-                        window=window.window_string, custom_granularity_names=custom_granularity_names
-                    )
-                except ParsingException as e:
-                    issues.append(
-                        ValidationError(
-                            context=metric_context,
-                            message="".join(traceback.format_exception_only(type(e), value=e)),
-                            extra_detail="".join(traceback.format_tb(e.__traceback__)),
-                        )
-                    )
+                issues += cls.validate_metric_time_window(
+                    metric_context=metric_context, window=window, custom_granularities=custom_granularity_names
+                )
+
+        return issues
+
+    @classmethod
+    def validate_metric_time_window(  # noqa: D
+        cls, metric_context: MetricContext, window: MetricTimeWindow, custom_granularities: Sequence[str]
+    ) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        valid_granularities = set(custom_granularities) | {item.value.lower() for item in TimeGranularity}
+        window_granularity = window.granularity
+        if window_granularity.endswith("s") and window_granularity[:-1] in valid_granularities:
+            # months -> month
+            window_granularity = window_granularity[:-1]
+
+        if window_granularity not in valid_granularities:
+            issues.append(
+                ValidationError(
+                    context=metric_context,
+                    message=f"Invalid time granularity {window_granularity} in window: ({window})",
+                )
+            )
 
         return issues
 
@@ -188,17 +196,24 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
 
     @staticmethod
     @validate_safely(whats_being_done="checking that input metric time offset params are valid")
-    def _validate_time_offset_params(metric: Metric) -> List[ValidationIssue]:
+    def _validate_time_offset_params(metric: Metric, custom_granularities: Sequence[str]) -> List[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
+        metric_context = MetricContext(
+            file_context=FileContext.from_metadata(metadata=metric.metadata),
+            metric=MetricModelReference(metric_name=metric.name),
+        )
         for input_metric in metric.type_params.metrics or []:
+            if input_metric.offset_window:
+                issues += CumulativeMetricRule.validate_metric_time_window(
+                    metric_context=metric_context,
+                    window=input_metric.offset_window,
+                    custom_granularities=custom_granularities,
+                )
             if input_metric.offset_window and input_metric.offset_to_grain:
                 issues.append(
                     ValidationError(
-                        context=MetricContext(
-                            file_context=FileContext.from_metadata(metadata=metric.metadata),
-                            metric=MetricModelReference(metric_name=metric.name),
-                        ),
+                        context=metric_context,
                         message=f"Both offset_window and offset_to_grain set for derived metric '{metric.name}' on "
                         f"input metric '{input_metric.name}'. Please set one or the other.",
                     )
@@ -247,10 +262,18 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
+        custom_granularity_names = [
+            granularity.name
+            for time_spine in semantic_manifest.project_configuration.time_spines
+            for granularity in time_spine.custom_granularities
+        ]
+
         issues += DerivedMetricRule._validate_input_metrics_exist(semantic_manifest=semantic_manifest)
         for metric in semantic_manifest.metrics or []:
             issues += DerivedMetricRule._validate_alias_collision(metric=metric)
-            issues += DerivedMetricRule._validate_time_offset_params(metric=metric)
+            issues += DerivedMetricRule._validate_time_offset_params(
+                metric=metric, custom_granularities=custom_granularity_names
+            )
             issues += DerivedMetricRule._validate_expr(metric=metric)
         return issues
 
@@ -267,20 +290,15 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
         window = conversion_type_params.window
         if window:
-            try:
-                window_str = f"{window.count} {window.granularity}"
-                PydanticMetricTimeWindow.parse(window=window_str, custom_granularity_names=custom_granularity_names)
-            except ParsingException as e:
-                issues.append(
-                    ValidationError(
-                        context=MetricContext(
-                            file_context=FileContext.from_metadata(metadata=metric.metadata),
-                            metric=MetricModelReference(metric_name=metric.name),
-                        ),
-                        message="".join(traceback.format_exception_only(type(e), value=e)),
-                        extra_detail="".join(traceback.format_tb(e.__traceback__)),
-                    )
-                )
+            issues += CumulativeMetricRule.validate_metric_time_window(
+                metric_context=MetricContext(
+                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                    metric=MetricModelReference(metric_name=metric.name),
+                ),
+                window=window,
+                custom_granularities=custom_granularity_names,
+            )
+
         return issues
 
     @staticmethod

@@ -11,11 +11,9 @@ from dbt_semantic_interfaces.implementations.metric import (
 )
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     parse_yaml_files_to_semantic_manifest,
+    parse_yaml_files_to_validation_ready_semantic_manifest,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
-from dbt_semantic_interfaces.transformations.semantic_manifest_transformer import (
-    PydanticSemanticManifestTransformer,
-)
 from dbt_semantic_interfaces.type_enums import (
     ConversionCalculationType,
     MetricType,
@@ -220,7 +218,9 @@ def test_cumulative_window_old_metric_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE]
+    )
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -246,7 +246,9 @@ def test_cumulative_window_metric_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE]
+    )
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]
@@ -318,6 +320,29 @@ def test_derived_metric_offset_window_parsing() -> None:
     """Test for parsing a derived metric with an offset window."""
     yaml_contents = textwrap.dedent(
         """\
+        semantic_model:
+          name: sample_semantic_model
+          node_relation:
+            schema_name: some_schema
+            alias: source_table
+          defaults:
+            agg_time_dimension: ds
+          entities:
+            - name: example_entity
+              type: primary
+              role: test_role
+              expr: example_id
+          measures:
+            - name: bookings
+              agg: sum
+              expr: 1
+              create_metric: true
+          dimensions:
+            - name: ds
+              type: time
+              type_params:
+                time_granularity: day
+        ---
         metric:
           name: derived_offset_test
           type: derived
@@ -332,10 +357,12 @@ def test_derived_metric_offset_window_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE]
+    )
 
     assert len(build_result.issues.all_issues) == 0
-    assert len(build_result.semantic_manifest.metrics) == 1
+    assert len(build_result.semantic_manifest.metrics) == 2
     metric = build_result.semantic_manifest.metrics[0]
     assert metric.name == "derived_offset_test"
     assert metric.type is MetricType.DERIVED
@@ -389,13 +416,12 @@ def test_derived_metric_offset_to_grain_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE]
+    )
 
-    # Apply transformations to ensure lowercasing
-    manifest = PydanticSemanticManifestTransformer().transform(build_result.semantic_manifest)
-
-    assert len(manifest.metrics) == 2
-    metric = [m for m in manifest.metrics if m.name == "derived_offset_to_grain_test"][0]
+    assert len(build_result.semantic_manifest.metrics) == 2
+    metric = [m for m in build_result.semantic_manifest.metrics if m.name == "derived_offset_to_grain_test"][0]
     assert metric
     assert metric.type is MetricType.DERIVED
     assert metric.type_params.metrics and len(metric.type_params.metrics) == 2
@@ -522,7 +548,9 @@ def test_conversion_metric_parsing() -> None:
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
 
-    build_result = parse_yaml_files_to_semantic_manifest(files=[file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE])
+    build_result = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [file, EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE]
+    )
 
     assert len(build_result.semantic_manifest.metrics) == 1
     metric = build_result.semantic_manifest.metrics[0]

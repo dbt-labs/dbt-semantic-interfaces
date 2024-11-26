@@ -304,7 +304,7 @@ def test_derived_metric() -> None:  # noqa: D
                         metrics=[
                             PydanticMetricInput(
                                 name="random_metric",
-                                offset_window=PydanticMetricTimeWindow.parse("3 weeks", custom_granularity_names=()),
+                                offset_window=PydanticMetricTimeWindow.parse("3 weekies"),
                             ),
                             PydanticMetricInput(
                                 name="random_metric",
@@ -322,7 +322,7 @@ def test_derived_metric() -> None:  # noqa: D
                         metrics=[
                             PydanticMetricInput(
                                 name="random_metric",
-                                offset_window=PydanticMetricTimeWindow.parse("3 weeks", custom_granularity_names=()),
+                                offset_window=PydanticMetricTimeWindow.parse("3 weeks"),
                                 offset_to_grain=TimeGranularity.MONTH.value,
                             )
                         ],
@@ -333,7 +333,7 @@ def test_derived_metric() -> None:  # noqa: D
         )
     )
     build_issues = validation_results.all_issues
-    assert len(build_issues) == 6
+    assert len(build_issues) == 7
     expected_substrings = [
         "is already being used. Please choose another alias",
         "does not exist as a configured metric in the model",
@@ -341,6 +341,7 @@ def test_derived_metric() -> None:  # noqa: D
         "is not used in `expr`",
         "No input metrics found for derived metric",
         "No `expr` set for derived metric",
+        "Invalid time granularity",
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
@@ -351,7 +352,7 @@ def test_conversion_metrics() -> None:  # noqa: D
     entity = "entity"
     invalid_entity = "bad"
     invalid_measure = "invalid_measure"
-    window = PydanticMetricTimeWindow.parse("7 days", custom_granularity_names=())
+    window = PydanticMetricTimeWindow.parse("7 days")
     validator = SemanticManifestValidator[PydanticSemanticManifest]([ConversionMetricRule()])
     result = validator.validate_semantic_manifest(
         PydanticSemanticManifest(
@@ -478,7 +479,7 @@ def test_conversion_metrics() -> None:  # noqa: D
                             conversion_measure=PydanticMetricInputMeasure(
                                 name=conversion_measure_name,
                             ),
-                            window=PydanticMetricTimeWindow.parse("7 moons", custom_granularity_names=(), strict=False),
+                            window=PydanticMetricTimeWindow.parse("7 moons"),
                             entity=entity,
                         )
                     ),
@@ -492,9 +493,7 @@ def test_conversion_metrics() -> None:  # noqa: D
                             conversion_measure=PydanticMetricInputMeasure(
                                 name=conversion_measure_name,
                             ),
-                            window=PydanticMetricTimeWindow.parse(
-                                "7 martian_week", custom_granularity_names=("martian_week",)
-                            ),
+                            window=PydanticMetricTimeWindow.parse("7 martian_week"),
                             entity=entity,
                         )
                     ),
@@ -508,9 +507,7 @@ def test_conversion_metrics() -> None:  # noqa: D
                             conversion_measure=PydanticMetricInputMeasure(
                                 name=conversion_measure_name,
                             ),
-                            window=PydanticMetricTimeWindow.parse(
-                                "7 martian_weeks", custom_granularity_names=("martian_week",)
-                            ),
+                            window=PydanticMetricTimeWindow.parse("7 martian_weeks"),
                             entity=entity,
                         )
                     ),
@@ -640,9 +637,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
                     type_params=PydanticMetricTypeParams(
                         measure=PydanticMetricInputMeasure(name=measure_name),
                         cumulative_type_params=PydanticCumulativeTypeParams(
-                            window=PydanticMetricTimeWindow.parse(
-                                window="3 moons", custom_granularity_names=(), strict=False
-                            ),
+                            window=PydanticMetricTimeWindow.parse(window="3 moons"),
                         ),
                     ),
                 ),
@@ -652,9 +647,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
                     type_params=PydanticMetricTypeParams(
                         measure=PydanticMetricInputMeasure(name=measure_name),
                         cumulative_type_params=PydanticCumulativeTypeParams(
-                            window=PydanticMetricTimeWindow.parse(
-                                window="3 martian_week", custom_granularity_names=("martian_week",), strict=False
-                            ),
+                            window=PydanticMetricTimeWindow.parse(window="3 martian_week"),
                         ),
                     ),
                 ),
@@ -664,9 +657,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
                     type_params=PydanticMetricTypeParams(
                         measure=PydanticMetricInputMeasure(name=measure_name),
                         cumulative_type_params=PydanticCumulativeTypeParams(
-                            window=PydanticMetricTimeWindow.parse(
-                                window="3 martian_weeks", custom_granularity_names=("martian_week",), strict=False
-                            ),
+                            window=PydanticMetricTimeWindow.parse(window="3 martian_weeks"),
                         ),
                     ),
                 ),
