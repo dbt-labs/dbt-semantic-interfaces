@@ -1,4 +1,4 @@
-from typing import Dict, Generic, List, Optional, Sequence
+from typing import Dict, Generic, List, Optional, Sequence, Set
 
 from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.protocols import (
@@ -49,11 +49,11 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     def validate_manifest(cls, semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        custom_granularity_names = [
+        custom_granularity_names = {
             granularity.name
             for time_spine in semantic_manifest.project_configuration.time_spines
             for granularity in time_spine.custom_granularities
-        ]
+        }
         standard_granularities = {item.value.lower() for item in TimeGranularity}
 
         for metric in semantic_manifest.metrics or []:
@@ -131,13 +131,13 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         cls,
         metric_context: MetricContext,
         window: MetricTimeWindow,
-        custom_granularities: Sequence[str],
+        custom_granularities: Set[str],
         allow_custom: bool = False,
     ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         standard_granularities = {item.value.lower() for item in TimeGranularity}
-        valid_granularities = set(custom_granularities) | standard_granularities
+        valid_granularities = custom_granularities | standard_granularities
         window_granularity = window.granularity
         if window_granularity.endswith("s") and window_granularity[:-1] in valid_granularities:
             # months -> month
@@ -224,7 +224,7 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
 
     @staticmethod
     @validate_safely(whats_being_done="checking that input metric time offset params are valid")
-    def _validate_time_offset_params(metric: Metric, custom_granularities: Sequence[str]) -> List[ValidationIssue]:
+    def _validate_time_offset_params(metric: Metric, custom_granularities: Set[str]) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         standard_granularities = {item.value.lower() for item in TimeGranularity}
@@ -303,11 +303,11 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        custom_granularity_names = [
+        custom_granularity_names = {
             granularity.name
             for time_spine in semantic_manifest.project_configuration.time_spines
             for granularity in time_spine.custom_granularities
-        ]
+        }
 
         issues += DerivedMetricRule._validate_input_metrics_exist(semantic_manifest=semantic_manifest)
         for metric in semantic_manifest.metrics or []:
@@ -325,8 +325,8 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     @staticmethod
     @validate_safely(whats_being_done="checking that the params of metric are valid if it is a conversion metric")
     def _validate_type_params(
-        metric: Metric, conversion_type_params: ConversionTypeParams, custom_granularity_names: Sequence[str]
-    ) -> List[ValidationIssue]:
+        metric: Metric, conversion_type_params: ConversionTypeParams, custom_granularity_names: Set[str]
+    ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         window = conversion_type_params.window
@@ -490,11 +490,11 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
-        custom_granularity_names = [
+        custom_granularity_names = {
             granularity.name
             for time_spine in semantic_manifest.project_configuration.time_spines
             for granularity in time_spine.custom_granularities
-        ]
+        }
 
         for metric in semantic_manifest.metrics or []:
             if metric.type == MetricType.CONVERSION:

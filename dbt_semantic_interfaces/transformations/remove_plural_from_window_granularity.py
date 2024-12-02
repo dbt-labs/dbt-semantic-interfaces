@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Set
 
 from typing_extensions import override
 
@@ -30,7 +30,7 @@ class RemovePluralFromWindowGranularityRule(ProtocolHint[SemanticManifestTransfo
 
     @staticmethod
     def _update_metric(
-        semantic_manifest: PydanticSemanticManifest, metric_name: str, custom_granularity_names: Sequence[str]
+        semantic_manifest: PydanticSemanticManifest, metric_name: str, custom_granularity_names: Set[str]
     ) -> None:
         """Mutates all the MetricTimeWindow by reparsing to remove the trailing 's'."""
         valid_time_granularities = {item.value.lower() for item in TimeGranularity} | set(
@@ -81,11 +81,11 @@ class RemovePluralFromWindowGranularityRule(ProtocolHint[SemanticManifestTransfo
 
     @staticmethod
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        custom_granularity_names = [
+        custom_granularity_names = {
             granularity.name
             for time_spine in semantic_manifest.project_configuration.time_spines
             for granularity in time_spine.custom_granularities
-        ]
+        }
 
         for metric in semantic_manifest.metrics:
             RemovePluralFromWindowGranularityRule._update_metric(
