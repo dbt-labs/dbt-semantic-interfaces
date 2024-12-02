@@ -37,7 +37,7 @@ class CommonEntitysRule(SemanticManifestValidationRule[SemanticManifestT], Gener
         entity: Entity,
         semantic_model: SemanticModel,
         entities_to_semantic_models: Dict[EntityReference, Set[str]],
-    ) -> List[ValidationIssue]:
+    ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
         # If the entity is the dict and if the set of semantic models minus this semantic model is empty,
         # then we warn the user that their entity will be unused in joins
@@ -65,15 +65,17 @@ class CommonEntitysRule(SemanticManifestValidationRule[SemanticManifestT], Gener
     @validate_safely(whats_being_done="running model validation warning if entities are only one one semantic model")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:
         """Issues a warning for any entity that is associated with only one semantic_model."""
-        issues = []
+        issues: List[ValidationIssue] = []
 
         entities_to_semantic_models = CommonEntitysRule._map_semantic_model_entities(semantic_manifest.semantic_models)
         for semantic_model in semantic_manifest.semantic_models or []:
             for entity in semantic_model.entities or []:
-                issues += CommonEntitysRule._check_entity(
-                    entity=entity,
-                    semantic_model=semantic_model,
-                    entities_to_semantic_models=entities_to_semantic_models,
+                issues.extend(
+                    CommonEntitysRule._check_entity(
+                        entity=entity,
+                        semantic_model=semantic_model,
+                        entities_to_semantic_models=entities_to_semantic_models,
+                    )
                 )
 
         return issues

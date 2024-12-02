@@ -69,7 +69,9 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     NAME_REGEX = re.compile(r"\A[a-z]((?!__)[a-z0-9_])*[a-z0-9]\Z")
 
     @staticmethod
-    def check_valid_name(name: str, context: Optional[ValidationContext] = None) -> List[ValidationIssue]:  # noqa: D
+    def check_valid_name(  # noqa: D
+        name: str, context: Optional[ValidationContext] = None
+    ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         if not UniqueAndValidNameRule.NAME_REGEX.match(name):
@@ -102,7 +104,9 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
 
     @staticmethod
     @validate_safely(whats_being_done="checking semantic model sub element names are unique")
-    def _validate_semantic_model_elements_and_time_spines(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
+    def _validate_semantic_model_elements_and_time_spines(
+        semantic_manifest: SemanticManifest,
+    ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
         custom_granularity_restricted_names_and_types: Dict[str, str] = {}
 
@@ -219,9 +223,9 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     @staticmethod
     @validate_safely(whats_being_done="checking top level elements of a specific type have unique and valid names")
     def _validate_top_level_objects_of_type(
-        objects: Union[List[SemanticModel], List[Metric], List[SavedQuery]],
+        objects: Union[Sequence[SemanticModel], Sequence[Metric], Sequence[SavedQuery]],
         object_type: SemanticManifestNodeType,
-    ) -> List[ValidationIssue]:
+    ) -> Sequence[ValidationIssue]:
         """Validates uniqeness and validaty of top level objects of singular type."""
         issues: List[ValidationIssue] = []
         object_names = set()
@@ -247,11 +251,9 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
 
     @staticmethod
     @validate_safely(whats_being_done="checking model top level element names are sufficiently unique")
-    def _validate_top_level_objects(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
+    def _validate_top_level_objects(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
         """Checks names of objects that are not nested."""
-        issues: List[ValidationIssue] = []
-
-        issues.extend(
+        issues = list(
             UniqueAndValidNameRule._validate_top_level_objects_of_type(
                 semantic_manifest.semantic_models, SemanticManifestNodeType.SEMANTIC_MODEL
             )
@@ -274,7 +276,7 @@ class UniqueAndValidNameRule(SemanticManifestValidationRule[SemanticManifestT], 
     @staticmethod
     @validate_safely(whats_being_done="running model validation ensuring elements have adequately unique names")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
-        issues = []
+        issues: List[ValidationIssue] = []
         issues += UniqueAndValidNameRule._validate_top_level_objects(semantic_manifest=semantic_manifest)
         issues += UniqueAndValidNameRule._validate_semantic_model_elements_and_time_spines(semantic_manifest)
 
@@ -336,7 +338,7 @@ class PrimaryEntityDimensionPairs(SemanticManifestValidationRule[SemanticManifes
     @staticmethod
     @validate_safely(whats_being_done="validating there are no duplicate dimension primary entity pairs")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
-        issues = []
+        issues: List[ValidationIssue] = []
         known_pairings: Dict[str, Dict[str, str]] = {}
         for semantic_model in semantic_manifest.semantic_models:
             issues += PrimaryEntityDimensionPairs._check_semantic_model(

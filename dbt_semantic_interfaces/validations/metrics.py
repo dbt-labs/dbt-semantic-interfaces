@@ -120,8 +120,10 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 )
 
             if window:
-                issues += cls.validate_metric_time_window(
-                    metric_context=metric_context, window=window, custom_granularities=custom_granularity_names
+                issues.extend(
+                    cls.validate_metric_time_window(
+                        metric_context=metric_context, window=window, custom_granularities=custom_granularity_names
+                    )
                 )
 
         return issues
@@ -167,7 +169,7 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the alias set are not unique and distinct")
-    def _validate_alias_collision(metric: Metric) -> List[ValidationIssue]:
+    def _validate_alias_collision(metric: Metric) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         if metric.type == MetricType.DERIVED:
@@ -193,7 +195,7 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the input metrics exist")
-    def _validate_input_metrics_exist(semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
+    def _validate_input_metrics_exist(semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         all_metrics = {m.name for m in semantic_manifest.metrics}
@@ -264,7 +266,7 @@ class DerivedMetricRule(SemanticManifestValidationRule[SemanticManifestT], Gener
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the expr field uses the input metrics")
-    def _validate_expr(metric: Metric) -> List[ValidationIssue]:
+    def _validate_expr(metric: Metric) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         if metric.type == MetricType.DERIVED:
@@ -346,7 +348,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     @validate_safely(whats_being_done="checks that the entity exists in the base/conversion semantic model")
     def _validate_entity_exists(
         metric: Metric, entity: str, base_semantic_model: SemanticModel, conversion_semantic_model: SemanticModel
-    ) -> List[ValidationIssue]:
+    ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         if entity not in {entity.name for entity in base_semantic_model.entities}:
@@ -376,7 +378,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     @validate_safely(whats_being_done="checks that the provided measures are valid for conversion metrics")
     def _validate_measures(
         metric: Metric, base_semantic_model: SemanticModel, conversion_semantic_model: SemanticModel
-    ) -> List[ValidationIssue]:
+    ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         def _validate_measure(
@@ -438,7 +440,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     @validate_safely(whats_being_done="checks that the provided constant properties are valid")
     def _validate_constant_properties(
         metric: Metric, base_semantic_model: SemanticModel, conversion_semantic_model: SemanticModel
-    ) -> List[ValidationIssue]:
+    ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         def _elements_in_model(references: List[str], semantic_model: SemanticModel) -> None:

@@ -26,7 +26,7 @@ class NaturalEntityConfigurationRule(SemanticManifestValidationRule[SemanticMani
             "natural entities are used in the appropriate contexts"
         )
     )
-    def _validate_semantic_model_natural_entities(semantic_model: SemanticModel) -> List[ValidationIssue]:
+    def _validate_semantic_model_natural_entities(semantic_model: SemanticModel) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
         context = SemanticModelContext(
             file_context=FileContext.from_metadata(metadata=semantic_model.metadata),

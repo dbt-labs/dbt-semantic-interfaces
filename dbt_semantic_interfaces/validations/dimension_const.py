@@ -58,7 +58,7 @@ class DimensionConsistencyRule(SemanticManifestValidationRule[SemanticManifestT]
         dimension: Dimension,
         time_dims_to_granularity: Dict[DimensionReference, TimeGranularity],
         semantic_model: SemanticModel,
-    ) -> List[ValidationIssue]:
+    ) -> Sequence[ValidationIssue]:
         """Check that time dimensions of the same name and aren't primary have the same time granularity.
 
         Args:
@@ -104,7 +104,7 @@ class DimensionConsistencyRule(SemanticManifestValidationRule[SemanticManifestT]
         semantic_model: SemanticModel,
         dimension_to_invariant: Dict[DimensionReference, DimensionInvariants],
         update_invariant_dict: bool,
-    ) -> List[ValidationIssue]:
+    ) -> Sequence[ValidationIssue]:
         """Checks that the given semantic model has dimensions consistent with the given invariants.
 
         Args:

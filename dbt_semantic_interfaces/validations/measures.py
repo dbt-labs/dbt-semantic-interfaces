@@ -65,7 +65,7 @@ class MeasureConstraintAliasesRule(SemanticManifestValidationRule[SemanticManife
 
     @staticmethod
     @validate_safely(whats_being_done="ensuring measures aliases are set when required")
-    def _validate_required_aliases_are_set(metric: Metric, metric_context: MetricContext) -> List[ValidationIssue]:
+    def _validate_required_aliases_are_set(metric: Metric, metric_context: MetricContext) -> Sequence[ValidationIssue]:
         """Checks if valid aliases are set on the input measure references where they are required.
 
         Aliases are required whenever there are 2 or more input measures with the same measure
@@ -188,7 +188,7 @@ class MetricMeasuresRule(SemanticManifestValidationRule[SemanticManifestT], Gene
 
     @staticmethod
     @validate_safely(whats_being_done="checking all measures referenced by the metric exist")
-    def _validate_metric_measure_references(metric: Metric, valid_measure_names: Set[str]) -> List[ValidationIssue]:
+    def _validate_metric_measure_references(metric: Metric, valid_measure_names: Set[str]) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         for measure_reference in metric.measure_references:
