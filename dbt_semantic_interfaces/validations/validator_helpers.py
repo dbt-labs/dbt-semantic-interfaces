@@ -7,7 +7,6 @@ from dataclasses import dataclass
 from datetime import date
 from enum import Enum
 from typing import (
-    Any,
     Callable,
     Dict,
     Generic,
@@ -20,6 +19,7 @@ from typing import (
 )
 
 import click
+from typing_extensions import ParamSpec
 
 from dbt_semantic_interfaces.implementations.base import FrozenBaseModel
 from dbt_semantic_interfaces.protocols import Metadata, SemanticManifestT, SemanticModel
@@ -34,6 +34,8 @@ from dsi_pydantic_shim import BaseModel, Extra
 VALIDATE_SAFELY_ERROR_STR_TMPLT = ". Issue occurred in method `{method_name}` called with {arguments_str}"
 ValidationContextJSON = Dict[str, Union[str, int, None]]
 ValidationIssueJSON = Dict[str, Union[str, int, ValidationContextJSON]]
+
+P = ParamSpec("P")
 
 
 class ValidationIssueLevel(Enum):
@@ -384,18 +386,21 @@ def generate_exception_issue(
     )
 
 
-def _func_args_to_string(*args: Any, **kwargs: Any) -> str:  # type: ignore
+def _func_args_to_string(*args: P.args, **kwargs: P.kwargs) -> str:  # type: ignore
     return f"positional args: {args}, key word args: {kwargs}"
 
 
-def validate_safely(whats_being_done: str) -> Callable:
+def validate_safely(
+    whats_being_done: str,
+) -> Callable[[Callable[P, Sequence[ValidationIssue]]], Callable[P, Sequence[ValidationIssue]]]:
     """Decorator to safely run validation checks."""
 
-    def decorator_check_element_safely(func: Callable) -> Callable:  # noqa
+    def decorator_check_element_safely(
+        func: Callable[P, Sequence[ValidationIssue]]
+    ) -> Callable[P, Sequence[ValidationIssue]]:
         @functools.wraps(func)
-        def wrapper(*args: Any, **kwargs: Any) -> List[ValidationIssue]:  # type: ignore
+        def wrapper(*args: P.args, **kwargs: P.kwargs) -> Sequence[ValidationIssue]:  # type: ignore
             """Safely run a check on model elements."""
-            issues: List[ValidationIssue]
             try:
                 issues = func(*args, **kwargs)
             except Exception as e:
