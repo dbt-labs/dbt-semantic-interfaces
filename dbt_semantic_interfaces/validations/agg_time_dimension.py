@@ -28,7 +28,7 @@ class AggregationTimeDimensionRule(SemanticManifestValidationRule[SemanticManife
 
     @staticmethod
     @validate_safely(whats_being_done="checking aggregation time dimension for a semantic model")
-    def _validate_semantic_model(semantic_model: SemanticModel) -> List[ValidationIssue]:
+    def _validate_semantic_model(semantic_model: SemanticModel) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         for measure in semantic_model.measures:

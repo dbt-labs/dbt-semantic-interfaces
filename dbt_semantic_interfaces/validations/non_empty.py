@@ -17,7 +17,7 @@ class NonEmptyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[Se
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the model has semantic models")
-    def _check_model_has_semantic_models(semantic_manifest: PydanticSemanticManifest) -> List[ValidationIssue]:
+    def _check_model_has_semantic_models(semantic_manifest: PydanticSemanticManifest) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
         if not semantic_manifest.semantic_models:
             issues.append(
@@ -29,7 +29,7 @@ class NonEmptyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[Se
 
     @staticmethod
     @validate_safely(whats_being_done="checking that the model has metrics")
-    def _check_model_has_metrics(semantic_manifest: PydanticSemanticManifest) -> List[ValidationIssue]:
+    def _check_model_has_metrics(semantic_manifest: PydanticSemanticManifest) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         # If we are going to generate measure proxy metrics that is sufficient as well
@@ -50,8 +50,12 @@ class NonEmptyRule(SemanticManifestValidationRule[SemanticManifestT], Generic[Se
 
     @staticmethod
     @validate_safely("running model validation rule ensuring metrics and semantic models are defined")
-    def validate_manifest(semantic_manifest: PydanticSemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
+    def validate_manifest(  # noqa: D
+        # PydanticSemanticManifest is required here due to a Measure.create_metric call downstream.
+        # TODO: can we add create_metric to the Measure protocol to avoid this type override?
+        semantic_manifest: PydanticSemanticManifest,  # type: ignore[override]
+    ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
-        issues += NonEmptyRule._check_model_has_semantic_models(semantic_manifest=semantic_manifest)
-        issues += NonEmptyRule._check_model_has_metrics(semantic_manifest=semantic_manifest)
+        issues.extend(NonEmptyRule._check_model_has_semantic_models(semantic_manifest=semantic_manifest))
+        issues.extend(NonEmptyRule._check_model_has_metrics(semantic_manifest=semantic_manifest))
         return issues

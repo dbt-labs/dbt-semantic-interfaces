@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import Dict, List, Optional, Sequence, Set
+from copy import deepcopy
+from typing import Any, Dict, List, Optional, Sequence, Set
 
 from typing_extensions import override
 
@@ -83,7 +84,7 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         The MetricTimeWindow is always expected to be provided as a string in user-defined YAML configs.
         """
         if isinstance(input, str):
-            return PydanticMetricTimeWindow.parse(window=input.lower(), custom_granularity_names=(), strict=False)
+            return PydanticMetricTimeWindow.parse(window=input.lower())
         else:
             raise ValueError(
                 f"MetricTimeWindow inputs from model configs are expected to always be of type string, but got "
@@ -101,12 +102,8 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
         return f"{self.count} {self.granularity}"
 
     @staticmethod
-    def parse(window: str, custom_granularity_names: Sequence[str], strict: bool = True) -> PydanticMetricTimeWindow:
-        """Returns window values if parsing succeeds, None otherwise.
-
-        If strict=True, then the granularity in the window must exist as a valid granularity.
-        Use strict=True for when you have all valid granularities, otherwise use strict=False.
-        """
+    def parse(window: str) -> PydanticMetricTimeWindow:
+        """Returns window values if parsing succeeds, None otherwise."""
         parts = window.lower().split(" ")
         if len(parts) != 2:
             raise ParsingException(
@@ -115,22 +112,6 @@ class PydanticMetricTimeWindow(PydanticCustomInputParser, HashableBaseModel):
             )
 
         granularity = parts[1]
-
-        valid_time_granularities = {item.value.lower() for item in TimeGranularity} | set(
-            c.lower() for c in custom_granularity_names
-        )
-
-        # if we switched to python 3.9 this could just be `granularity = parts[0].removesuffix('s')
-        if granularity.endswith("s") and granularity[:-1] in valid_time_granularities:
-            # months -> month
-            granularity = granularity[:-1]
-
-        if strict and granularity not in valid_time_granularities:
-            raise ParsingException(
-                f"Invalid time granularity {granularity} in metric window string: ({window})",
-            )
-        # If not strict and not standard granularity, it may be a custom grain, so validations happens later
-
         count = parts[0]
         if not count.isdigit():
             raise ParsingException(f"Invalid count ({count}) in cumulative metric window string: ({window})")
@@ -221,6 +202,27 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     label: Optional[str] = None
     config: Optional[PydanticSemanticLayerElementConfig]
     time_granularity: Optional[str] = None
+
+    @classmethod
+    def parse_obj(cls, input: Any) -> PydanticMetric:
+        """Adds custom parsing to the default method."""
+        data = deepcopy(input)
+
+        # Ensure grain_to_date is lowercased
+        type_params = data.get("type_params", {})
+        grain_to_date = type_params.get("cumulative_type_params", {}).get("grain_to_date")
+        if isinstance(grain_to_date, str):
+            data["type_params"]["cumulative_type_params"]["grain_to_date"] = grain_to_date.lower()
+
+        # Ensure offset_to_grain is lowercased
+        input_metrics = type_params.get("metrics", [])
+        if input_metrics:
+            for input_metric in input_metrics:
+                offset_to_grain = input_metric.get("offset_to_grain")
+                if offset_to_grain and isinstance(offset_to_grain, str):
+                    input_metric["offset_to_grain"] = offset_to_grain.lower()
+
+        return super(HashableBaseModel, cls).parse_obj(data)
 
     @property
     def input_measures(self) -> Sequence[PydanticMetricInputMeasure]:

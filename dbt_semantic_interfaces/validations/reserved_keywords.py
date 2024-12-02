@@ -1,4 +1,4 @@
-from typing import Generic, List
+from typing import Generic, List, Sequence
 
 from dbt_semantic_interfaces.protocols import (
     SemanticManifest,
@@ -67,7 +67,7 @@ class ReservedKeywordsRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
     @staticmethod
     @validate_safely(whats_being_done="checking that semantic model sub element names aren't reserved sql keywords")
-    def _validate_semantic_model_sub_elements(semantic_model: SemanticModel) -> List[ValidationIssue]:
+    def _validate_semantic_model_sub_elements(semantic_model: SemanticModel) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         for dimension in semantic_model.dimensions:
@@ -125,7 +125,7 @@ class ReservedKeywordsRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
     @classmethod
     @validate_safely(whats_being_done="checking that semantic_model node_relations are not sql reserved keywords")
-    def _validate_semantic_models(cls, semantic_manifest: SemanticManifest) -> List[ValidationIssue]:
+    def _validate_semantic_models(cls, semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:
         """Checks names of objects that are not nested."""
         issues: List[ValidationIssue] = []
         set_keywords = set(RESERVED_KEYWORDS)
@@ -156,5 +156,5 @@ class ReservedKeywordsRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         whats_being_done="running model validation ensuring elements that aren't selected via a defined expr don't "
         "contain reserved keywords"
     )
-    def validate_manifest(cls, semantic_manifest: SemanticManifest) -> List[ValidationIssue]:  # noqa: D
+    def validate_manifest(cls, semantic_manifest: SemanticManifest) -> Sequence[ValidationIssue]:  # noqa: D
         return cls._validate_semantic_models(semantic_manifest=semantic_manifest)

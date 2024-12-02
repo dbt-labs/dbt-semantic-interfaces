@@ -36,7 +36,7 @@ class SemanticModelValidityWindowRule(SemanticManifestValidationRule[SemanticMan
         whats_being_done="checking the semantic model's validity parameters for compatibility with "
         "runtime requirements"
     )
-    def _validate_semantic_model(semantic_model: SemanticModel) -> List[ValidationIssue]:
+    def _validate_semantic_model(semantic_model: SemanticModel) -> Sequence[ValidationIssue]:
         """Runs assertions on semantic models with validity parameters set on one or more time dimensions."""
         issues: List[ValidationIssue] = []
 
@@ -157,7 +157,7 @@ class SemanticModelDefaultsRule(SemanticManifestValidationRule[SemanticManifestT
 
     @staticmethod
     @validate_safely(whats_being_done="checking validity of the semantic model's default agg_time_dimension")
-    def _validate_default_agg_time_dimension(semantic_model: SemanticModel) -> List[ValidationIssue]:
+    def _validate_default_agg_time_dimension(semantic_model: SemanticModel) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
 
         if semantic_model.defaults is None or semantic_model.defaults.agg_time_dimension is None:

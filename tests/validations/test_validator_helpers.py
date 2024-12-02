@@ -1,5 +1,5 @@
 from datetime import date
-from typing import List
+from typing import List, Sequence
 
 import pytest
 
@@ -25,7 +25,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
 
 
 @pytest.fixture
-def list_of_issues() -> List[ValidationIssue]:  # noqa: D
+def list_of_issues() -> Sequence[ValidationIssue]:  # noqa: D
     file_context = FileContext(file_name="foo", line_number=1337)
     semantic_model_name = "My semantic model"
 
@@ -141,7 +141,7 @@ def test_merge_two_model_validation_results(list_of_issues: List[ValidationIssue
 
 def test_validate_safely_handles_exceptions():  # noqa: D
     @validate_safely("testing validate safely handles exceptions gracefully")
-    def checking_validate_safely() -> List[ValidationIssue]:
+    def checking_validate_safely() -> Sequence[ValidationIssue]:
         raise (Exception("Oh no an exception!"))
         return []
 
