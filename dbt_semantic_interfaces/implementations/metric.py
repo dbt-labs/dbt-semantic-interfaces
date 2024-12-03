@@ -209,8 +209,8 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         data = deepcopy(input)
 
         # Ensure grain_to_date is lowercased
-        type_params = data.get("type_params", {})
-        grain_to_date = type_params.get("cumulative_type_params", {}).get("grain_to_date")
+        type_params = data.get("type_params") or {}
+        grain_to_date = (type_params.get("cumulative_type_params") or {}).get("grain_to_date")
         if isinstance(grain_to_date, str):
             data["type_params"]["cumulative_type_params"]["grain_to_date"] = grain_to_date.lower()
 
