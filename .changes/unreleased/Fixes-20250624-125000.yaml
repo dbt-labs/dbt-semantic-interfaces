@@ -1,0 +1,6 @@
+kind: Fixes
+body: Ensure agg_time_dimension is lowercased in the manifest
+time: 2025-06-24T12:50:00.951688-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "379"

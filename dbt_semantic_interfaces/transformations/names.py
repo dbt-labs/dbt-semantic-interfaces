@@ -41,6 +41,8 @@ class LowerCaseNamesRule(ProtocolHint[SemanticManifestTransformRule[PydanticSema
         if semantic_model.dimensions:
             for dimension in semantic_model.dimensions:
                 dimension.name = dimension.name.lower()
+        if semantic_model.defaults and semantic_model.defaults.agg_time_dimension:
+            semantic_model.defaults.agg_time_dimension = semantic_model.defaults.agg_time_dimension.lower()
 
     @staticmethod
     def _lowercase_top_level_objects(model: PydanticSemanticManifest) -> None:
