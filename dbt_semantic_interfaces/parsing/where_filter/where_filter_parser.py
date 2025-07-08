@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Sequence
 
 from dbt_semantic_interfaces.call_parameter_sets import (
-    FilterCallParameterSets,
+    JinjaCallParameterSets,
     ParseWhereFilterException,
 )
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
@@ -23,7 +23,7 @@ from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
 
 
 class WhereFilterParser:
-    """Parses the template in the WhereFilter into FilterCallParameterSets."""
+    """Parses the template in the WhereFilter into JinjaCallParameterSets."""
 
     @staticmethod
     def parse_item_descriptions(where_sql_template: str) -> Sequence[ObjectBuilderItemDescription]:
@@ -41,7 +41,7 @@ class WhereFilterParser:
     @staticmethod
     def parse_call_parameter_sets(
         where_sql_template: str, custom_granularity_names: Sequence[str]
-    ) -> FilterCallParameterSets:
+    ) -> JinjaCallParameterSets:
         """Return the result of extracting the semantic objects referenced in the where SQL template string."""
         descriptions = WhereFilterParser.parse_item_descriptions(where_sql_template)
 
@@ -102,7 +102,7 @@ class WhereFilterParser:
             else:
                 assert_values_exhausted(item_type)
 
-        return FilterCallParameterSets(
+        return JinjaCallParameterSets(
             dimension_call_parameter_sets=tuple(dimension_call_parameter_sets),
             time_dimension_call_parameter_sets=tuple(time_dimension_call_parameter_sets),
             entity_call_parameter_sets=tuple(entity_call_parameter_sets),

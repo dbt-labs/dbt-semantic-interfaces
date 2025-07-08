@@ -7,7 +7,7 @@ from typing import Callable, Generator, List, Sequence, Tuple
 from typing_extensions import Self
 
 from dbt_semantic_interfaces.call_parameter_sets import (
-    FilterCallParameterSets,
+    JinjaCallParameterSets,
     ParseWhereFilterException,
 )
 from dbt_semantic_interfaces.implementations.base import (
@@ -49,7 +49,7 @@ class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
         else:
             raise ValueError(f"Expected input to be of type string, but got type {type(input)} with value: {input}")
 
-    def call_parameter_sets(self, custom_granularity_names: Sequence[str]) -> FilterCallParameterSets:  # noqa: D
+    def call_parameter_sets(self, custom_granularity_names: Sequence[str]) -> JinjaCallParameterSets:  # noqa: D
         return WhereFilterParser.parse_call_parameter_sets(
             where_sql_template=self.where_sql_template, custom_granularity_names=custom_granularity_names
         )
@@ -118,9 +118,9 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
 
     def filter_expression_parameter_sets(
         self, custom_granularity_names: Sequence[str]
-    ) -> List[Tuple[str, FilterCallParameterSets]]:
+    ) -> List[Tuple[str, JinjaCallParameterSets]]:
         """Gets the call parameter sets for each filter expression."""
-        filter_parameter_sets: List[Tuple[str, FilterCallParameterSets]] = []
+        filter_parameter_sets: List[Tuple[str, JinjaCallParameterSets]] = []
         invalid_filter_expressions: List[Tuple[str, Exception]] = []
         for where_filter in self.where_filters:
             try:

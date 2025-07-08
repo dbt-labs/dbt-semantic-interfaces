@@ -49,7 +49,7 @@ class MetricCallParameterSet:
 
 
 @dataclass(frozen=True)
-class FilterCallParameterSets:
+class JinjaCallParameterSets:
     """The calls for metric items made in the Jinja template of the where filter."""
 
     dimension_call_parameter_sets: Tuple[DimensionCallParameterSet, ...] = ()

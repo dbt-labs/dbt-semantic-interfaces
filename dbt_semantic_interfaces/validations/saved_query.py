@@ -5,7 +5,7 @@ import traceback
 from dataclasses import dataclass
 from typing import Generic, List, Optional, Sequence, Set
 
-from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
+from dbt_semantic_interfaces.call_parameter_sets import JinjaCallParameterSets
 from dbt_semantic_interfaces.naming.keywords import METRIC_TIME_ELEMENT_NAME
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
     ObjectBuilderItemDescription,
@@ -56,7 +56,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
 
         for group_by_item in saved_query.query_params.group_by:
             # TODO: Replace with more appropriate abstractions once available.
-            parameter_sets: FilterCallParameterSets
+            parameter_sets: JinjaCallParameterSets
             try:
                 parameter_sets = WhereFilterParser.parse_call_parameter_sets(
                     where_sql_template="{{" + group_by_item + "}}", custom_granularity_names=custom_granularity_names
