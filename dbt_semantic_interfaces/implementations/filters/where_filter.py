@@ -15,8 +15,8 @@ from dbt_semantic_interfaces.implementations.base import (
     PydanticCustomInputParser,
     PydanticParseableValueType,
 )
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
-    WhereFilterParser,
+from dbt_semantic_interfaces.parsing.where_filter.jinja_object_parser import (
+    JinjaObjectParser,
 )
 
 
@@ -50,7 +50,7 @@ class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
             raise ValueError(f"Expected input to be of type string, but got type {type(input)} with value: {input}")
 
     def call_parameter_sets(self, custom_granularity_names: Sequence[str]) -> JinjaCallParameterSets:  # noqa: D
-        return WhereFilterParser.parse_call_parameter_sets(
+        return JinjaObjectParser.parse_call_parameter_sets(
             where_sql_template=self.where_sql_template, custom_granularity_names=custom_granularity_names
         )
 

@@ -18,8 +18,8 @@ from dbt_semantic_interfaces.parsing.text_input.valid_method import (
     ConfiguredValidMethodMapping,
     ValidMethodMapping,
 )
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
-    WhereFilterParser,
+from dbt_semantic_interfaces.parsing.where_filter.jinja_object_parser import (
+    JinjaObjectParser,
 )
 from dbt_semantic_interfaces.protocols import SemanticManifestT
 from dbt_semantic_interfaces.protocols.saved_query import SavedQuery
@@ -58,7 +58,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
             # TODO: Replace with more appropriate abstractions once available.
             parameter_sets: JinjaCallParameterSets
             try:
-                parameter_sets = WhereFilterParser.parse_call_parameter_sets(
+                parameter_sets = JinjaObjectParser.parse_call_parameter_sets(
                     where_sql_template="{{" + group_by_item + "}}", custom_granularity_names=custom_granularity_names
                 )
             except Exception as e:

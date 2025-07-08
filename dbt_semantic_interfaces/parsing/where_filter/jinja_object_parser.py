@@ -22,7 +22,7 @@ from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
 )
 
 
-class WhereFilterParser:
+class JinjaObjectParser:
     """Parses the template in the WhereFilter into JinjaCallParameterSets."""
 
     @staticmethod
@@ -43,7 +43,7 @@ class WhereFilterParser:
         where_sql_template: str, custom_granularity_names: Sequence[str]
     ) -> JinjaCallParameterSets:
         """Return the result of extracting the semantic objects referenced in the where SQL template string."""
-        descriptions = WhereFilterParser.parse_item_descriptions(where_sql_template)
+        descriptions = JinjaObjectParser.parse_item_descriptions(where_sql_template)
 
         """
         Dimensions that are created with a grain or date_part parameter, for instance Dimension(...).grain(...), are
