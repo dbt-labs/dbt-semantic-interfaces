@@ -1,7 +1,7 @@
 from abc import abstractmethod
 from typing import Protocol, Sequence, Tuple
 
-from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
+from dbt_semantic_interfaces.call_parameter_sets import JinjaCallParameterSets
 
 
 class WhereFilter(Protocol):
@@ -14,7 +14,7 @@ class WhereFilter(Protocol):
         pass
 
     @abstractmethod
-    def call_parameter_sets(self, custom_granularity_names: Sequence[str]) -> FilterCallParameterSets:
+    def call_parameter_sets(self, custom_granularity_names: Sequence[str]) -> JinjaCallParameterSets:
         """Describe calls like 'dimension(...)' in the SQL template."""
         pass
 
@@ -43,7 +43,7 @@ class WhereFilterIntersection(Protocol):
     @abstractmethod
     def filter_expression_parameter_sets(
         self, custom_granularity_names: Sequence[str]
-    ) -> Sequence[Tuple[str, FilterCallParameterSets]]:
+    ) -> Sequence[Tuple[str, JinjaCallParameterSets]]:
         """Mapping from distinct filter expressions to the call parameter sets associated with them.
 
         We use a tuple, rather than a Mapping, in case the call parameter sets may vary between

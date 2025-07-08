@@ -1,0 +1,6 @@
+kind: Features
+body: Support for parsing the order by in saved queries
+time: 2025-07-08T15:56:37.073651-07:00
+custom:
+  Author: courtneyholcomb
+  Issue: "382"

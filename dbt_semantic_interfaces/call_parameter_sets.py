@@ -19,6 +19,7 @@ class DimensionCallParameterSet:
 
     entity_path: Tuple[EntityReference, ...]
     dimension_reference: DimensionReference
+    descending: Optional[bool] = None
     # TODO: MFS Jinja allows grain and date part in Dimension(...). Should we allow them here, too, for consistency?
 
 
@@ -30,6 +31,7 @@ class TimeDimensionCallParameterSet:
     time_dimension_reference: TimeDimensionReference
     time_granularity_name: Optional[str] = None
     date_part: Optional[DatePart] = None
+    descending: Optional[bool] = None
 
 
 @dataclass(frozen=True)
@@ -38,6 +40,7 @@ class EntityCallParameterSet:
 
     entity_path: Tuple[EntityReference, ...]
     entity_reference: EntityReference
+    descending: Optional[bool] = None
 
 
 @dataclass(frozen=True)
@@ -45,11 +48,12 @@ class MetricCallParameterSet:
     """When 'Metric(...)' is used in the Jinja template of the where filter, the parameters to that call."""
 
     metric_reference: MetricReference
-    group_by: Tuple[LinkableElementReference, ...]
+    group_by: Tuple[LinkableElementReference, ...] = ()
+    descending: Optional[bool] = None
 
 
 @dataclass(frozen=True)
-class FilterCallParameterSets:
+class JinjaCallParameterSets:
     """The calls for metric items made in the Jinja template of the where filter."""
 
     dimension_call_parameter_sets: Tuple[DimensionCallParameterSet, ...] = ()
@@ -58,5 +62,5 @@ class FilterCallParameterSets:
     metric_call_parameter_sets: Tuple[MetricCallParameterSet, ...] = ()
 
 
-class ParseWhereFilterException(Exception):  # noqa: D
+class ParseJinjaObjectException(Exception):  # noqa: D
     pass

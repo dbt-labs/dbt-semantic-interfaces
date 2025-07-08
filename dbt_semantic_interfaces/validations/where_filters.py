@@ -2,7 +2,7 @@ import traceback
 from enum import Enum
 from typing import Generic, List, Sequence, Tuple
 
-from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
+from dbt_semantic_interfaces.call_parameter_sets import JinjaCallParameterSets
 from dbt_semantic_interfaces.protocols import Metric, SemanticManifestT
 from dbt_semantic_interfaces.protocols.saved_query import SavedQuery
 from dbt_semantic_interfaces.references import MetricModelReference
@@ -36,7 +36,7 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
         element_name: str,
         object_type: SemanticManifestNodeType,
         context: ValidationContext,
-        filter_call_param_sets: FilterCallParameterSets,
+        filter_call_param_sets: JinjaCallParameterSets,
         valid_granularity_names: List[str],
     ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
@@ -84,7 +84,7 @@ class WhereFiltersAreParseable(SemanticManifestValidationRule[SemanticManifestT]
     @staticmethod
     def _validate_time_granularity_names_for_metric(
         context: MetricContext,
-        filter_expression_parameter_sets: Sequence[Tuple[str, FilterCallParameterSets]],
+        filter_expression_parameter_sets: Sequence[Tuple[str, JinjaCallParameterSets]],
         valid_granularity_names: List[str],
     ) -> Sequence[ValidationIssue]:
         issues: List[ValidationIssue] = []
