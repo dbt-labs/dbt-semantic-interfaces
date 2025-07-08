@@ -5,9 +5,9 @@ import pytest
 from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
-    FilterCallParameterSets,
+    JinjaCallParameterSets,
     MetricCallParameterSet,
-    ParseWhereFilterException,
+    ParseJinjaObjectException,
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
@@ -36,7 +36,7 @@ def test_extract_dimension_call_parameter_sets() -> None:  # noqa: D
         )
     ).call_parameter_sets(custom_granularity_names=())
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         dimension_call_parameter_sets=(
             DimensionCallParameterSet(
                 dimension_reference=DimensionReference(element_name="is_instant"),
@@ -63,7 +63,7 @@ def test_extract_dimension_with_grain_call_parameter_sets() -> None:  # noqa: D
         )
     ).call_parameter_sets(custom_granularity_names=())
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         dimension_call_parameter_sets=(),
         time_dimension_call_parameter_sets=(
             TimeDimensionCallParameterSet(
@@ -83,7 +83,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
         )
     ).call_parameter_sets(custom_granularity_names=())
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         time_dimension_call_parameter_sets=(
             TimeDimensionCallParameterSet(
                 time_dimension_reference=TimeDimensionReference(element_name="created_at"),
@@ -102,7 +102,7 @@ def test_extract_time_dimension_call_parameter_sets() -> None:  # noqa: D
         )
     ).call_parameter_sets(custom_granularity_names=())
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         time_dimension_call_parameter_sets=(
             TimeDimensionCallParameterSet(
                 time_dimension_reference=TimeDimensionReference(element_name="created_at"),
@@ -121,7 +121,7 @@ def test_extract_metric_time_dimension_call_parameter_sets() -> None:  # noqa: D
         where_sql_template="""{{ TimeDimension('metric_time', 'month') }} = '2020-01-01'"""
     ).call_parameter_sets(custom_granularity_names=())
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         time_dimension_call_parameter_sets=(
             TimeDimensionCallParameterSet(
                 time_dimension_reference=TimeDimensionReference(element_name="metric_time"),
@@ -139,7 +139,7 @@ def test_extract_entity_call_parameter_sets() -> None:  # noqa: D
         )
     ).call_parameter_sets(custom_granularity_names=())
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         dimension_call_parameter_sets=(),
         entity_call_parameter_sets=(
             EntityCallParameterSet(
@@ -159,7 +159,7 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
         where_sql_template=("{{ Metric('bookings', group_by=['listing']) }} > 2")
     ).call_parameter_sets(custom_granularity_names=())
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         dimension_call_parameter_sets=(),
         entity_call_parameter_sets=(),
         metric_call_parameter_sets=(
@@ -174,7 +174,7 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
         where_sql_template=("{{ Metric('bookings', group_by=['listing', 'metric_time']) }} > 2")
     ).call_parameter_sets(custom_granularity_names=())
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         dimension_call_parameter_sets=(),
         entity_call_parameter_sets=(),
         metric_call_parameter_sets=(
@@ -185,7 +185,7 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
         ),
     )
 
-    with pytest.raises(ParseWhereFilterException):
+    with pytest.raises(ParseJinjaObjectException):
         PydanticWhereFilter(where_sql_template=("{{ Metric('bookings') }} > 2")).call_parameter_sets(
             custom_granularity_names=()
         )
@@ -195,7 +195,7 @@ def test_invalid_entity_name_error() -> None:
     """Test to ensure we throw an error if an entity name is invalid."""
     bad_entity_filter = PydanticWhereFilter(where_sql_template="{{ Entity('is_food_order__day' )}}")
 
-    with pytest.raises(ParseWhereFilterException, match="Name is in an incorrect format"):
+    with pytest.raises(ParseJinjaObjectException, match="Name is in an incorrect format"):
         bad_entity_filter.call_parameter_sets(custom_granularity_names=())
 
 
@@ -213,7 +213,7 @@ def test_where_filter_interesection_extract_call_parameter_sets() -> None:
 
     parse_result = dict(filter_intersection.filter_expression_parameter_sets(custom_granularity_names=()))
 
-    assert parse_result.get(time_filter.where_sql_template) == FilterCallParameterSets(
+    assert parse_result.get(time_filter.where_sql_template) == JinjaCallParameterSets(
         time_dimension_call_parameter_sets=(
             TimeDimensionCallParameterSet(
                 time_dimension_reference=TimeDimensionReference(element_name="metric_time"),
@@ -222,7 +222,7 @@ def test_where_filter_interesection_extract_call_parameter_sets() -> None:
             ),
         )
     )
-    assert parse_result.get(entity_filter.where_sql_template) == FilterCallParameterSets(
+    assert parse_result.get(entity_filter.where_sql_template) == JinjaCallParameterSets(
         dimension_call_parameter_sets=(),
         entity_call_parameter_sets=(
             EntityCallParameterSet(
@@ -251,7 +251,7 @@ def test_where_filter_intersection_error_collection() -> None:
         where_filters=[metric_time_in_dimension_error, valid_dimension, entity_format_error]
     )
 
-    with pytest.raises(ParseWhereFilterException) as exc_info:
+    with pytest.raises(ParseJinjaObjectException) as exc_info:
         filter_intersection.filter_expression_parameter_sets(custom_granularity_names=())
 
     error_string = str(exc_info.value)
@@ -265,7 +265,7 @@ def test_time_dimension_without_granularity() -> None:  # noqa: D
         where_sql_template="{{ TimeDimension('booking__created_at') }} > 2023-09-18"
     ).call_parameter_sets(custom_granularity_names=())
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         dimension_call_parameter_sets=(),
         time_dimension_call_parameter_sets=(
             TimeDimensionCallParameterSet(
@@ -283,7 +283,7 @@ def test_time_dimension_with_custom_granularity() -> None:  # noqa: D
         where_sql_template="{{ TimeDimension('booking__created_at', 'martian_week') }} > 2023-09-18"
     ).call_parameter_sets(custom_granularity_names=("martian_week",))
 
-    assert parse_result == FilterCallParameterSets(
+    assert parse_result == JinjaCallParameterSets(
         dimension_call_parameter_sets=(),
         time_dimension_call_parameter_sets=(
             TimeDimensionCallParameterSet(

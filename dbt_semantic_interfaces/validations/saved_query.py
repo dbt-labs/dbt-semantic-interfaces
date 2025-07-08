@@ -5,7 +5,6 @@ import traceback
 from dataclasses import dataclass
 from typing import Generic, List, Optional, Sequence, Set
 
-from dbt_semantic_interfaces.call_parameter_sets import FilterCallParameterSets
 from dbt_semantic_interfaces.naming.keywords import METRIC_TIME_ELEMENT_NAME
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
     ObjectBuilderItemDescription,
@@ -18,8 +17,9 @@ from dbt_semantic_interfaces.parsing.text_input.valid_method import (
     ConfiguredValidMethodMapping,
     ValidMethodMapping,
 )
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
-    WhereFilterParser,
+from dbt_semantic_interfaces.parsing.where_filter.jinja_object_parser import (
+    JinjaObjectParser,
+    QueryItemLocation,
 )
 from dbt_semantic_interfaces.protocols import SemanticManifestT
 from dbt_semantic_interfaces.protocols.saved_query import SavedQuery
@@ -55,11 +55,11 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
         issues: List[ValidationIssue] = []
 
         for group_by_item in saved_query.query_params.group_by:
-            # TODO: Replace with more appropriate abstractions once available.
-            parameter_sets: FilterCallParameterSets
             try:
-                parameter_sets = WhereFilterParser.parse_call_parameter_sets(
-                    where_sql_template="{{" + group_by_item + "}}", custom_granularity_names=custom_granularity_names
+                parameter_sets = JinjaObjectParser.parse_call_parameter_sets(
+                    where_sql_template="{{" + group_by_item + "}}",
+                    custom_granularity_names=custom_granularity_names,
+                    query_item_location=QueryItemLocation.NON_ORDER_BY,
                 )
             except Exception as e:
                 issues.append(
@@ -117,13 +117,14 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
         return issues
 
     @staticmethod
-    def _parse_query_item(
+    def parse_query_item(
         saved_query: SavedQuery,
         text_processor: ObjectBuilderTextProcessor,
         query_item_input: str,
         element_type: SavedQueryElementType,
         valid_method_mapping: ValidMethodMapping,
     ) -> _ParseQueryItemResult:
+        """Parse a Jinja syntax object into an ObjectBuilderItemDescription."""
         try:
             item_description = text_processor.get_description(query_item_input, valid_method_mapping)
             return _ParseQueryItemResult(item_description=item_description, validation_issue=None)
@@ -165,7 +166,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
         for metric in saved_query.query_params.metrics:
             # In an order-by, a metric is specified as "Metric('bookings')" while in the metrics section, it's only the
             # metric name.
-            result = SavedQueryRule._parse_query_item(
+            result = SavedQueryRule.parse_query_item(
                 saved_query=saved_query,
                 text_processor=text_processor,
                 query_item_input=f"{QueryItemType.METRIC.value}('{metric}')",
@@ -178,7 +179,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
                 validation_issues.append(result.validation_issue)
 
         for group_by in saved_query.query_params.group_by:
-            result = SavedQueryRule._parse_query_item(
+            result = SavedQueryRule.parse_query_item(
                 saved_query=saved_query,
                 text_processor=text_processor,
                 query_item_input=group_by,
@@ -195,7 +196,7 @@ class SavedQueryRule(SemanticManifestValidationRule[SemanticManifestT], Generic[
             return validation_issues
 
         for order_by in saved_query.query_params.order_by:
-            result = SavedQueryRule._parse_query_item(
+            result = SavedQueryRule.parse_query_item(
                 saved_query=saved_query,
                 text_processor=text_processor,
                 query_item_input=order_by,

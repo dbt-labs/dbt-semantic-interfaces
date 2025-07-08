@@ -25,8 +25,9 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
     PydanticWhereFilterIntersection,
 )
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
-    WhereFilterParser,
+from dbt_semantic_interfaces.parsing.where_filter.jinja_object_parser import (
+    JinjaObjectParser,
+    QueryItemLocation,
 )
 from dbt_semantic_interfaces.references import (
     EntityReference,
@@ -165,14 +166,18 @@ def test_where_filter_intersection_from_partially_deserialized_list_of_strings()
     ],
 )
 def test_time_dimension_date_part(where: str) -> None:  # noqa
-    param_sets = WhereFilterParser.parse_call_parameter_sets(where, custom_granularity_names=())
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        where, custom_granularity_names=(), query_item_location=QueryItemLocation.NON_ORDER_BY
+    )
     assert len(param_sets.time_dimension_call_parameter_sets) == 1
     assert param_sets.time_dimension_call_parameter_sets[0].date_part == DatePart.YEAR
 
 
 def test_dimension_date_part() -> None:  # noqa
     where = "{{ Dimension('metric_time').grain('DAY').date_part('YEAR') }} > '2023-01-01'"
-    param_sets = WhereFilterParser.parse_call_parameter_sets(where, custom_granularity_names=())
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        where, custom_granularity_names=(), query_item_location=QueryItemLocation.NON_ORDER_BY
+    )
     assert len(param_sets.time_dimension_call_parameter_sets) == 1
     assert param_sets.time_dimension_call_parameter_sets[0].date_part == DatePart.YEAR
 
@@ -215,17 +220,21 @@ def test_dimension_date_part() -> None:  # noqa
     ],
 )
 def test_time_dimension_grain(  # noqa
-    where_and_expected_call_params: Tuple[str, Union[TimeDimensionCallParameterSet, DimensionCallParameterSet]]
+    where_and_expected_call_params: Tuple[str, Union[TimeDimensionCallParameterSet, DimensionCallParameterSet]],
 ) -> None:
     where, expected_call_params = where_and_expected_call_params
-    param_sets = WhereFilterParser.parse_call_parameter_sets(where, custom_granularity_names=("martian_week",))
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        where, custom_granularity_names=("martian_week",), query_item_location=QueryItemLocation.NON_ORDER_BY
+    )
     assert len(param_sets.time_dimension_call_parameter_sets) == 1
     assert param_sets.time_dimension_call_parameter_sets[0] == expected_call_params
 
 
 def test_entity_without_primary_entity_prefix() -> None:  # noqa
     where = "{{ Entity('non_primary_entity') }} = '1'"
-    param_sets = WhereFilterParser.parse_call_parameter_sets(where, custom_granularity_names=())
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        where, custom_granularity_names=(), query_item_location=QueryItemLocation.NON_ORDER_BY
+    )
     assert len(param_sets.entity_call_parameter_sets) == 1
     assert param_sets.entity_call_parameter_sets[0] == EntityCallParameterSet(
         entity_path=(),
@@ -235,7 +244,9 @@ def test_entity_without_primary_entity_prefix() -> None:  # noqa
 
 def test_entity() -> None:  # noqa
     where = "{{ Entity('entity_1__entity_2', entity_path=['entity_0']) }} = '1'"
-    param_sets = WhereFilterParser.parse_call_parameter_sets(where, custom_granularity_names=())
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        where, custom_granularity_names=(), query_item_location=QueryItemLocation.NON_ORDER_BY
+    )
     assert len(param_sets.entity_call_parameter_sets) == 1
     assert param_sets.entity_call_parameter_sets[0] == EntityCallParameterSet(
         entity_path=(
@@ -248,7 +259,9 @@ def test_entity() -> None:  # noqa
 
 def test_metric() -> None:  # noqa
     where = "{{ Metric('metric', group_by=['dimension']) }} = 10"
-    param_sets = WhereFilterParser.parse_call_parameter_sets(where, custom_granularity_names=())
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        where, custom_granularity_names=(), query_item_location=QueryItemLocation.NON_ORDER_BY
+    )
     assert len(param_sets.metric_call_parameter_sets) == 1
     assert param_sets.metric_call_parameter_sets[0] == MetricCallParameterSet(
         group_by=(LinkableElementReference(element_name="dimension"),),
@@ -257,7 +270,9 @@ def test_metric() -> None:  # noqa
 
     # Without kwarg syntax
     where = "{{ Metric('metric', ['dimension']) }} = 10"
-    param_sets = WhereFilterParser.parse_call_parameter_sets(where, custom_granularity_names=())
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        where, custom_granularity_names=(), query_item_location=QueryItemLocation.NON_ORDER_BY
+    )
     assert len(param_sets.metric_call_parameter_sets) == 1
     assert param_sets.metric_call_parameter_sets[0] == MetricCallParameterSet(
         group_by=(LinkableElementReference(element_name="dimension"),),

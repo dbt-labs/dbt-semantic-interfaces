@@ -49,7 +49,7 @@ class MetricCallParameterSet:
 
 
 @dataclass(frozen=True)
-class FilterCallParameterSets:
+class JinjaCallParameterSets:
     """The calls for metric items made in the Jinja template of the where filter."""
 
     dimension_call_parameter_sets: Tuple[DimensionCallParameterSet, ...] = ()
@@ -58,5 +58,5 @@ class FilterCallParameterSets:
     metric_call_parameter_sets: Tuple[MetricCallParameterSet, ...] = ()
 
 
-class ParseWhereFilterException(Exception):  # noqa: D
+class ParseJinjaObjectException(Exception):  # noqa: D
     pass

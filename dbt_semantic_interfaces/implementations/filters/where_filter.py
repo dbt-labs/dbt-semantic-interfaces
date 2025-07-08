@@ -7,16 +7,17 @@ from typing import Callable, Generator, List, Sequence, Tuple
 from typing_extensions import Self
 
 from dbt_semantic_interfaces.call_parameter_sets import (
-    FilterCallParameterSets,
-    ParseWhereFilterException,
+    JinjaCallParameterSets,
+    ParseJinjaObjectException,
 )
 from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
     PydanticCustomInputParser,
     PydanticParseableValueType,
 )
-from dbt_semantic_interfaces.parsing.where_filter.where_filter_parser import (
-    WhereFilterParser,
+from dbt_semantic_interfaces.parsing.where_filter.jinja_object_parser import (
+    JinjaObjectParser,
+    QueryItemLocation,
 )
 
 
@@ -49,9 +50,11 @@ class PydanticWhereFilter(PydanticCustomInputParser, HashableBaseModel):
         else:
             raise ValueError(f"Expected input to be of type string, but got type {type(input)} with value: {input}")
 
-    def call_parameter_sets(self, custom_granularity_names: Sequence[str]) -> FilterCallParameterSets:  # noqa: D
-        return WhereFilterParser.parse_call_parameter_sets(
-            where_sql_template=self.where_sql_template, custom_granularity_names=custom_granularity_names
+    def call_parameter_sets(self, custom_granularity_names: Sequence[str]) -> JinjaCallParameterSets:  # noqa: D
+        return JinjaObjectParser.parse_call_parameter_sets(
+            where_sql_template=self.where_sql_template,
+            custom_granularity_names=custom_granularity_names,
+            query_item_location=QueryItemLocation.NON_ORDER_BY,
         )
 
 
@@ -118,9 +121,9 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
 
     def filter_expression_parameter_sets(
         self, custom_granularity_names: Sequence[str]
-    ) -> List[Tuple[str, FilterCallParameterSets]]:
+    ) -> List[Tuple[str, JinjaCallParameterSets]]:
         """Gets the call parameter sets for each filter expression."""
-        filter_parameter_sets: List[Tuple[str, FilterCallParameterSets]] = []
+        filter_parameter_sets: List[Tuple[str, JinjaCallParameterSets]] = []
         invalid_filter_expressions: List[Tuple[str, Exception]] = []
         for where_filter in self.where_filters:
             try:
@@ -142,6 +145,6 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
                 lines.append(textwrap.indent(str(exception), prefix="    "))
                 lines.append("Traceback:")
                 lines.append(textwrap.indent("".join(traceback.format_tb(exception.__traceback__)), prefix="  "))
-            raise ParseWhereFilterException("\n".join(lines))
+            raise ParseJinjaObjectException("\n".join(lines))
 
         return filter_parameter_sets

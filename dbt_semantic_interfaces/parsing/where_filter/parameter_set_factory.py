@@ -1,10 +1,11 @@
+from enum import Enum
 from typing import Optional, Sequence
 
 from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     MetricCallParameterSet,
-    ParseWhereFilterException,
+    ParseJinjaObjectException,
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.naming.dundered import StructuredDunderedName
@@ -17,6 +18,13 @@ from dbt_semantic_interfaces.references import (
     TimeDimensionReference,
 )
 from dbt_semantic_interfaces.type_enums.date_part import DatePart
+
+
+class QueryItemLocation(Enum):
+    """The location of the input string in the query."""
+
+    ORDER_BY = "order_by"
+    NON_ORDER_BY = "non_order_by"
 
 
 class ParameterSetFactory:
@@ -70,7 +78,7 @@ class ParameterSetFactory:
             name=time_dimension_name, custom_granularity_names=custom_granularity_names
         )
         if len(group_by_item_name.entity_links) != 1 and not is_metric_time_name(group_by_item_name.element_name):
-            raise ParseWhereFilterException(
+            raise ParseJinjaObjectException(
                 ParameterSetFactory._exception_message_for_incorrect_format(time_dimension_name)
             )
         grain_parsed_from_name = group_by_item_name.time_granularity
@@ -81,7 +89,7 @@ class ParameterSetFactory:
         )
 
         if inputs_are_mismatched:
-            raise ParseWhereFilterException(
+            raise ParseJinjaObjectException(
                 f"Received different grains in `time_dimension_name` parameter ('{time_dimension_name}') "
                 f"and `time_granularity_name` parameter ('{time_granularity_name}'). Remove the grain suffix "
                 f"(`{grain_parsed_from_name}`) from the time dimension name and use the `time_granularity_name` "
@@ -105,7 +113,7 @@ class ParameterSetFactory:
         group_by_item_name = StructuredDunderedName.parse_name(name=dimension_name, custom_granularity_names=())
 
         if len(group_by_item_name.entity_links) != 1 and not is_metric_time_name(group_by_item_name.element_name):
-            raise ParseWhereFilterException(ParameterSetFactory._exception_message_for_incorrect_format(dimension_name))
+            raise ParseJinjaObjectException(ParameterSetFactory._exception_message_for_incorrect_format(dimension_name))
 
         return DimensionCallParameterSet(
             dimension_reference=DimensionReference(element_name=group_by_item_name.element_name),
@@ -119,7 +127,7 @@ class ParameterSetFactory:
         """Gets called by Jinja when rendering {{ Entity(...) }}."""
         structured_dundered_name = StructuredDunderedName.parse_name(name=entity_name, custom_granularity_names=())
         if structured_dundered_name.time_granularity is not None:
-            raise ParseWhereFilterException(
+            raise ParseJinjaObjectException(
                 f"Name is in an incorrect format: {repr(entity_name)}. " f"It should not contain a time grain suffix."
             )
 
@@ -133,10 +141,15 @@ class ParameterSetFactory:
         )
 
     @staticmethod
-    def create_metric(metric_name: str, group_by: Sequence[str] = ()) -> MetricCallParameterSet:
+    def create_metric(
+        metric_name: str,
+        group_by: Sequence[str] = (),
+        query_item_location: QueryItemLocation = QueryItemLocation.NON_ORDER_BY,
+    ) -> MetricCallParameterSet:
         """Gets called by Jinja when rendering {{ Metric(...) }}."""
-        if not group_by:
-            raise ParseWhereFilterException(
+        # Metric(...) syntax is required in saved_query.order_by to apply descending. Don't require group by there.
+        if query_item_location == QueryItemLocation.NON_ORDER_BY and not group_by:
+            raise ParseJinjaObjectException(
                 "`group_by` parameter is required for Metric in where filter. This is needed to determine 1) the "
                 "granularity to aggregate the metric to and 2) how to join the metric to the rest of the query."
             )

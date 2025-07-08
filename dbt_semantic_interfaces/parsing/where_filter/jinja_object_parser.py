@@ -1,11 +1,9 @@
 from __future__ import annotations
 
+from enum import Enum
 from typing import Sequence
 
-from dbt_semantic_interfaces.call_parameter_sets import (
-    FilterCallParameterSets,
-    ParseWhereFilterException,
-)
+from dbt_semantic_interfaces.call_parameter_sets import JinjaCallParameterSets, ParseJinjaObjectException
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
     ObjectBuilderItemDescription,
@@ -16,34 +14,50 @@ from dbt_semantic_interfaces.parsing.text_input.ti_processor import (
 )
 from dbt_semantic_interfaces.parsing.text_input.valid_method import (
     ConfiguredValidMethodMapping,
+    ValidMethodMapping,
 )
 from dbt_semantic_interfaces.parsing.where_filter.parameter_set_factory import (
     ParameterSetFactory,
+    QueryItemLocation,
 )
 
 
-class WhereFilterParser:
-    """Parses the template in the WhereFilter into FilterCallParameterSets."""
+class JinjaObjectParser:
+    """Parses the template in the Jinja object-builder syntax into JinjaCallParameterSets.
+
+    These are used in where filters, saved query params, and the JDBC API.
+    """
 
     @staticmethod
-    def parse_item_descriptions(where_sql_template: str) -> Sequence[ObjectBuilderItemDescription]:
+    def parse_item_descriptions(
+        where_sql_template: str,
+        valid_method_mapping: ValidMethodMapping = ConfiguredValidMethodMapping.DEFAULT_MAPPING,
+    ) -> Sequence[ObjectBuilderItemDescription]:
         """Parses the filter and returns the item descriptions."""
         text_processor = ObjectBuilderTextProcessor()
 
         try:
             return text_processor.collect_descriptions_from_template(
-                jinja_template=where_sql_template,
-                valid_method_mapping=ConfiguredValidMethodMapping.DEFAULT_MAPPING,
+                jinja_template=where_sql_template, valid_method_mapping=valid_method_mapping
             )
         except Exception as e:
-            raise ParseWhereFilterException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
+            raise ParseJinjaObjectException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
 
     @staticmethod
     def parse_call_parameter_sets(
-        where_sql_template: str, custom_granularity_names: Sequence[str]
-    ) -> FilterCallParameterSets:
+        where_sql_template: str,
+        custom_granularity_names: Sequence[str],
+        query_item_location: QueryItemLocation,
+    ) -> JinjaCallParameterSets:
         """Return the result of extracting the semantic objects referenced in the where SQL template string."""
-        descriptions = WhereFilterParser.parse_item_descriptions(where_sql_template)
+        valid_method_mapping = (
+            ConfiguredValidMethodMapping.DEFAULT_MAPPING_FOR_ORDER_BY
+            if query_item_location == QueryItemLocation.ORDER_BY
+            else ConfiguredValidMethodMapping.DEFAULT_MAPPING
+        )
+        descriptions = JinjaObjectParser.parse_item_descriptions(
+            where_sql_template, valid_method_mapping=valid_method_mapping
+        )
 
         """
         Dimensions that are created with a grain or date_part parameter, for instance Dimension(...).grain(...), are
@@ -97,12 +111,13 @@ class WhereFilterParser:
                     ParameterSetFactory.create_metric(
                         metric_name=description.item_name,
                         group_by=description.group_by_for_metric_item,
+                        query_item_location=query_item_location,
                     )
                 )
             else:
                 assert_values_exhausted(item_type)
 
-        return FilterCallParameterSets(
+        return JinjaCallParameterSets(
             dimension_call_parameter_sets=tuple(dimension_call_parameter_sets),
             time_dimension_call_parameter_sets=tuple(time_dimension_call_parameter_sets),
             entity_call_parameter_sets=tuple(entity_call_parameter_sets),
