@@ -58,5 +58,5 @@ class JinjaCallParameterSets:
     metric_call_parameter_sets: Tuple[MetricCallParameterSet, ...] = ()
 
 
-class ParseWhereFilterException(Exception):  # noqa: D
+class ParseJinjaObjectException(Exception):  # noqa: D
     pass

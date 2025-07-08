@@ -7,7 +7,7 @@ from dbt_semantic_interfaces.call_parameter_sets import (
     EntityCallParameterSet,
     JinjaCallParameterSets,
     MetricCallParameterSet,
-    ParseWhereFilterException,
+    ParseJinjaObjectException,
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
@@ -185,7 +185,7 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
         ),
     )
 
-    with pytest.raises(ParseWhereFilterException):
+    with pytest.raises(ParseJinjaObjectException):
         PydanticWhereFilter(where_sql_template=("{{ Metric('bookings') }} > 2")).call_parameter_sets(
             custom_granularity_names=()
         )
@@ -195,7 +195,7 @@ def test_invalid_entity_name_error() -> None:
     """Test to ensure we throw an error if an entity name is invalid."""
     bad_entity_filter = PydanticWhereFilter(where_sql_template="{{ Entity('is_food_order__day' )}}")
 
-    with pytest.raises(ParseWhereFilterException, match="Name is in an incorrect format"):
+    with pytest.raises(ParseJinjaObjectException, match="Name is in an incorrect format"):
         bad_entity_filter.call_parameter_sets(custom_granularity_names=())
 
 
@@ -251,7 +251,7 @@ def test_where_filter_intersection_error_collection() -> None:
         where_filters=[metric_time_in_dimension_error, valid_dimension, entity_format_error]
     )
 
-    with pytest.raises(ParseWhereFilterException) as exc_info:
+    with pytest.raises(ParseJinjaObjectException) as exc_info:
         filter_intersection.filter_expression_parameter_sets(custom_granularity_names=())
 
     error_string = str(exc_info.value)

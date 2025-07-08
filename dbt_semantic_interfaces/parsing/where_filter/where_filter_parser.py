@@ -4,7 +4,7 @@ from typing import Sequence
 
 from dbt_semantic_interfaces.call_parameter_sets import (
     JinjaCallParameterSets,
-    ParseWhereFilterException,
+    ParseJinjaObjectException,
 )
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
@@ -36,7 +36,7 @@ class WhereFilterParser:
                 valid_method_mapping=ConfiguredValidMethodMapping.DEFAULT_MAPPING,
             )
         except Exception as e:
-            raise ParseWhereFilterException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
+            raise ParseJinjaObjectException(f"Error while parsing Jinja template:\n{where_sql_template}") from e
 
     @staticmethod
     def parse_call_parameter_sets(

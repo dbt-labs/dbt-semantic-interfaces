@@ -8,7 +8,7 @@ from typing_extensions import Self
 
 from dbt_semantic_interfaces.call_parameter_sets import (
     JinjaCallParameterSets,
-    ParseWhereFilterException,
+    ParseJinjaObjectException,
 )
 from dbt_semantic_interfaces.implementations.base import (
     HashableBaseModel,
@@ -142,6 +142,6 @@ class PydanticWhereFilterIntersection(HashableBaseModel):
                 lines.append(textwrap.indent(str(exception), prefix="    "))
                 lines.append("Traceback:")
                 lines.append(textwrap.indent("".join(traceback.format_tb(exception.__traceback__)), prefix="  "))
-            raise ParseWhereFilterException("\n".join(lines))
+            raise ParseJinjaObjectException("\n".join(lines))
 
         return filter_parameter_sets
