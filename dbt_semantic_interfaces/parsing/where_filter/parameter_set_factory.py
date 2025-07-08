@@ -58,6 +58,7 @@ class ParameterSetFactory:
         time_granularity_name: Optional[str] = None,
         entity_path: Sequence[str] = (),
         date_part_name: Optional[str] = None,
+        descending: Optional[bool] = None,
     ) -> TimeDimensionCallParameterSet:
         """Gets called by Jinja when rendering {{ TimeDimension(...) }}.
 
@@ -105,10 +106,13 @@ class ParameterSetFactory:
             ),
             time_granularity_name=time_granularity_name.lower() if time_granularity_name else None,
             date_part=DatePart(date_part_name.lower()) if date_part_name else None,
+            descending=descending,
         )
 
     @staticmethod
-    def create_dimension(dimension_name: str, entity_path: Sequence[str] = ()) -> DimensionCallParameterSet:
+    def create_dimension(
+        dimension_name: str, entity_path: Sequence[str] = (), descending: Optional[bool] = None
+    ) -> DimensionCallParameterSet:
         """Gets called by Jinja when rendering {{ Dimension(...) }}."""
         group_by_item_name = StructuredDunderedName.parse_name(name=dimension_name, custom_granularity_names=())
 
@@ -120,10 +124,13 @@ class ParameterSetFactory:
             entity_path=(
                 tuple(EntityReference(element_name=arg) for arg in entity_path) + group_by_item_name.entity_links
             ),
+            descending=descending,
         )
 
     @staticmethod
-    def create_entity(entity_name: str, entity_path: Sequence[str] = ()) -> EntityCallParameterSet:
+    def create_entity(
+        entity_name: str, entity_path: Sequence[str] = (), descending: Optional[bool] = None
+    ) -> EntityCallParameterSet:
         """Gets called by Jinja when rendering {{ Entity(...) }}."""
         structured_dundered_name = StructuredDunderedName.parse_name(name=entity_name, custom_granularity_names=())
         if structured_dundered_name.time_granularity is not None:
@@ -138,6 +145,7 @@ class ParameterSetFactory:
         return EntityCallParameterSet(
             entity_path=additional_entity_path_elements + structured_dundered_name.entity_links,
             entity_reference=EntityReference(element_name=structured_dundered_name.element_name),
+            descending=descending,
         )
 
     @staticmethod
@@ -145,6 +153,7 @@ class ParameterSetFactory:
         metric_name: str,
         group_by: Sequence[str] = (),
         query_item_location: QueryItemLocation = QueryItemLocation.NON_ORDER_BY,
+        descending: Optional[bool] = None,
     ) -> MetricCallParameterSet:
         """Gets called by Jinja when rendering {{ Metric(...) }}."""
         # Metric(...) syntax is required in saved_query.order_by to apply descending. Don't require group by there.
@@ -156,4 +165,5 @@ class ParameterSetFactory:
         return MetricCallParameterSet(
             metric_reference=MetricReference(element_name=metric_name),
             group_by=tuple([LinkableElementReference(element_name=group_by_name) for group_by_name in group_by]),
+            descending=descending,
         )

@@ -30,6 +30,7 @@ from dbt_semantic_interfaces.parsing.where_filter.jinja_object_parser import (
     QueryItemLocation,
 )
 from dbt_semantic_interfaces.references import (
+    DimensionReference,
     EntityReference,
     LinkableElementReference,
     MetricReference,
@@ -277,4 +278,37 @@ def test_metric() -> None:  # noqa
     assert param_sets.metric_call_parameter_sets[0] == MetricCallParameterSet(
         group_by=(LinkableElementReference(element_name="dimension"),),
         metric_reference=MetricReference(element_name="metric"),
+    )
+
+
+def test_order_by_params() -> None:  # noqa
+    input_str = "{{ Metric('metric').descending(True) }} = 10"
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        input_str, custom_granularity_names=(), query_item_location=QueryItemLocation.ORDER_BY
+    )
+    assert len(param_sets.metric_call_parameter_sets) == 1
+    assert param_sets.metric_call_parameter_sets[0] == MetricCallParameterSet(
+        metric_reference=MetricReference(element_name="metric"), descending=True
+    )
+
+    input_str = "{{ Dimension('entity__stuff').descending(True) }} = 10"
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        input_str, custom_granularity_names=(), query_item_location=QueryItemLocation.ORDER_BY
+    )
+    assert len(param_sets.dimension_call_parameter_sets) == 1
+    assert param_sets.dimension_call_parameter_sets[0] == DimensionCallParameterSet(
+        dimension_reference=DimensionReference(element_name="stuff"),
+        entity_path=(EntityReference(element_name="entity"),),
+        descending=True,
+    )
+
+    input_str = "{{ TimeDimension('entity__time_stuff').descending(True) }} = 10"
+    param_sets = JinjaObjectParser.parse_call_parameter_sets(
+        input_str, custom_granularity_names=(), query_item_location=QueryItemLocation.ORDER_BY
+    )
+    assert len(param_sets.time_dimension_call_parameter_sets) == 1
+    assert param_sets.time_dimension_call_parameter_sets[0] == TimeDimensionCallParameterSet(
+        time_dimension_reference=TimeDimensionReference(element_name="time_stuff"),
+        entity_path=(EntityReference(element_name="entity"),),
+        descending=True,
     )

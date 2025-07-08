@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from enum import Enum
 from typing import Sequence
 
-from dbt_semantic_interfaces.call_parameter_sets import JinjaCallParameterSets, ParseJinjaObjectException
+from dbt_semantic_interfaces.call_parameter_sets import (
+    JinjaCallParameterSets,
+    ParseJinjaObjectException,
+)
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.parsing.text_input.ti_description import (
     ObjectBuilderItemDescription,
@@ -80,6 +82,7 @@ class JinjaObjectParser:
                             entity_path=description.entity_path,
                             date_part_name=description.date_part_name,
                             custom_granularity_names=custom_granularity_names,
+                            descending=description.descending,
                         )
                     )
                 else:
@@ -87,6 +90,7 @@ class JinjaObjectParser:
                         ParameterSetFactory.create_dimension(
                             dimension_name=description.item_name,
                             entity_path=description.entity_path,
+                            descending=description.descending,
                         )
                     )
             elif item_type is QueryItemType.TIME_DIMENSION:
@@ -97,6 +101,7 @@ class JinjaObjectParser:
                         entity_path=description.entity_path,
                         date_part_name=description.date_part_name,
                         custom_granularity_names=custom_granularity_names,
+                        descending=description.descending,
                     )
                 )
             elif item_type is QueryItemType.ENTITY:
@@ -104,6 +109,7 @@ class JinjaObjectParser:
                     ParameterSetFactory.create_entity(
                         entity_name=description.item_name,
                         entity_path=description.entity_path,
+                        descending=description.descending,
                     )
                 )
             elif item_type is QueryItemType.METRIC:
@@ -112,6 +118,7 @@ class JinjaObjectParser:
                         metric_name=description.item_name,
                         group_by=description.group_by_for_metric_item,
                         query_item_location=query_item_location,
+                        descending=description.descending,
                     )
                 )
             else:
