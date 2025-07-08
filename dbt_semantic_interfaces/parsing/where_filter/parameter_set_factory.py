@@ -1,3 +1,4 @@
+from enum import Enum
 from typing import Optional, Sequence
 
 from dbt_semantic_interfaces.call_parameter_sets import (
@@ -17,6 +18,13 @@ from dbt_semantic_interfaces.references import (
     TimeDimensionReference,
 )
 from dbt_semantic_interfaces.type_enums.date_part import DatePart
+
+
+class QueryItemLocation(Enum):
+    """The location of the input string in the query."""
+
+    ORDER_BY = "order_by"
+    NON_ORDER_BY = "non_order_by"
 
 
 class ParameterSetFactory:
@@ -133,9 +141,14 @@ class ParameterSetFactory:
         )
 
     @staticmethod
-    def create_metric(metric_name: str, group_by: Sequence[str] = ()) -> MetricCallParameterSet:
+    def create_metric(
+        metric_name: str,
+        group_by: Sequence[str] = (),
+        query_item_location: QueryItemLocation = QueryItemLocation.NON_ORDER_BY,
+    ) -> MetricCallParameterSet:
         """Gets called by Jinja when rendering {{ Metric(...) }}."""
-        if not group_by:
+        # Metric(...) syntax is required in saved_query.order_by to apply descending. Don't require group by there.
+        if query_item_location == QueryItemLocation.NON_ORDER_BY and not group_by:
             raise ParseJinjaObjectException(
                 "`group_by` parameter is required for Metric in where filter. This is needed to determine 1) the "
                 "granularity to aggregate the metric to and 2) how to join the metric to the rest of the query."
