@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install twine
-        run: pip install twine
+        run: pip install twine==3.2.0
 
       - name: Get package name
         id: package-name
