@@ -22,15 +22,8 @@ jobs:
           echo "package-name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
 
       - name: Yank release from PyPI
-        run: |
-          PACKAGE_NAME="dbt-semantic-interfaces"
-          VERSION="0.8.6"
-          REASON="Breaking change needs new minor version"
-          
-          echo "Yanking $PACKAGE_NAME==$VERSION from PyPI..."
-          echo "Reason: $REASON"
-          
-          twine yank "$PACKAGE_NAME==$VERSION" --reason "$REASON"
+        run: |          
+          twine delete dbt-semantic-interfaces -v 0.8.6
 
         env:
           TWINE_USERNAME: __token__
