@@ -1,0 +1,37 @@
+name: Yank PyPI Release
+
+on:
+
+  pull_request:
+    types: [opened, synchronize]
+
+jobs:
+  yank-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install twine
+        run: pip install twine
+
+      - name: Get package name
+        id: package-name
+        run: |
+          # Extract package name from repository name
+          REPO_NAME="${{ github.event.repository.name }}"
+          # Convert underscores to hyphens for PyPI package names
+          PACKAGE_NAME=$(echo "$REPO_NAME" | sed 's/_/-/g')
+          echo "package-name=$PACKAGE_NAME" >> $GITHUB_OUTPUT
+
+      - name: Yank release from PyPI
+        run: |
+          PACKAGE_NAME="dbt-semantic-interfaces"
+          VERSION="0.8.6"
+          REASON="Breaking change needs new minor version"
+          
+          echo "Yanking $PACKAGE_NAME==$VERSION from PyPI..."
+          echo "Reason: $REASON"
+          
+          twine yank "$PACKAGE_NAME==$VERSION" --reason "$REASON"
+
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
