@@ -21,6 +21,9 @@ jobs:
         with:
           python-version: "${{ env.PYTHON_VERSION }}"
 
+      - name: Clean old build artifacts
+        run: rm -rf dist build
+
       - name: Hatch Publish
         run: hatch build && hatch publish
         env:
