@@ -60,8 +60,8 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
             measure:
               name: legacy_measure_from_object
               filter: "{{ dimension('some_bool') }}"
-              join_to_timespine: true
-              fill_nulls_with: 1
+              time_spine_join: true
+              null_fill_value: 1
         """
     )
     file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
@@ -75,8 +75,8 @@ def test_legacy_metric_input_measure_object_parsing() -> None:
         filter=PydanticWhereFilterIntersection(
             where_filters=[PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}""")]
         ),
-        join_to_timespine=True,
-        fill_nulls_with=1,
+        time_spine_join=True,
+        null_fill_value=1,
     )
 
 
