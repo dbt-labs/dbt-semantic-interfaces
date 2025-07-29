@@ -32,6 +32,18 @@ def test_semantic_manifest_validator_default_failure(  # noqa:D
     assert results.has_blocking_issues
 
 
+def test_semantic_manifest_validator_succeeds_with_empty_measures(  # noqa:D
+    simple_semantic_manifest: PydanticSemanticManifest,
+) -> None:
+    semantic_manifest = deepcopy(simple_semantic_manifest)
+
+    validator = SemanticManifestValidator[PydanticSemanticManifest]()
+    model = next(model for model in semantic_manifest.semantic_models if model.name == "no_measures_source")
+
+    validator.checked_validations(semantic_manifest)
+    assert model.measures == []
+
+
 def test_multi_process_validator_results_same_as_sync(  # noqa:D
     simple_semantic_manifest: PydanticSemanticManifest,
 ) -> None:
