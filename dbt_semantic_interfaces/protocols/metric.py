@@ -13,6 +13,7 @@ from dbt_semantic_interfaces.type_enums import (
     PeriodAggregation,
     TimeGranularity,
 )
+from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 
 
 class MetricInputMeasure(Protocol):
@@ -280,6 +281,11 @@ class Metric(Protocol):
     @property
     @abstractmethod
     def type(self) -> MetricType:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def agg(self) -> Optional[AggregationType]:  # noqa: D
         pass
 
     @property
