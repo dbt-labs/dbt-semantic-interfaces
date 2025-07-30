@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Add test enforcing that measures are optional in semantic models and have a default value.
+time: 2025-07-30T10:01:23.168159-07:00
+custom:
+    Author: patricky
+    Issue: "387"
