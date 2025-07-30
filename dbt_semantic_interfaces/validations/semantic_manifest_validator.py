@@ -22,6 +22,7 @@ from dbt_semantic_interfaces.validations.measures import (
     MetricMeasuresRule,
     PercentileAggregationRule,
     SemanticModelMeasuresUniqueRule,
+    SimpleMetricHasExtraFieldsXORSourceMeasure,
 )
 from dbt_semantic_interfaces.validations.metrics import (
     ConversionMetricRule,
@@ -93,6 +94,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         EntityLabelsRule[SemanticManifestT](),
         ConversionMetricRule[SemanticManifestT](),
         TimeSpineRule[SemanticManifestT](),
+        SimpleMetricHasExtraFieldsXORSourceMeasure[SemanticManifestT](),
     )
 
     def __init__(

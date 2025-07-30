@@ -13,6 +13,7 @@ from dbt_semantic_interfaces.type_enums import (
     PeriodAggregation,
     TimeGranularity,
 )
+from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 
 
 class MetricInputMeasure(Protocol):
@@ -263,6 +264,19 @@ class MetricTypeParams(Protocol):
     def cumulative_type_params(self) -> Optional[CumulativeTypeParams]:  # noqa: D
         pass
 
+    @property
+    @abstractmethod
+    def agg(self) -> Optional[AggregationType]:  # noqa: D
+        pass
+
+    # Fields to add (borrow from measures):
+    # --agg--
+    # agg_params (these will be flattened in the yaml but not the actual objects here)
+    # agg_time_dimension
+    # non_additive_dimension
+    # config (from measures)
+    # expr
+
 
 class Metric(Protocol):
     """Describes a metric."""
@@ -281,6 +295,11 @@ class Metric(Protocol):
     @abstractmethod
     def type(self) -> MetricType:  # noqa: D
         pass
+
+    # @property
+    # @abstractmethod
+    # def agg(self) -> Optional[AggregationType]:  # noqa: D
+    #     pass
 
     @property
     @abstractmethod

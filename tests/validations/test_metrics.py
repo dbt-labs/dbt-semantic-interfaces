@@ -1,4 +1,4 @@
-from typing import List, Tuple
+from typing import Any, List, Tuple
 
 import pytest
 
@@ -148,7 +148,144 @@ def test_metric_no_time_dim() -> None:  # noqa:D
         )
 
 
+@pytest.mark.parametrize(
+    "type_params, missing_fields",
+    [
+        (PydanticMetricTypeParams(), ["agg"]),
+    ],
+)
+def test_metric_no_measures_missing_required_fields(  # noqa:D
+    type_params: PydanticMetricTypeParams,
+    missing_fields: List[str],
+) -> None:
+    """If metric and measure are not present, we need specific fields to be present.
+
+    Note: The parameters on this function are a pain and will ALL have to be updated if
+    we add a new required field to simple metrics with no source, but that should
+    be rare, and it's better than writing less explicit logic to generate data.
+    """
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]()
+    missing_fields.sort()
+    # we need to escape the brackets in the regex, so we can't just use the default str() for the list
+    missing_fields_list_str = ", ".join([f"'{s}'" for s in missing_fields])
+    # TODO: rewrite using check_error_in_issues
+    with pytest.raises(
+        SemanticManifestValidationException,
+        match=rf".*The metric does not define \[{missing_fields_list_str}\].*",
+    ):
+        model_validator.checked_validations(
+            PydanticSemanticManifest(
+                semantic_models=[
+                    semantic_model_with_guaranteed_meta(
+                        name="sum_measure",
+                        dimensions=[
+                            PydanticDimension(
+                                name="date_created",
+                                type=DimensionType.TIME,
+                                type_params=PydanticDimensionTypeParams(
+                                    time_granularity=TimeGranularity.DAY,
+                                ),
+                            ),
+                        ],
+                        entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
+                    ),
+                ],
+                metrics=[
+                    metric_with_guaranteed_meta(
+                        name="foo",
+                        type=MetricType.SIMPLE,
+                        type_params=type_params,
+                    )
+                ],
+                project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+            )
+        )
+
+
+def _make_test_metric_type_params_for_test_metric_with_both_measure_and_measureless_source_fields_fails(
+    args: dict[str, Any],
+) -> PydanticMetricTypeParams:
+    """A helper function to make it easier to create a test failing metric type params."""
+    return PydanticMetricTypeParams(
+        measure=PydanticMetricInputMeasure(name="foo"),
+        agg=AggregationType.SUM,
+        **args,
+    )
+
+
+@pytest.mark.parametrize(
+    "type_params, illegal_fields",
+    [
+        # measure names must match the one used in the test below
+        (
+            # PydanticMetricTypeParams(
+            # ),
+            PydanticMetricTypeParams(),
+            ["agg"],
+        ),
+    ],
+)
+def test_metric_with_both_measure_and_measureless_source_fields_fails(  # noqa:D
+    type_params: PydanticMetricTypeParams,
+    illegal_fields: List[str],
+) -> None:
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]()
+    measure_name = "foo"
+    illegal_fields.sort()
+    # we need to escape the brackets in the regex, so we can't just use the default str() for the list
+    illegal_fields_list_str = ", ".join([f"'{s}'" for s in illegal_fields])
+    error_prefix = "Metric 'foo' has an input metric or input measure, and therefore cannot have the following fields: "
+    # TODO: rewrite using check_error_in_issues
+    with pytest.raises(
+        SemanticManifestValidationException,
+        # TODO fix error string for this test
+        match=rf".*{error_prefix}\[{illegal_fields_list_str}\].*",
+    ):
+        dim_name = "date_created"
+        measure_name = "foo"
+        model_validator = SemanticManifestValidator[PydanticSemanticManifest]()
+        model_validator.checked_validations(
+            PydanticSemanticManifest(
+                semantic_models=[
+                    semantic_model_with_guaranteed_meta(
+                        name="sum_measure",
+                        measures=[
+                            PydanticMeasure(
+                                name=measure_name,
+                                agg=AggregationType.SUM,
+                                agg_time_dimension="date_created",
+                            )
+                        ],
+                        dimensions=[
+                            PydanticDimension(
+                                name=dim_name,
+                                type=DimensionType.TIME,
+                                type_params=PydanticDimensionTypeParams(
+                                    time_granularity=TimeGranularity.DAY,
+                                ),
+                            ),
+                        ],
+                        entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
+                    )
+                ],
+                metrics=[
+                    metric_with_guaranteed_meta(
+                        name="foo",
+                        type=MetricType.SIMPLE,
+                        type_params=PydanticMetricTypeParams(
+                            measure=PydanticMetricInputMeasure(name=measure_name),
+                            # agg_time_dimension="date_created",
+                            agg=AggregationType.SUM,
+                        ),
+                    )
+                ],
+                project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+            )
+        )
+
+
 def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
+    # TODO - fix this test because I don't think it's even catching the right error here.
     with pytest.raises(SemanticManifestValidationException):
         dim_name = "date_created"
         dim2_name = "date_deleted"

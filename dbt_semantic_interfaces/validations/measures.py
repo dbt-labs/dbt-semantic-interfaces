@@ -10,6 +10,7 @@ from dbt_semantic_interfaces.protocols import (
 )
 from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
 from dbt_semantic_interfaces.type_enums import AggregationType, DimensionType
+from dbt_semantic_interfaces.type_enums.metric_type import MetricType
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
@@ -213,10 +214,121 @@ class MetricMeasuresRule(SemanticManifestValidationRule[SemanticManifestT], Gene
         issues: List[ValidationIssue] = []
         valid_measure_names = _get_measure_names_from_semantic_manifest(semantic_manifest)
 
+        # Is this 'or []' needed?
         for metric in semantic_manifest.metrics or []:
             issues += MetricMeasuresRule._validate_metric_measure_references(
                 metric=metric, valid_measure_names=valid_measure_names
             )
+        return issues
+
+
+# TODO move this to the METRICS file?  Or split it into a class for metrics and a class for measures?
+class SimpleMetricHasExtraFieldsXORSourceMeasure(
+    SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]
+):  # noqa: D
+    """Simple Metrics must have a source XOR extra measure-like arguments.
+
+    Checks that if a metric does not have a measure or metric field (i.e., is not a source metric),
+    it must have at least one of the new fields: expression, input_metrics, or input_measures.
+    """
+
+    # If a metric has no input metric or input measure, it must have these fields.
+    # It CANNOT have these fields if it does have an input metric or input measure.
+    SOURCELESS_REQUIRED_FIELDS = ["agg"]
+    # These fields are optional, but only allowed if the metric has no input
+    # metric or input measure.
+    SOURCELESS_OPTIONAL_FIELDS: List[str] = []
+
+    @staticmethod
+    def _get_sourceless_metric_fields_from_metric(metric: Metric) -> List[str]:
+        """Use this function to see fields that are only allowed on sourceless metrics."""
+        all_sourceless_only_fields = (
+            SimpleMetricHasExtraFieldsXORSourceMeasure.SOURCELESS_REQUIRED_FIELDS
+            + SimpleMetricHasExtraFieldsXORSourceMeasure.SOURCELESS_OPTIONAL_FIELDS
+        )
+        return [field for field in all_sourceless_only_fields if getattr(metric.type_params, field, None) is not None]
+
+    @staticmethod
+    def _get_required_fields_missing_from_sourceless_metric(metric: Metric) -> List[str]:
+        """Use this function to see fields that are REQUIRED on sourceless metrics but missing from this metric."""
+        return [
+            field
+            for field in SimpleMetricHasExtraFieldsXORSourceMeasure.SOURCELESS_REQUIRED_FIELDS
+            if getattr(metric.type_params, field, None) is None
+        ]
+
+    @staticmethod
+    def _has_separate_source(metric: Metric) -> bool:
+        return metric.type_params.measure is not None or (
+            metric.type_params.metrics is not None and len(metric.type_params.metrics) > 0
+        )
+
+    @staticmethod
+    def _validate_metric_with_source(metric: Metric) -> Sequence[ValidationIssue]:
+        sourceless_only_fields = SimpleMetricHasExtraFieldsXORSourceMeasure._get_sourceless_metric_fields_from_metric(
+            metric
+        )
+        if len(sourceless_only_fields) == 0:
+            raise NotImplementedError("we did try to validate a metric with a source, but we got count == 0")
+            return []
+        return [
+            ValidationError(
+                context=MetricContext(
+                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                    metric=MetricModelReference(metric_name=metric.name),
+                ),
+                message=(
+                    f"Metric '{metric.name}' has an input metric or input measure, and therefore cannot "
+                    f"have the following fields: {sourceless_only_fields}."
+                ),
+            )
+        ]
+
+    @staticmethod
+    def _validate_metric_without_source(metric: Metric) -> Sequence[ValidationIssue]:
+        missing_required_sourceless_fields = (
+            SimpleMetricHasExtraFieldsXORSourceMeasure._get_required_fields_missing_from_sourceless_metric(metric)
+        )
+        if len(missing_required_sourceless_fields) == 0:
+            return []
+        missing_required_sourceless_fields.sort()
+        return [
+            ValidationError(
+                context=MetricContext(
+                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                    metric=MetricModelReference(metric_name=metric.name),
+                ),
+                message=(
+                    f"Metric '{metric.name}' does not specify a source measure or metric, "
+                    f"and must either define at least one of (expression, input_metrics, or input_measures) or "
+                    f"all of the following fields: {missing_required_sourceless_fields}.  The metric does not "
+                    f"define {missing_required_sourceless_fields}."
+                ),
+            )
+        ]
+
+    @staticmethod
+    @validate_safely(
+        whats_being_done=(
+            "ensuring metrics without a source have required extra fields, and those that don't have a source, don't "
+            "have extra fields only allowed for metrics without a source."
+        )
+    )
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+        for metric in semantic_manifest.metrics:
+            if metric.type != MetricType.SIMPLE:
+                continue
+            if SimpleMetricHasExtraFieldsXORSourceMeasure._has_separate_source(metric):
+                issues += SimpleMetricHasExtraFieldsXORSourceMeasure._validate_metric_with_source(metric)
+                continue
+
+            issues += SimpleMetricHasExtraFieldsXORSourceMeasure._validate_metric_without_source(metric)
+
+            # If the metric has no input metric or input measure, it must have all required fields for sourceless
+            # metrics.
+            issues += SimpleMetricHasExtraFieldsXORSourceMeasure._validate_metric_without_source(metric)
+
         return issues
 
 
