@@ -28,6 +28,7 @@ from dbt_semantic_interfaces.type_enums import (
     PeriodAggregation,
     TimeGranularity,
 )
+from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dsi_pydantic_shim import Field
 
 
@@ -196,6 +197,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
     name: str
     description: Optional[str]
     type: MetricType
+    agg: Optional[AggregationType]
     type_params: PydanticMetricTypeParams
     filter: Optional[PydanticWhereFilterIntersection]
     metadata: Optional[PydanticMetadata]

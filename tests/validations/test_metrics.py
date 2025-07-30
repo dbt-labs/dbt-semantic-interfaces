@@ -148,6 +148,36 @@ def test_metric_no_time_dim() -> None:  # noqa:D
         )
 
 
+def test_metric_no_measures_no_agg() -> None:  # noqa:D
+    # if metric and measure are not present, we need the new fields to be present
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]()
+    with pytest.raises(SemanticManifestValidationException, match="agg"):
+        model_validator.checked_validations(
+            PydanticSemanticManifest(
+                semantic_models=[
+                    semantic_model_with_guaranteed_meta(
+                        name="sum_measure",
+                        # dimensions=[],
+                        dimensions=[
+                            # PydanticDimension(
+                            #     name=dim_name,
+                            #     type=DimensionType.CATEGORICAL,
+                            # )
+                        ],
+                    )
+                ],
+                metrics=[
+                    metric_with_guaranteed_meta(
+                        name="foo",
+                        type=MetricType.SIMPLE,
+                        type_params=PydanticMetricTypeParams(),
+                    )
+                ],
+                project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+            )
+        )
+
+
 def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
     with pytest.raises(SemanticManifestValidationException):
         dim_name = "date_created"
