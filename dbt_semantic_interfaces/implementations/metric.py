@@ -28,6 +28,7 @@ from dbt_semantic_interfaces.type_enums import (
     PeriodAggregation,
     TimeGranularity,
 )
+from dbt_semantic_interfaces.type_enums.aggregation_type import AggregationType
 from dsi_pydantic_shim import Field
 
 
@@ -184,6 +185,9 @@ class PydanticMetricTypeParams(HashableBaseModel):
     cumulative_type_params: Optional[PydanticCumulativeTypeParams]
 
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
+
+    # Fields for simple metrics with no input measure
+    agg: Optional[AggregationType]
 
 
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[Metric]):
