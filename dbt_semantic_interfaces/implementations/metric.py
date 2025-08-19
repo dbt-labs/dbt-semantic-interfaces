@@ -157,8 +157,10 @@ class PydanticMetricInput(HashableBaseModel):
 class PydanticConversionTypeParams(HashableBaseModel):
     """Type params to provide context for conversion metrics properties."""
 
-    base_measure: PydanticMetricInputMeasure
-    conversion_measure: PydanticMetricInputMeasure
+    base_measure: Optional[PydanticMetricInputMeasure]
+    base_metric: Optional[PydanticMetricInput]
+    conversion_measure: Optional[PydanticMetricInputMeasure]
+    conversion_metric: Optional[PydanticMetricInput]
     entity: str
     calculation: ConversionCalculationType = ConversionCalculationType.CONVERSION_RATE
     window: Optional[PydanticMetricTimeWindow]
@@ -171,6 +173,7 @@ class PydanticCumulativeTypeParams(HashableBaseModel):
     window: Optional[PydanticMetricTimeWindow]
     grain_to_date: Optional[str]
     period_agg: PeriodAggregation = PeriodAggregation.FIRST
+    metric: Optional[PydanticMetricInput]
 
 
 class PydanticMetricAggregationParams(HashableBaseModel):
@@ -301,7 +304,14 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         elif metric.type is MetricType.CONVERSION:
             conversion_type_params = metric.type_params.conversion_type_params
             assert conversion_type_params, "Conversion metric should have conversion_type_params."
+            # TODO SL-4116: the `is not None` assertions below on base_measure and conversion_measure
+            # are temporary while we update the validations to allow the use of metrics instead as inputs
+            # of measures
+            assert conversion_type_params.base_measure is not None, "Conversion metric must have base_measure."
             measures.add(conversion_type_params.base_measure.measure_reference)
+            assert (
+                conversion_type_params.conversion_measure is not None
+            ), "Conversion metric must have conversion_measure."
             measures.add(conversion_type_params.conversion_measure.measure_reference)
         else:
             assert_values_exhausted(metric.type)
