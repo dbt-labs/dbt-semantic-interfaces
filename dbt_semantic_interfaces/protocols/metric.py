@@ -3,11 +3,16 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
+from dbt_semantic_interfaces.protocols.measure import (
+    MeasureAggregationParameters,
+    NonAdditiveDimensionParameters,
+)
 from dbt_semantic_interfaces.protocols.meta import SemanticLayerElementConfig
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
+    AggregationType,
     ConversionCalculationType,
     MetricType,
     PeriodAggregation,
@@ -209,6 +214,39 @@ class CumulativeTypeParams(Protocol):
         pass
 
 
+class MetricAggregationParams(Protocol):
+    """Type params to provide context for metrics that are used as source nodes.
+
+    At this point, this is specifically for simple metrics that do not have a
+    measure included.
+    """
+
+    @property
+    @abstractmethod
+    def agg(self) -> Optional[AggregationType]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def agg_params(self) -> Optional[MeasureAggregationParameters]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def agg_time_dimension(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def non_additive_dimension(self) -> Optional[NonAdditiveDimensionParameters]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def expr(self) -> Optional[str]:  # noqa: D
+        pass
+
+
 class MetricTypeParams(Protocol):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
@@ -261,6 +299,11 @@ class MetricTypeParams(Protocol):
     @property
     @abstractmethod
     def cumulative_type_params(self) -> Optional[CumulativeTypeParams]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def metric_aggregation_params(self) -> Optional[MetricAggregationParams]:  # noqa: D
         pass
 
 
@@ -319,6 +362,8 @@ class Metric(Protocol):
     @property
     @abstractmethod
     def config(self) -> Optional[SemanticLayerElementConfig]:  # noqa: D
+        # TODO SL-4116: Validate that we accept measure-only config fields here
+        # IFF we are using a metric as a source node (i.e. without a measure)
         pass
 
     @property
