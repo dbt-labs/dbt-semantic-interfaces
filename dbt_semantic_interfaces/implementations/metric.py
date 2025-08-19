@@ -184,6 +184,13 @@ class PydanticMetricAggregationParams(HashableBaseModel):
     non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters]
     expr: Optional[str]
 
+    # These fields are applied directly to a simple metric.
+    # Previously, these lived in the "PydanticMetricInput",
+    # which was only everattached to a consumer metric.  Now, they are attached to the
+    # producing metric, which may require more total metrics to be created.
+    join_to_timespine: bool = False
+    fill_nulls_with: Optional[int] = None
+
 
 class PydanticMetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
