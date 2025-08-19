@@ -16,6 +16,10 @@ from dbt_semantic_interfaces.implementations.base import (
 from dbt_semantic_interfaces.implementations.element_config import (
     PydanticSemanticLayerElementConfig,
 )
+from dbt_semantic_interfaces.implementations.elements.measure import (
+    PydanticMeasureAggregationParameters,
+    PydanticNonAdditiveDimensionParameters,
+)
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
 )
@@ -23,6 +27,7 @@ from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.protocols import Metric, ProtocolHint
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
+    AggregationType,
     ConversionCalculationType,
     MetricType,
     PeriodAggregation,
@@ -168,6 +173,18 @@ class PydanticCumulativeTypeParams(HashableBaseModel):
     period_agg: PeriodAggregation = PeriodAggregation.FIRST
 
 
+class PydanticMetricAggregationParams(HashableBaseModel):
+    """Type params to provide context for metrics that are used as source nodes."""
+
+    # TODO SL-4116: make sure we recreate/reuse all the validations for measures
+    # for these fields, too.
+    agg: Optional[AggregationType]
+    agg_params: Optional[PydanticMeasureAggregationParameters]
+    agg_time_dimension: Optional[str]
+    non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters]
+    expr: Optional[str]
+
+
 class PydanticMetricTypeParams(HashableBaseModel):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
 
@@ -184,6 +201,12 @@ class PydanticMetricTypeParams(HashableBaseModel):
     cumulative_type_params: Optional[PydanticCumulativeTypeParams]
 
     input_measures: List[PydanticMetricInputMeasure] = Field(default_factory=list)
+
+    # TODO SL-4116: Validate that we accept measure-only config fields here IFF
+    # this is a simple metric and does not have a measure argument.
+    # These fields are required and allowed IFF this metric is a simple metric
+    # that does not have any measure arguments.
+    metric_aggregation_params: Optional[PydanticMetricAggregationParams]
 
 
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[Metric]):
