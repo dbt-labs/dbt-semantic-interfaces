@@ -2,6 +2,9 @@ from typing import Optional
 
 import pytest
 
+from dbt_semantic_interfaces.implementations.element_config import (
+    PydanticSemanticLayerElementConfig,
+)
 from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimension,
     PydanticDimensionTypeParams,
@@ -12,6 +15,10 @@ from dbt_semantic_interfaces.implementations.elements.measure import (
     PydanticMeasureAggregationParameters,
     PydanticNonAdditiveDimensionParameters,
 )
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
+    PydanticWhereFilter,
+    PydanticWhereFilterIntersection,
+)
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticCumulativeTypeParams,
     PydanticMetric,
@@ -21,9 +28,11 @@ from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetricTimeWindow,
     PydanticMetricTypeParams,
 )
+from dbt_semantic_interfaces.implementations.node_relation import PydanticNodeRelation
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -40,6 +49,9 @@ from dbt_semantic_interfaces.type_enums import (
     MetricType,
     PeriodAggregation,
     TimeGranularity,
+)
+from dbt_semantic_interfaces.type_enums.conversion_calculation_type import (
+    ConversionCalculationType,
 )
 from dbt_semantic_interfaces.validations.metrics import (
     CumulativeMetricRule,
@@ -920,6 +932,466 @@ def test_generated_metrics_only() -> None:  # noqa:D
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
+
+
+def test_make_fake_semantic_manifest() -> None:  # noqa: D
+    semantic_manifest = PydanticSemanticManifest(
+        project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        semantic_models=[
+            PydanticSemanticModel(
+                # I don't really know what this is for yet, but node relation away!
+                node_relation=PydanticNodeRelation(
+                    schema_name="schema",
+                    alias="table",
+                ),
+                name="fct_orders",
+                config=PydanticSemanticLayerElementConfig(
+                    # I'm not sure what this line is supposed to do in the yaml?
+                    # semantic_model=True,
+                    # TODO: these lines are cut and being moved in the YAML but it's just not done yet.
+                    # agg_time_dimension="my_time_dimension_column",
+                    # primary_entity="my_virtual_primary_entity",
+                ),
+                entities=[
+                    PydanticEntity(
+                        name="my_primary_entity_column",
+                        type=EntityType.PRIMARY,
+                    ),
+                    PydanticEntity(
+                        name="my_foreign_entity_column",
+                        type=EntityType.FOREIGN,
+                    ),
+                    PydanticEntity(
+                        name="my_other_foreign_entity_column",
+                        type=EntityType.FOREIGN,
+                    ),
+                ],
+                dimensions=[
+                    PydanticDimension(
+                        name="my_categorical_dimension_column",
+                        type=DimensionType.CATEGORICAL,
+                    ),
+                    PydanticDimension(
+                        name="my_time_dimension_column",
+                        type=DimensionType.TIME,
+                        is_partition=True,
+                        label="My Custom Label",
+                        description="My Custom Description",
+                        type_params=PydanticDimensionTypeParams(
+                            time_granularity=TimeGranularity.DAY,
+                        ),
+                    ),
+                    PydanticDimension(
+                        name="my_other_time_dimension_column",
+                        type=DimensionType.TIME,
+                        type_params=PydanticDimensionTypeParams(
+                            time_granularity=TimeGranularity.DAY,
+                        ),
+                    ),
+                ],
+                # What is this part of the new example code?  Is this a real thing we need to add?
+                # derived_semantics=PydanticSemanticModelDerivedSemantics(
+                #     dimensions=[
+                #         PydanticDimension(
+                #             name="my_derived_dimension",
+                #             type=DimensionType.CATEGORICAL,
+                #             expr="case when my_column = 'value' then 'new_value' else my_column end",
+                #         ),
+                #     ],
+                #     entities=[
+                #         PydanticEntity(
+                #             name="my_derived_entity",
+                #             type=EntityType.FOREIGN,
+                #             description="string",
+                #             expr="col_1 || '-' || col_2",
+                #         ),
+                #     ],
+                # ),
+                # measures=[
+                # ],
+                # metrics=[
+                #     PydanticMetric(
+                #         name="my_simple_metric",
+                #         agg=AggregationType.SUM,
+                #         expr="case when is_a then 1 else 0 end",
+                #         description="cool metric",
+                #         label="my label",
+                #     ),
+                #     PydanticMeasure(
+                #         name="my_simple_metric_that_uses_the_other_time_dimension",
+                #         agg=AggregationType.SUM,
+                #         agg_time_dimension="my_other_time_dimension_column",
+                #         description="cool metric",
+                #         label="my label",
+                #     ),
+                #     PydanticMeasure(
+                #         name="my_simple_percentile_metric",
+                #         agg=AggregationType.PERCENTILE,
+                #         expr="another_column",
+                #         description="cool metric",
+                #         label="my label",
+                #         agg_params=PydanticMeasureAggregationParameters(
+                #             percentile=50.0,
+                #             use_discrete_percentile=True,
+                #         ),
+                #     ),
+                #     PydanticMeasure(
+                #         name="my_simple_metric_with_configs_and_non_additive_dimension",
+                #         agg=AggregationType.SUM,
+                #         description="cool cumulative metric",
+                #         label="my label",
+                #         # TODO change this because it's not how we are going to do things!
+                #         config=PydanticSemanticLayerElementConfig(
+                #             join_to_timespine=True,
+                #             fill_nulls_with=0,
+                #             meta={"key": "value"},
+                #         ),
+                #         non_additive_dimension=PydanticNonAdditiveDimensionParameters(
+                #             name="my_derived_dimension",
+                #             window_choice=AggregationType.MAX,
+                #             window_groupings=["my_entity_column"],
+                #         ),
+                #     ),
+                #     PydanticMetric(
+                #         name="my_derived_metric",
+                #         description="cool derived metric",
+                #         label="my label",
+                #         type=MetricType.DERIVED,
+                #         type_params=PydanticMetricTypeParams(
+                #             expr="my_simple_metric - my_simple_metric_a_week_ago",
+                #             metrics=[
+                #                 PydanticMetricInput(
+                #                     name="my_simple_metric",
+                #                     alias="my_simple_metric_a_week_ago",
+                #                     filter="{{ Dimension('my_cateogorical_dimension_column') }} > 10",
+                #                     offset_window="1 week",
+                #                 ),
+                #             ],
+                #         ),
+                #     ),
+                #     PydanticMetric(
+                #         name="my_cumulative_metric",
+                #         description="cool cumulative metric",
+                #         label="my label",
+                #         type=MetricType.CUMULATIVE,
+                #         type_params=PydanticMetricTypeParams(
+                #             window="1 week",
+                #             grain_to_date=TimeGranularity.HOUR,
+                #             cumulative_type_params=PydanticCumulativeTypeParams(
+                #                 period_agg=PeriodAggregation.FIRST,
+                #                 metric=PydanticMetricInput(name="my_simple_metric"),
+                #             ),
+                #         ),
+                #     ),
+                #     PydanticMetric(
+                #         name="my_ratio_metric",
+                #         description="cool ratio metric",
+                #         label="my label",
+                #         type=MetricType.RATIO,
+                #         type_params=PydanticMetricTypeParams(
+                #             numerator=PydanticMetricInput(name="my_simple_metric"),
+                #             denominator=PydanticMetricInput(
+                #               name="my_simple_metric_that_uses_the_other_time_dimension",
+                #             ),
+                #         ),
+                #     ),
+                #     PydanticMetric(
+                #         name="my_ratio_metric_with_metric_customization",
+                #         description="cool ratio metric",
+                #         label="my label",
+                #         type=MetricType.RATIO,
+                #         type_params=PydanticMetricTypeParams(
+                #             numerator=PydanticMetricInput(
+                #                 name="my_simple_metric",
+                #                 filter="{{ Dimension('my_cateogorical_dimension_column') }} > 10",
+                #                 alias="joel_loves_data",
+                #             ),
+                #             denominator=PydanticMetricInput(
+                #                 name="my_simple_metric_that_uses_the_other_time_dimension",
+                #             ),
+                #         ),
+                #     ),
+                #     PydanticMetric(
+                #         name="my_conversion_metric",
+                #         description="cool conversion metric",
+                #         label="my label",
+                #         type=MetricType.CONVERSION,
+                #         type_params=PydanticMetricTypeParams(
+                #             conversion_type_params=PydanticConversionTypeParams(
+                #                 entity="my_virtual_primary_entity",
+                #                 base_metric=PydanticMetricInput(name="my_simple_metric"),
+                #                 conversion_metric=PydanticMetricInput(
+                #                     name="my_simple_metric_that_uses_the_other_time_dimension"
+                #                 ),
+                #                 window="1 week",
+                #                 constant_properties=[
+                #                     PydanticConstantPropertyInput(
+                #                         base_property="my_derived_dimension",
+                #                         conversion_property="my_foreign_entity",
+                #                     ),
+                #                 ],
+                #             ),
+                #         ),
+                #     ),
+                # ],
+            ),
+        ],
+        metrics=[
+            ## ==============================================================
+            ## Starting block of metrics that might need to be INTERNAL to a semantic model
+            PydanticMetric(
+                name="my_simple_metric",
+                description="cool metric",
+                label="my label",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.SUM,
+                        expr="case when is_a then 1 else 0 end",
+                    ),
+                ),
+            ),
+            PydanticMetric(
+                name="my_simple_metric_that_uses_the_other_time_dimension",
+                description="cool metric",
+                label="my label",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.SUM,
+                        agg_time_dimension="my_other_time_dimension_column",
+                    ),
+                ),
+            ),
+            PydanticMetric(
+                name="my_simple_percentile_metric",
+                description="cool metric",
+                label="my label",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.PERCENTILE,
+                        expr="another_column",
+                        agg_params=PydanticMeasureAggregationParameters(
+                            percentile=50.0,
+                            use_discrete_percentile=True,
+                        ),
+                    ),
+                ),
+            ),
+            PydanticMetric(
+                name="my_simple_metric_with_configs_and_non_additive_dimension",
+                description="cool cumulative metric",
+                label="my label",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.SUM,
+                        join_to_timespine=True,
+                        fill_nulls_with=0,
+                        non_additive_dimension=PydanticNonAdditiveDimensionParameters(
+                            name="my_derived_dimension",
+                            window_choice=AggregationType.MAX,
+                            window_groupings=["my_entity_column"],
+                        ),
+                    ),
+                ),
+                config=PydanticSemanticLayerElementConfig(
+                    meta={"key": "value"},
+                ),
+            ),
+            PydanticMetric(
+                name="my_derived_metric",
+                description="cool derived metric",
+                label="my label",
+                type=MetricType.DERIVED,
+                type_params=PydanticMetricTypeParams(
+                    expr="my_simple_metric - my_simple_metric_a_week_ago",
+                    metrics=[
+                        PydanticMetricInput(
+                            name="my_simple_metric",
+                            alias="my_simple_metric_a_week_ago",
+                            filter=PydanticWhereFilterIntersection(
+                                where_filters=[
+                                    PydanticWhereFilter(
+                                        where_sql_template="{{ Dimension('my_cateogorical_dimension_column') }} > 10",
+                                    )
+                                ],
+                            ),
+                            offset_window=PydanticMetricTimeWindow(
+                                count=1,
+                                granularity=TimeGranularity.WEEK.value,
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+            PydanticMetric(
+                name="my_cumulative_metric",
+                description="cool cumulative metric",
+                label="my label",
+                type=MetricType.CUMULATIVE,
+                type_params=PydanticMetricTypeParams(
+                    window=PydanticMetricTimeWindow(
+                        count=1,
+                        granularity=TimeGranularity.WEEK.value,
+                    ),
+                    grain_to_date=TimeGranularity.HOUR,
+                    cumulative_type_params=PydanticCumulativeTypeParams(
+                        period_agg=PeriodAggregation.FIRST,
+                        metric=PydanticMetricInput(name="my_simple_metric"),
+                    ),
+                ),
+            ),
+            PydanticMetric(
+                name="my_ratio_metric",
+                description="cool ratio metric",
+                label="my label",
+                type=MetricType.RATIO,
+                type_params=PydanticMetricTypeParams(
+                    numerator=PydanticMetricInput(name="my_simple_metric"),
+                    denominator=PydanticMetricInput(
+                        name="my_simple_metric_that_uses_the_other_time_dimension",
+                    ),
+                ),
+            ),
+            PydanticMetric(
+                name="my_ratio_metric_with_metric_customization",
+                description="cool ratio metric",
+                label="my label",
+                type=MetricType.RATIO,
+                type_params=PydanticMetricTypeParams(
+                    numerator=PydanticMetricInput(
+                        name="my_simple_metric",
+                        filter=PydanticWhereFilterIntersection(
+                            where_filters=[
+                                PydanticWhereFilter(
+                                    where_sql_template="{{ Dimension('my_cateogorical_dimension_column') }} > 10",
+                                )
+                            ],
+                        ),
+                        alias="joel_loves_data",
+                    ),
+                    denominator=PydanticMetricInput(
+                        name="my_simple_metric_that_uses_the_other_time_dimension",
+                    ),
+                ),
+            ),
+            PydanticMetric(
+                name="my_conversion_metric",
+                description="cool conversion metric",
+                label="my label",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        entity="my_virtual_primary_entity",
+                        base_metric=PydanticMetricInput(name="my_simple_metric"),
+                        conversion_metric=PydanticMetricInput(
+                            name="my_simple_metric_that_uses_the_other_time_dimension"
+                        ),
+                        window=PydanticMetricTimeWindow(
+                            count=1,
+                            granularity=TimeGranularity.WEEK.value,
+                        ),
+                        constant_properties=[
+                            PydanticConstantPropertyInput(
+                                base_property="my_derived_dimension",
+                                conversion_property="my_foreign_entity",
+                            ),
+                        ],
+                    ),
+                ),
+            ),
+            # END BLOCK OF "INTERNAL" METRICS
+            ## ==============================================================
+            PydanticMetric(
+                name="my_advanced_cumulative_metric",
+                type=MetricType.CUMULATIVE,
+                type_params=PydanticMetricTypeParams(
+                    window=PydanticMetricTimeWindow(
+                        count=1,
+                        granularity=TimeGranularity.WEEK.value,
+                    ),
+                    grain_to_date=TimeGranularity.HOUR,
+                ),
+            ),
+            PydanticMetric(
+                name="my_advanced_ratio_metric",
+                type=MetricType.RATIO,
+                type_params=PydanticMetricTypeParams(
+                    numerator=PydanticMetricInput(
+                        name="my_simple_metric",
+                        filter=PydanticWhereFilterIntersection(
+                            where_filters=[
+                                PydanticWhereFilter(
+                                    where_sql_template="{{ Dimension('my_cateogorical_dimension_column') }} > 10",
+                                )
+                            ],
+                        ),
+                        alias="joel_loves_data",
+                    ),
+                    denominator=PydanticMetricInput(
+                        name="my_simple_metric_that_uses_the_other_time_dimension_but_is_also_from_another_semantic_model"
+                    ),
+                ),
+            ),
+            PydanticMetric(
+                name="my_advanced_derived_metric",
+                type=MetricType.DERIVED,
+                type_params=PydanticMetricTypeParams(
+                    expr="my_simple_metric - my_metric_name_a_week_ago_in_another_semantic_model",
+                    metrics=[
+                        PydanticMetricInput(
+                            name="my_metric_name_from_another_semantic_model",
+                            filter=PydanticWhereFilterIntersection(
+                                where_filters=[
+                                    PydanticWhereFilter(
+                                        where_sql_template="my_filter",
+                                    )
+                                ],
+                            ),
+                            alias="my_metric_name_a_week_ago_in_another_semantic_model",
+                            offset_window=PydanticMetricTimeWindow(
+                                count=1,
+                                granularity=TimeGranularity.WEEK.value,
+                            ),
+                        ),
+                    ],
+                ),
+            ),
+            PydanticMetric(
+                name="my_advanced_conversion_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        entity="my_primary_entity_column",
+                        calculation=ConversionCalculationType.CONVERSION_RATE,
+                        base_metric=PydanticMetricInput(name="my_simple_metric"),
+                        conversion_metric=PydanticMetricInput(name="my_other_metric_from_another_semantic_model"),
+                        window=PydanticMetricTimeWindow(
+                            count=1,
+                            granularity=TimeGranularity.WEEK.value,
+                        ),
+                        constant_properties=[
+                            PydanticConstantPropertyInput(
+                                base_property="DIMENSION or ENTITY",
+                                conversion_property="DIMENSION or ENTITY",
+                            ),
+                        ],
+                    ),
+                ),
+            ),
+        ],
+    )
+    json = semantic_manifest.json(indent=2)
+    print(json)
+
+    # Construct the file path within the temporary directory
+    output_file = "./generated_pydantic_output.json"
+
+    # Write the data to the file
+    with open(output_file, "w") as f:
+        f.write(json)
 
 
 def test_derived_metric() -> None:  # noqa: D
