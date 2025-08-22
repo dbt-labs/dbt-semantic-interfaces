@@ -160,14 +160,30 @@ class ConversionTypeParams(Protocol):
 
     @property
     @abstractmethod
-    def base_measure(self) -> MetricInputMeasure:
+    def base_measure(self) -> Optional[MetricInputMeasure]:
         """Measure used to calculate the base event."""
+        # TODO SL-4116: Validate that this is used IFF base_metric is not
         pass
 
     @property
     @abstractmethod
-    def conversion_measure(self) -> MetricInputMeasure:
+    def conversion_measure(self) -> Optional[MetricInputMeasure]:
         """Measure used to calculate the conversion event."""
+        # TODO SL-4116: Validate that this is used IFF conversion_metric is not
+        pass
+
+    @property
+    @abstractmethod
+    def base_metric(self) -> Optional[MetricInput]:
+        """Metric used to calculate the base event."""
+        # TODO SL-4116: Validate that this is used IFF base_measure is not
+        pass
+
+    @property
+    @abstractmethod
+    def conversion_metric(self) -> Optional[MetricInput]:
+        """Metric used to calculate the conversion event."""
+        # TODO SL-4116: Validate that this is used IFF conversion_measure is not
         pass
 
     @property
@@ -211,6 +227,13 @@ class CumulativeTypeParams(Protocol):
     @property
     @abstractmethod
     def period_agg(self) -> Optional[PeriodAggregation]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def metric(self) -> Optional[MetricInput]:  # noqa: D
+        # TODO SL-4116: Validate that this is used IFF measure is not set
+        # TODO SL-4116: Validate that measure is NOT used if this is used.
         pass
 
 
