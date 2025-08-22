@@ -246,6 +246,18 @@ class MetricAggregationParams(Protocol):
     def expr(self) -> Optional[str]:  # noqa: D
         pass
 
+    @property
+    @abstractmethod
+    def join_to_timespine(self) -> bool:
+        """If the measure should be joined to the timespine."""
+        pass
+
+    @property
+    @abstractmethod
+    def fill_nulls_with(self) -> Optional[int]:
+        """What null values should be filled with if set."""
+        pass
+
 
 class MetricTypeParams(Protocol):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""
