@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 import pytest
@@ -20,6 +21,8 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilterIntersection,
 )
 from dbt_semantic_interfaces.implementations.metric import (
+    PydanticConstantPropertyInput,
+    PydanticConversionTypeParams,
     PydanticCumulativeTypeParams,
     PydanticMetric,
     PydanticMetricAggregationParams,
@@ -934,8 +937,9 @@ def test_generated_metrics_only() -> None:  # noqa:D
     )
 
 
-def test_make_fake_semantic_manifest() -> None:  # noqa: D
-    semantic_manifest = PydanticSemanticManifest(
+@pytest.fixture
+def fake_semantic_manifest() -> PydanticSemanticManifest:  # noqa: D
+    return PydanticSemanticManifest(
         project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         semantic_models=[
             PydanticSemanticModel(
@@ -1257,8 +1261,10 @@ def test_make_fake_semantic_manifest() -> None:  # noqa: D
             ),
         ],
     )
-    json = semantic_manifest.json(indent=2)
-    print(json)
+
+
+def test_make_fake_semantic_manifest(fake_semantic_manifest: PydanticSemanticManifest) -> None:  # noqa: D
+    json = fake_semantic_manifest.json(indent=2)
 
     # Construct the file path within the temporary directory
     output_file = "./generated_pydantic_output.json"
@@ -1797,3 +1803,30 @@ def test_time_granularity() -> None:
         "`time_granularity` for metric 'derived_metric_with_invalid_time_granularity' must be >= MONTH.",
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
+
+
+def test_semantic_manifest_json_parsing_matches_fixture(fake_semantic_manifest: PydanticSemanticManifest) -> None:
+    """Test that parsing a semantic_manifest.json file produces a PydanticSemanticManifest that matches the fixture.
+
+    This test verifies that JSON deserialization works correctly and produces the same semantic manifest
+    structure as the fake_semantic_manifest fixture.
+    Test arbitrary file paths via env var.
+    """
+    # Path to the JSON file in the project root. If using env var, file must be in the project root.
+    json_file_name = os.environ.get("SEMANTIC_MANIFEST_JSON_PATH", "generated_pydantic_output.json")
+    json_file_path = os.path.join(os.path.dirname(__file__), "..", "..", json_file_name)
+
+    # Load and parse the JSON file
+    with open(json_file_path, "r") as f:
+        json_content = f.read()
+
+    # Deserialize from JSON to PydanticSemanticManifest
+    parsed_manifest = PydanticSemanticManifest.parse_raw(json_content)
+    # Don't fail for using a diff DSI version
+    parsed_manifest.project_configuration.dsi_package_version = (
+        fake_semantic_manifest.project_configuration.dsi_package_version
+    )
+    # Compare with the fake_semantic_manifest fixture
+    assert (
+        parsed_manifest == fake_semantic_manifest
+    ), "The parsed semantic manifest from JSON should match the fake_semantic_manifest fixture"
