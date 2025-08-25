@@ -41,6 +41,16 @@
           "metadata": null,
           "label": null,
           "config": null
+        },
+        {
+          "name": "my_derived_entity",
+          "description": "string",
+          "type": "foreign",
+          "role": null,
+          "expr": "col_1 || '-' || col_2",
+          "metadata": null,
+          "label": null,
+          "config": null
         }
       ],
       "measures": [],
@@ -83,6 +93,17 @@
           "metadata": null,
           "label": null,
           "config": null
+        },
+        {
+          "name": "my_derived_dimension",
+          "description": null,
+          "type": "categorical",
+          "is_partition": false,
+          "type_params": null,
+          "expr": "case when my_column = 'value' then 'new_value' else my_column end",
+          "metadata": null,
+          "label": null,
+          "config": null
         }
       ],
       "label": null,
@@ -93,6 +114,144 @@
     }
   ],
   "metrics": [
+    {
+      "name": "my_simple_metric",
+      "description": "cool metric",
+      "type": "simple",
+      "type_params": {
+        "measure": null,
+        "numerator": null,
+        "denominator": null,
+        "expr": null,
+        "window": null,
+        "grain_to_date": null,
+        "metrics": null,
+        "conversion_type_params": null,
+        "cumulative_type_params": null,
+        "input_measures": [],
+        "metric_aggregation_params": {
+          "agg": "sum",
+          "agg_params": null,
+          "agg_time_dimension": null,
+          "non_additive_dimension": null,
+          "expr": "case when is_a then 1 else 0 end",
+          "join_to_timespine": false,
+          "fill_nulls_with": null
+        }
+      },
+      "filter": null,
+      "metadata": null,
+      "label": "my label",
+      "config": null,
+      "time_granularity": null
+    },
+    {
+      "name": "my_simple_metric_that_uses_the_other_time_dimension",
+      "description": "cool metric",
+      "type": "simple",
+      "type_params": {
+        "measure": null,
+        "numerator": null,
+        "denominator": null,
+        "expr": null,
+        "window": null,
+        "grain_to_date": null,
+        "metrics": null,
+        "conversion_type_params": null,
+        "cumulative_type_params": null,
+        "input_measures": [],
+        "metric_aggregation_params": {
+          "agg": "sum",
+          "agg_params": null,
+          "agg_time_dimension": "my_other_time_dimension_column",
+          "non_additive_dimension": null,
+          "expr": null,
+          "join_to_timespine": false,
+          "fill_nulls_with": null
+        }
+      },
+      "filter": null,
+      "metadata": null,
+      "label": "my label",
+      "config": null,
+      "time_granularity": null
+    },
+    {
+      "name": "my_simple_percentile_metric",
+      "description": "cool metric",
+      "type": "simple",
+      "type_params": {
+        "measure": null,
+        "numerator": null,
+        "denominator": null,
+        "expr": null,
+        "window": null,
+        "grain_to_date": null,
+        "metrics": null,
+        "conversion_type_params": null,
+        "cumulative_type_params": null,
+        "input_measures": [],
+        "metric_aggregation_params": {
+          "agg": "percentile",
+          "agg_params": {
+            "percentile": 50.0,
+            "use_discrete_percentile": true,
+            "use_approximate_percentile": false
+          },
+          "agg_time_dimension": null,
+          "non_additive_dimension": null,
+          "expr": "another_column",
+          "join_to_timespine": false,
+          "fill_nulls_with": null
+        }
+      },
+      "filter": null,
+      "metadata": null,
+      "label": "my label",
+      "config": null,
+      "time_granularity": null
+    },
+    {
+      "name": "my_simple_metric_with_configs_and_non_additive_dimension",
+      "description": "cool cumulative metric",
+      "type": "simple",
+      "type_params": {
+        "measure": null,
+        "numerator": null,
+        "denominator": null,
+        "expr": null,
+        "window": null,
+        "grain_to_date": null,
+        "metrics": null,
+        "conversion_type_params": null,
+        "cumulative_type_params": null,
+        "input_measures": [],
+        "metric_aggregation_params": {
+          "agg": "sum",
+          "agg_params": null,
+          "agg_time_dimension": null,
+          "non_additive_dimension": {
+            "name": "my_derived_dimension",
+            "window_choice": "max",
+            "window_groupings": [
+              "my_entity_column"
+            ]
+          },
+          "expr": null,
+          "join_to_timespine": true,
+          "fill_nulls_with": 0
+        }
+      },
+      "filter": null,
+      "metadata": null,
+      "label": "my label",
+      "config": {
+        "meta": {
+          "key": "value"
+        }
+      },
+      "time_granularity": null
+    },
     {
       "name": "my_derived_metric",
       "description": "cool derived metric",
