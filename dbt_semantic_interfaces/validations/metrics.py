@@ -425,10 +425,18 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         assert (
             conversion_type_params is not None
         ), "For a conversion metric, type_params.conversion_type_params must exist."
+        # TODO SL-4116: these assertions on base_measure and conversion_measure are only necessary until we add
+        # validation for using a measure XOR metric in each field.
+        assert (
+            conversion_type_params.base_measure is not None
+        ), "For a conversion metric, type_params.base_measure must exist."
         _validate_measure(
             input_measure=conversion_type_params.base_measure,
             semantic_model=base_semantic_model,
         )
+        assert (
+            conversion_type_params.conversion_measure is not None
+        ), "For a conversion metric, type_params.conversion_measure must exist."
         _validate_measure(
             input_measure=conversion_type_params.conversion_measure,
             semantic_model=conversion_semantic_model,
@@ -504,11 +512,14 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 assert (
                     metric.type_params.conversion_type_params is not None
                 ), "For a conversion metric, type_params.conversion_type_params must exist."
-
+                # TODO SL-4116: these assertions are only necessary until we add validation for
+                # using a measure XOR metric in each field
+                assert metric.type_params.conversion_type_params.base_measure is not None
                 base_semantic_model = ConversionMetricRule._get_semantic_model_from_measure(
                     measure_reference=metric.type_params.conversion_type_params.base_measure.measure_reference,
                     semantic_manifest=semantic_manifest,
                 )
+                assert metric.type_params.conversion_type_params.conversion_measure is not None
                 conversion_semantic_model = ConversionMetricRule._get_semantic_model_from_measure(
                     measure_reference=metric.type_params.conversion_type_params.conversion_measure.measure_reference,
                     semantic_manifest=semantic_manifest,

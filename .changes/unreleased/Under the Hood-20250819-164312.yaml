@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Add fields to eventually enable using certain types of metrics as inputs to other metrics.
+time: 2025-08-19T16:43:12.593611-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
