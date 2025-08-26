@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Add fields to metrics so that we can eventually push the customization upstream from the consuming metric to input metrics (that replace measures).
+time: 2025-08-19T16:39:12.729869-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
