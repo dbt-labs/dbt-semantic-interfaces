@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Add model field for simple metrics without measures.
+time: 2025-08-26T12:32:03.169609-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
