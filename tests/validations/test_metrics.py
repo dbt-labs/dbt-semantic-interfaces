@@ -149,45 +149,51 @@ def test_metric_no_time_dim() -> None:  # noqa:D
 
 
 def test_metric_multiple_primary_time_dims() -> None:  # noqa:D
-    with pytest.raises(SemanticManifestValidationException):
-        dim_name = "date_created"
-        dim2_name = "date_deleted"
-        measure_name = "foo"
-        model_validator = SemanticManifestValidator[PydanticSemanticManifest]()
-        model_validator.checked_validations(
-            PydanticSemanticManifest(
-                semantic_models=[
-                    semantic_model_with_guaranteed_meta(
-                        name="sum_measure",
-                        measures=[PydanticMeasure(name=measure_name, agg=AggregationType.SUM)],
-                        dimensions=[
-                            PydanticDimension(
-                                name=dim_name,
-                                type=DimensionType.TIME,
-                                type_params=PydanticDimensionTypeParams(
-                                    time_granularity=TimeGranularity.DAY,
-                                ),
+    dim_name = "date_created"
+    dim2_name = "date_deleted"
+    measure_name = "foo"
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]()
+    model_validator.checked_validations(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="sum_measure",
+                    measures=[
+                        PydanticMeasure(
+                            name=measure_name,
+                            agg=AggregationType.SUM,
+                            agg_time_dimension="date_created",
+                        )
+                    ],
+                    dimensions=[
+                        PydanticDimension(
+                            name=dim_name,
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
                             ),
-                            PydanticDimension(
-                                name=dim2_name,
-                                type=DimensionType.TIME,
-                                type_params=PydanticDimensionTypeParams(
-                                    time_granularity=TimeGranularity.DAY,
-                                ),
+                        ),
+                        PydanticDimension(
+                            name=dim2_name,
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
                             ),
-                        ],
-                    )
-                ],
-                metrics=[
-                    metric_with_guaranteed_meta(
-                        name="foo",
-                        type=MetricType.SIMPLE,
-                        type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
-                    )
-                ],
-                project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
-            )
+                        ),
+                    ],
+                    entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
+                )
+            ],
+            metrics=[
+                metric_with_guaranteed_meta(
+                    name="foo",
+                    type=MetricType.SIMPLE,
+                    type_params=PydanticMetricTypeParams(measure=PydanticMetricInputMeasure(name=measure_name)),
+                )
+            ],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
+    )
 
 
 def test_generated_metrics_only() -> None:  # noqa:D
