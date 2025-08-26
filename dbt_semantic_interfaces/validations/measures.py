@@ -8,7 +8,16 @@ from dbt_semantic_interfaces.protocols import (
     SemanticManifest,
     SemanticManifestT,
 )
-from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
+from dbt_semantic_interfaces.protocols.measure import (
+    Measure,
+    NonAdditiveDimensionParameters,
+)
+from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
+from dbt_semantic_interfaces.references import (
+    MeasureReference,
+    MetricModelReference,
+    TimeDimensionReference,
+)
 from dbt_semantic_interfaces.type_enums import AggregationType, DimensionType
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
@@ -224,150 +233,322 @@ class MeasuresNonAdditiveDimensionRule(SemanticManifestValidationRule[SemanticMa
     """Checks that the measure's non_additive_dimensions are properly defined."""
 
     @staticmethod
+    def _validate_non_additive_dimension(
+        # measure_or_metric: Measure | Metric,
+        # semantic_model: SemanticModel,
+        # measure_or_metric: Measure | Metric,
+        semantic_model: SemanticModel,
+        non_additive_dimension: NonAdditiveDimensionParameters,
+        agg_time_dimension_reference: TimeDimensionReference,
+        issues: List[ValidationIssue],
+        object: Metric | Measure,
+        object_type_for_errors: str,  # TODO: make this an enum?  Add a func to get the capitalized version where needed?
+    ) -> None:
+        object_type_for_errors = "Measure" if isinstance(object, Measure) else "Metric"
+        lower_case_object_type_for_errors = object_type_for_errors.lower()
+        agg_time_dimension = next(
+            (dim for dim in semantic_model.dimensions if agg_time_dimension_reference.element_name == dim.name),
+            None,
+        )
+        if agg_time_dimension is None:
+            # Sanity check, should never hit this
+            issues.append(
+                ValidationError(
+                    context=SemanticModelElementContext(
+                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                        semantic_model_element=SemanticModelElementReference(
+                            semantic_model_name=semantic_model.name,
+                            element_name=object.name,
+                        ),
+                        element_type=SemanticModelElementType.MEASURE,
+                    ),
+                    message=(
+                        f"{object_type_for_errors} '{object.name}' has a agg_time_dimension of "
+                        f"{agg_time_dimension_reference.element_name} "
+                        f"that is not defined as a dimension in semantic model '{semantic_model.name}'."
+                    ),
+                )
+            )
+            return
+
+        # Validates that the non_additive_dimension exists as a time dimension in the semantic model
+        matching_dimension = next(
+            (dim for dim in semantic_model.dimensions if non_additive_dimension.name == dim.name), None
+        )
+        if matching_dimension is None:
+            issues.append(
+                ValidationError(
+                    context=SemanticModelElementContext(
+                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                        semantic_model_element=SemanticModelElementReference(
+                            semantic_model_name=semantic_model.name, element_name=object.name
+                        ),
+                        element_type=SemanticModelElementType.MEASURE,
+                    ),
+                    message=(
+                        f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with name "
+                        f"'{non_additive_dimension.name}' that is not defined as a dimension in semantic "
+                        f"model '{semantic_model.name}'."
+                    ),
+                )
+            )
+        if matching_dimension:
+            # Check that it's a time dimension
+            if matching_dimension.type != DimensionType.TIME:
+                issues.append(
+                    ValidationError(
+                        context=SemanticModelElementContext(
+                            file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                            semantic_model_element=SemanticModelElementReference(
+                                semantic_model_name=semantic_model.name,
+                                element_name=object.name,
+                            ),
+                            element_type=SemanticModelElementType.MEASURE,
+                        ),
+                        message=(
+                            f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with name"
+                            f"'{non_additive_dimension.name}' "
+                            f"that is defined as a categorical dimension which is not supported."
+                        ),
+                    )
+                )
+
+            # Validates that the non_additive_dimension time_granularity
+            # is >= agg_time_dimension time_granularity
+            if (
+                matching_dimension.type_params
+                and agg_time_dimension.type_params
+                and (matching_dimension.type_params.time_granularity != agg_time_dimension.type_params.time_granularity)
+            ):
+                issues.append(
+                    ValidationError(
+                        context=SemanticModelElementContext(
+                            file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                            semantic_model_element=SemanticModelElementReference(
+                                semantic_model_name=semantic_model.name, element_name=object.name
+                            ),
+                            element_type=SemanticModelElementType.MEASURE,
+                        ),
+                        message=(
+                            f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with name "
+                            f"'{non_additive_dimension.name}' that has a base time granularity "
+                            f"({matching_dimension.type_params.time_granularity.name}) that is not equal to "
+                            f"the {lower_case_object_type_for_errors}'s agg_time_dimension {agg_time_dimension.name} "
+                            f"with a base granularity of ({agg_time_dimension.type_params.time_granularity.name})."
+                        ),
+                    )
+                )
+
+        # Validates that the window_choice is either MIN/MAX
+        if non_additive_dimension.window_choice not in {AggregationType.MIN, AggregationType.MAX}:
+            issues.append(
+                ValidationError(
+                    context=SemanticModelElementContext(
+                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                        semantic_model_element=SemanticModelElementReference(
+                            semantic_model_name=semantic_model.name,
+                            element_name=object.name,
+                        ),
+                        element_type=SemanticModelElementType.MEASURE,
+                    ),
+                    message=(
+                        f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with an invalid "
+                        f"'window_choice' of '{non_additive_dimension.window_choice.value}'. "
+                        f"The only choices supported are 'min' or 'max'."
+                    ),
+                )
+            )
+
+        # Validates that all window_groupings are entities
+        entities_in_semantic_model = {entity.name for entity in semantic_model.entities}
+        window_groupings = set(non_additive_dimension.window_groupings)
+        intersected_entities = window_groupings.intersection(entities_in_semantic_model)
+        if len(intersected_entities) != len(window_groupings):
+            issues.append(
+                ValidationError(
+                    context=SemanticModelElementContext(
+                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                        semantic_model_element=SemanticModelElementReference(
+                            semantic_model_name=semantic_model.name,
+                            element_name=object.name,
+                        ),
+                        element_type=SemanticModelElementType.MEASURE,
+                    ),
+                    message=(
+                        f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with an invalid "
+                        "'window_groupings'. These entities "
+                        f"{window_groupings.difference(intersected_entities)} do not exist in the "
+                        "semantic model."
+                    ),
+                )
+            )
+
+        return issues
+
+    @staticmethod
     @validate_safely(whats_being_done="ensuring that a measure's non_additive_dimensions is valid")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        # issues: List[ValidationIssue] = []
+
+        # models = semantic_manifest.semantic_models or []
+        # objects_to_validate: list[Metric | Measure] = [measure for model in models for measure in model.measures] + [
+        #     metric for metric in (semantic_manifest.metrics or [])
+        # ]
+        # for semantic_model in semantic_manifest.semantic_models or []:
+        #     for measure_or_metric in objects_to_validate:
         issues: List[ValidationIssue] = []
         for semantic_model in semantic_manifest.semantic_models or []:
             for measure in semantic_model.measures:
+                # non_additive_dimension = measure.non_additive_dimension
+                # if non_additive_dimension is None:
+                #     continue
+                # agg_time_dimension_reference = semantic_model.checked_agg_time_dimension_for_measure(measure.reference)
                 non_additive_dimension = measure.non_additive_dimension
                 if non_additive_dimension is None:
                     continue
                 agg_time_dimension_reference = semantic_model.checked_agg_time_dimension_for_measure(measure.reference)
-                agg_time_dimension = next(
-                    (dim for dim in semantic_model.dimensions if agg_time_dimension_reference.element_name == dim.name),
-                    None,
+                MeasuresNonAdditiveDimensionRule._validate_non_additive_dimension(
+                    semantic_model=semantic_model,
+                    non_additive_dimension=non_additive_dimension,
+                    agg_time_dimension_reference=agg_time_dimension_reference,
+                    issues=issues,
+                    object=measure,
                 )
-                if agg_time_dimension is None:
-                    # Sanity check, should never hit this
-                    issues.append(
-                        ValidationError(
-                            context=SemanticModelElementContext(
-                                file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                                semantic_model_element=SemanticModelElementReference(
-                                    semantic_model_name=semantic_model.name, element_name=measure.name
-                                ),
-                                element_type=SemanticModelElementType.MEASURE,
-                            ),
-                            message=(
-                                f"Measure '{measure.name}' has a agg_time_dimension of "
-                                f"{agg_time_dimension_reference.element_name} "
-                                f"that is not defined as a dimension in semantic model '{semantic_model.name}'."
-                            ),
-                        )
-                    )
-                    continue
+                # agg_time_dimension = next(
+                #     (dim for dim in semantic_model.dimensions if agg_time_dimension_reference.element_name == dim.name),
+                #     None,
+                # )
+                # if agg_time_dimension is None:
+                #     # Sanity check, should never hit this
+                #     issues.append(
+                #         ValidationError(
+                #             context=SemanticModelElementContext(
+                #                 file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                #                 semantic_model_element=SemanticModelElementReference(
+                #                     semantic_model_name=semantic_model.name, element_name=measure_or_metric.name
+                #                 ),
+                #                 element_type=SemanticModelElementType.MEASURE,
+                #             ),
+                #             message=(
+                #                 f"Measure '{measure_or_metric.name}' has a agg_time_dimension of "
+                #                 f"{agg_time_dimension_reference.element_name} "
+                #                 f"that is not defined as a dimension in semantic model '{semantic_model.name}'."
+                #             ),
+                #         )
+                #     )
+                #     continue
 
-                # Validates that the non_additive_dimension exists as a time dimension in the semantic model
-                matching_dimension = next(
-                    (dim for dim in semantic_model.dimensions if non_additive_dimension.name == dim.name), None
-                )
-                if matching_dimension is None:
-                    issues.append(
-                        ValidationError(
-                            context=SemanticModelElementContext(
-                                file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                                semantic_model_element=SemanticModelElementReference(
-                                    semantic_model_name=semantic_model.name, element_name=measure.name
-                                ),
-                                element_type=SemanticModelElementType.MEASURE,
-                            ),
-                            message=(
-                                f"Measure '{measure.name}' has a non_additive_dimension with name "
-                                f"'{non_additive_dimension.name}' that is not defined as a dimension in semantic "
-                                f"model '{semantic_model.name}'."
-                            ),
-                        )
-                    )
-                if matching_dimension:
-                    # Check that it's a time dimension
-                    if matching_dimension.type != DimensionType.TIME:
-                        issues.append(
-                            ValidationError(
-                                context=SemanticModelElementContext(
-                                    file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                                    semantic_model_element=SemanticModelElementReference(
-                                        semantic_model_name=semantic_model.name, element_name=measure.name
-                                    ),
-                                    element_type=SemanticModelElementType.MEASURE,
-                                ),
-                                message=(
-                                    f"Measure '{measure.name}' has a non_additive_dimension with name"
-                                    f"'{non_additive_dimension.name}' "
-                                    f"that is defined as a categorical dimension which is not supported."
-                                ),
-                            )
-                        )
+                # # Validates that the non_additive_dimension exists as a time dimension in the semantic model
+                # matching_dimension = next(
+                #     (dim for dim in semantic_model.dimensions if non_additive_dimension.name == dim.name), None
+                # )
+                # if matching_dimension is None:
+                #     issues.append(
+                #         ValidationError(
+                #             context=SemanticModelElementContext(
+                #                 file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                #                 semantic_model_element=SemanticModelElementReference(
+                #                     semantic_model_name=semantic_model.name, element_name=measure_or_metric.name
+                #                 ),
+                #                 element_type=SemanticModelElementType.MEASURE,
+                #             ),
+                #             message=(
+                #                 f"Measure '{measure_or_metric.name}' has a non_additive_dimension with name "
+                #                 f"'{non_additive_dimension.name}' that is not defined as a dimension in semantic "
+                #                 f"model '{semantic_model.name}'."
+                #             ),
+                #         )
+                #     )
+                # if matching_dimension:
+                #     # Check that it's a time dimension
+                #     if matching_dimension.type != DimensionType.TIME:
+                #         issues.append(
+                #             ValidationError(
+                #                 context=SemanticModelElementContext(
+                #                     file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                #                     semantic_model_element=SemanticModelElementReference(
+                #                         semantic_model_name=semantic_model.name, element_name=measure_or_metric.name
+                #                     ),
+                #                     element_type=SemanticModelElementType.MEASURE,
+                #                 ),
+                #                 message=(
+                #                     f"Measure '{measure_or_metric.name}' has a non_additive_dimension with name"
+                #                     f"'{non_additive_dimension.name}' "
+                #                     f"that is defined as a categorical dimension which is not supported."
+                #                 ),
+                #             )
+                #         )
 
-                    # Validates that the non_additive_dimension time_granularity
-                    # is >= agg_time_dimension time_granularity
-                    if (
-                        matching_dimension.type_params
-                        and agg_time_dimension.type_params
-                        and (
-                            matching_dimension.type_params.time_granularity
-                            != agg_time_dimension.type_params.time_granularity
-                        )
-                    ):
-                        issues.append(
-                            ValidationError(
-                                context=SemanticModelElementContext(
-                                    file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                                    semantic_model_element=SemanticModelElementReference(
-                                        semantic_model_name=semantic_model.name, element_name=measure.name
-                                    ),
-                                    element_type=SemanticModelElementType.MEASURE,
-                                ),
-                                message=(
-                                    f"Measure '{measure.name}' has a non_additive_dimension with name "
-                                    f"'{non_additive_dimension.name}' that has a base time granularity "
-                                    f"({matching_dimension.type_params.time_granularity.name}) that is not equal to "
-                                    f"the measure's agg_time_dimension {agg_time_dimension.name} with a base "
-                                    f"granularity of ({agg_time_dimension.type_params.time_granularity.name})."
-                                ),
-                            )
-                        )
+                #     # Validates that the non_additive_dimension time_granularity
+                #     # is >= agg_time_dimension time_granularity
+                #     if (
+                #         matching_dimension.type_params
+                #         and agg_time_dimension.type_params
+                #         and (
+                #             matching_dimension.type_params.time_granularity
+                #             != agg_time_dimension.type_params.time_granularity
+                #         )
+                #     ):
+                #         issues.append(
+                #             ValidationError(
+                #                 context=SemanticModelElementContext(
+                #                     file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                #                     semantic_model_element=SemanticModelElementReference(
+                #                         semantic_model_name=semantic_model.name, element_name=measure_or_metric.name
+                #                     ),
+                #                     element_type=SemanticModelElementType.MEASURE,
+                #                 ),
+                #                 message=(
+                #                     f"Measure '{measure_or_metric.name}' has a non_additive_dimension with name "
+                #                     f"'{non_additive_dimension.name}' that has a base time granularity "
+                #                     f"({matching_dimension.type_params.time_granularity.name}) that is not equal to "
+                #                     f"the measure's agg_time_dimension {agg_time_dimension.name} with a base "
+                #                     f"granularity of ({agg_time_dimension.type_params.time_granularity.name})."
+                #                 ),
+                #             )
+                #         )
 
-                # Validates that the window_choice is either MIN/MAX
-                if non_additive_dimension.window_choice not in {AggregationType.MIN, AggregationType.MAX}:
-                    issues.append(
-                        ValidationError(
-                            context=SemanticModelElementContext(
-                                file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                                semantic_model_element=SemanticModelElementReference(
-                                    semantic_model_name=semantic_model.name, element_name=measure.name
-                                ),
-                                element_type=SemanticModelElementType.MEASURE,
-                            ),
-                            message=(
-                                f"Measure '{measure.name}' has a non_additive_dimension with an invalid "
-                                f"'window_choice' of '{non_additive_dimension.window_choice.value}'. "
-                                f"Only choices supported are 'min' or 'max'."
-                            ),
-                        )
-                    )
+                # # Validates that the window_choice is either MIN/MAX
+                # if non_additive_dimension.window_choice not in {AggregationType.MIN, AggregationType.MAX}:
+                #     issues.append(
+                #         ValidationError(
+                #             context=SemanticModelElementContext(
+                #                 file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                #                 semantic_model_element=SemanticModelElementReference(
+                #                     semantic_model_name=semantic_model.name, element_name=measure_or_metric.name
+                #                 ),
+                #                 element_type=SemanticModelElementType.MEASURE,
+                #             ),
+                #             message=(
+                #                 f"Measure '{measure_or_metric.name}' has a non_additive_dimension with an invalid "
+                #                 f"'window_choice' of '{non_additive_dimension.window_choice.value}'. "
+                #                 f"Only choices supported are 'min' or 'max'."
+                #             ),
+                #         )
+                #     )
 
-                # Validates that all window_groupings are entities
-                entities_in_semantic_model = {entity.name for entity in semantic_model.entities}
-                window_groupings = set(non_additive_dimension.window_groupings)
-                intersected_entities = window_groupings.intersection(entities_in_semantic_model)
-                if len(intersected_entities) != len(window_groupings):
-                    issues.append(
-                        ValidationError(
-                            context=SemanticModelElementContext(
-                                file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                                semantic_model_element=SemanticModelElementReference(
-                                    semantic_model_name=semantic_model.name, element_name=measure.name
-                                ),
-                                element_type=SemanticModelElementType.MEASURE,
-                            ),
-                            message=(
-                                f"Measure '{measure.name}' has a non_additive_dimension with an invalid "
-                                "'window_groupings'. These entities "
-                                f"{window_groupings.difference(intersected_entities)} do not exist in the "
-                                "semantic model."
-                            ),
-                        )
-                    )
+                # # Validates that all window_groupings are entities
+                # entities_in_semantic_model = {entity.name for entity in semantic_model.entities}
+                # window_groupings = set(non_additive_dimension.window_groupings)
+                # intersected_entities = window_groupings.intersection(entities_in_semantic_model)
+                # if len(intersected_entities) != len(window_groupings):
+                #     issues.append(
+                #         ValidationError(
+                #             context=SemanticModelElementContext(
+                #                 file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                #                 semantic_model_element=SemanticModelElementReference(
+                #                     semantic_model_name=semantic_model.name, element_name=measure_or_metric.name
+                #                 ),
+                #                 element_type=SemanticModelElementType.MEASURE,
+                #             ),
+                #             message=(
+                #                 f"Measure '{measure_or_metric.name}' has a non_additive_dimension with an invalid "
+                #                 "'window_groupings'. These entities "
+                #                 f"{window_groupings.difference(intersected_entities)} do not exist in the "
+                #                 "semantic model."
+                #             ),
+                #         )
+                #     )
 
         return issues
 
