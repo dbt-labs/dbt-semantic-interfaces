@@ -179,7 +179,7 @@ class PydanticCumulativeTypeParams(HashableBaseModel):
 class PydanticMetricAggregationParams(HashableBaseModel):
     """Type params to provide context for metrics that are used as source nodes."""
 
-    model: str
+    semantic_model: str
 
     # TODO SL-4116: make sure we recreate/reuse all the validations for measures
     # for these fields, too.
