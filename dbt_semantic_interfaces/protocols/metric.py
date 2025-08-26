@@ -246,7 +246,7 @@ class MetricAggregationParams(Protocol):
 
     @property
     @abstractmethod
-    def model(self) -> str:  # noqa: D
+    def semantic_model(self) -> str:  # noqa: D
         pass
 
     @property
