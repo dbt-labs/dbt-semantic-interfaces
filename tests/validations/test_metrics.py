@@ -796,13 +796,7 @@ def test_make_fake_semantic_manifest() -> None:  # noqa: D
                     alias="table",
                 ),
                 name="fct_orders",
-                config=PydanticSemanticLayerElementConfig(
-                    # I'm not sure what this line is supposed to do in the yaml?
-                    # semantic_model=True,
-                    # TODO: these lines are cut and being moved in the YAML but it's just not done yet.
-                    # agg_time_dimension="my_time_dimension_column",
-                    # primary_entity="my_virtual_primary_entity",
-                ),
+                config=PydanticSemanticLayerElementConfig(),
                 entities=[
                     PydanticEntity(
                         name="my_primary_entity_column",
@@ -871,6 +865,10 @@ def test_make_fake_semantic_manifest() -> None:  # noqa: D
                 type=MetricType.SIMPLE,
                 type_params=PydanticMetricTypeParams(
                     metric_aggregation_params=PydanticMetricAggregationParams(
+                        # on these simple metrics internal to the model, the parser MUST include the model!
+                        semantic_model="fct_orders",
+                        # inherited from the model
+                        agg_time_dimension="ds",
                         agg=AggregationType.SUM,
                         expr="case when is_a then 1 else 0 end",
                     ),
@@ -884,6 +882,9 @@ def test_make_fake_semantic_manifest() -> None:  # noqa: D
                 type_params=PydanticMetricTypeParams(
                     metric_aggregation_params=PydanticMetricAggregationParams(
                         agg=AggregationType.SUM,
+                        # on these simple metrics internal to the model, the parser MUST include the model!
+                        semantic_model="fct_orders",
+                        # this was overwritten explicitly in the YAML
                         agg_time_dimension="my_other_time_dimension_column",
                     ),
                 ),
@@ -895,6 +896,10 @@ def test_make_fake_semantic_manifest() -> None:  # noqa: D
                 type=MetricType.SIMPLE,
                 type_params=PydanticMetricTypeParams(
                     metric_aggregation_params=PydanticMetricAggregationParams(
+                        # on these simple metrics internal to the model, the parser MUST include the model!
+                        semantic_model="fct_orders",
+                        # inherited from the model
+                        agg_time_dimension="ds",
                         agg=AggregationType.PERCENTILE,
                         expr="another_column",
                         agg_params=PydanticMeasureAggregationParameters(
@@ -906,14 +911,18 @@ def test_make_fake_semantic_manifest() -> None:  # noqa: D
             ),
             PydanticMetric(
                 name="my_simple_metric_with_configs_and_non_additive_dimension",
-                description="cool cumulative metric",
+                description="cool simple metric",
                 label="my label",
                 type=MetricType.SIMPLE,
                 type_params=PydanticMetricTypeParams(
+                    join_to_timespine=True,
+                    fill_nulls_with=0,
                     metric_aggregation_params=PydanticMetricAggregationParams(
                         agg=AggregationType.SUM,
-                        join_to_timespine=True,
-                        fill_nulls_with=0,
+                        # on these simple metrics internal to the model, the parser MUST include the model!
+                        semantic_model="fct_orders",
+                        # inherited from the model
+                        agg_time_dimension="ds",
                         non_additive_dimension=PydanticNonAdditiveDimensionParameters(
                             name="my_derived_dimension",
                             window_choice=AggregationType.MAX,
@@ -1031,6 +1040,8 @@ def test_make_fake_semantic_manifest() -> None:  # noqa: D
             ## ==============================================================
             PydanticMetric(
                 name="my_advanced_cumulative_metric",
+                # metrics defined at the manifest level have no semantic model to include,
+                # so we don't pass a value for semantic_model.
                 type=MetricType.CUMULATIVE,
                 type_params=PydanticMetricTypeParams(
                     window=PydanticMetricTimeWindow(

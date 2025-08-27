@@ -130,14 +130,15 @@
         "cumulative_type_params": null,
         "input_measures": [],
         "metric_aggregation_params": {
+          "semantic_model": "fct_orders",
           "agg": "sum",
           "agg_params": null,
-          "agg_time_dimension": null,
+          "agg_time_dimension": "ds",
           "non_additive_dimension": null,
-          "expr": "case when is_a then 1 else 0 end",
-          "join_to_timespine": false,
-          "fill_nulls_with": null
-        }
+          "expr": "case when is_a then 1 else 0 end"
+        },
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -161,14 +162,15 @@
         "cumulative_type_params": null,
         "input_measures": [],
         "metric_aggregation_params": {
+          "semantic_model": "fct_orders",
           "agg": "sum",
           "agg_params": null,
           "agg_time_dimension": "my_other_time_dimension_column",
           "non_additive_dimension": null,
-          "expr": null,
-          "join_to_timespine": false,
-          "fill_nulls_with": null
-        }
+          "expr": null
+        },
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -192,18 +194,19 @@
         "cumulative_type_params": null,
         "input_measures": [],
         "metric_aggregation_params": {
+          "semantic_model": "fct_orders",
           "agg": "percentile",
           "agg_params": {
             "percentile": 50.0,
             "use_discrete_percentile": true,
             "use_approximate_percentile": false
           },
-          "agg_time_dimension": null,
+          "agg_time_dimension": "ds",
           "non_additive_dimension": null,
-          "expr": "another_column",
-          "join_to_timespine": false,
-          "fill_nulls_with": null
-        }
+          "expr": "another_column"
+        },
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -213,7 +216,7 @@
     },
     {
       "name": "my_simple_metric_with_configs_and_non_additive_dimension",
-      "description": "cool cumulative metric",
+      "description": "cool simple metric",
       "type": "simple",
       "type_params": {
         "measure": null,
@@ -227,9 +230,10 @@
         "cumulative_type_params": null,
         "input_measures": [],
         "metric_aggregation_params": {
+          "semantic_model": "fct_orders",
           "agg": "sum",
           "agg_params": null,
-          "agg_time_dimension": null,
+          "agg_time_dimension": "ds",
           "non_additive_dimension": {
             "name": "my_derived_dimension",
             "window_choice": "max",
@@ -237,10 +241,10 @@
               "my_entity_column"
             ]
           },
-          "expr": null,
-          "join_to_timespine": true,
-          "fill_nulls_with": 0
-        }
+          "expr": null
+        },
+        "join_to_timespine": true,
+        "fill_nulls_with": 0
       },
       "filter": null,
       "metadata": null,
@@ -284,7 +288,9 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -321,7 +327,9 @@
           }
         },
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -356,7 +364,9 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -397,7 +407,9 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -449,7 +461,9 @@
         },
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -475,7 +489,9 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -516,7 +532,9 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -556,7 +574,9 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
@@ -608,7 +628,9 @@
         },
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null
       },
       "filter": null,
       "metadata": null,
