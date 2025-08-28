@@ -662,7 +662,7 @@ class MetricsPercentileAggregationRule(SemanticManifestValidationRule[SemanticMa
         return issues
 
 
-class MetricAggregationParamsAreOnlyForSimpleMetricsRule(
+class MetricAggregationParamsInForSimpleMetricsRule(
     SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]
 ):
     """Checks that metric aggregation params are only set for simple metrics."""
@@ -675,6 +675,7 @@ class MetricAggregationParamsAreOnlyForSimpleMetricsRule(
         issues: List[ValidationIssue] = []
 
         for metric in semantic_manifest.metrics or []:
+            # Non-simple metrics cannot use these measure-like fields!
             if metric.type != MetricType.SIMPLE and metric.type_params.metric_aggregation_params is not None:
                 issues.append(
                     ValidationError(
@@ -686,6 +687,33 @@ class MetricAggregationParamsAreOnlyForSimpleMetricsRule(
                         "'agg', 'agg_time_dimension', 'non_additive_dimension', 'percentile', or 'expr'.",
                     )
                 )
+            # Simple metrics must have agg_params (measure-like fields) XOR an input measure
+            if metric.type == MetricType.SIMPLE:
+                has_agg_params = metric.type_params.metric_aggregation_params is not None
+                has_input_measure = metric.type_params.measure is not None
+                if has_agg_params and has_input_measure:
+                    issues.append(
+                        ValidationError(
+                            context=MetricContext(
+                                file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                metric=MetricModelReference(metric_name=metric.name),
+                            ),
+                            message=f"Metric '{metric.name}' cannot have both "
+                            "metric_aggregation_params and a measure.",
+                        )
+                    )
+                elif not has_agg_params and not has_input_measure:
+                    issues.append(
+                        ValidationError(
+                            context=MetricContext(
+                                file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                metric=MetricModelReference(metric_name=metric.name),
+                            ),
+                            message=f"Metric '{metric.name}' is a Simple metric, so it must have either "
+                            "metric_aggregation_params or a measure.",
+                        )
+                    )
+
         return issues
 
 
