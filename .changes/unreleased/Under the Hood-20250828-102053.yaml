@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Make the 'agg' param statically required when metrics use the new measure-like arguments.
+time: 2025-08-28T10:20:53.877714-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"

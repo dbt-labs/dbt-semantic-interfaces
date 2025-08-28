@@ -88,6 +88,7 @@ def check_error_in_issues(error_substrings: List[str], issues: Tuple[ValidationI
                 type=MetricType.SIMPLE,
                 type_params=PydanticMetricTypeParams(
                     metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.SUM,
                         semantic_model="sum_measure2",
                         non_additive_dimension=PydanticNonAdditiveDimensionParameters(
                             name="this_name_does_not_exist",
@@ -106,6 +107,7 @@ def check_error_in_issues(error_substrings: List[str], issues: Tuple[ValidationI
                 type=MetricType.SIMPLE,
                 type_params=PydanticMetricTypeParams(
                     metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.SUM,
                         semantic_model="sum_measure2",
                         non_additive_dimension=PydanticNonAdditiveDimensionParameters(
                             name="country",
@@ -124,6 +126,7 @@ def check_error_in_issues(error_substrings: List[str], issues: Tuple[ValidationI
                 type=MetricType.SIMPLE,
                 type_params=PydanticMetricTypeParams(
                     metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.SUM,
                         semantic_model="sum_measure2",
                         non_additive_dimension=PydanticNonAdditiveDimensionParameters(
                             name="country",
@@ -141,6 +144,7 @@ def check_error_in_issues(error_substrings: List[str], issues: Tuple[ValidationI
                 type=MetricType.SIMPLE,
                 type_params=PydanticMetricTypeParams(
                     metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.SUM,
                         semantic_model="sum_measure2",
                         non_additive_dimension=PydanticNonAdditiveDimensionParameters(
                             name="weekly_dim",
