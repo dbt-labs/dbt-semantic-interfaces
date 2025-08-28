@@ -5,6 +5,7 @@ from typing_extensions import assert_never
 from dbt_semantic_interfaces.protocols import Metric
 from dbt_semantic_interfaces.protocols.measure import (
     Measure,
+    MeasureAggregationParameters,
     NonAdditiveDimensionParameters,
 )
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
@@ -186,6 +187,85 @@ class SharedMeasureAndMetricHelpers:
                         f"expr: '{expr}'. This is not supported as it effectively converts an additive "
                         f"{object_type.lower()} into a non-additive one, and this could cause certain queries to "
                         f"return incorrect results. Please use the {agg_type.value}_distinct aggregation type."
+                    ),
+                )
+            )
+        return issues
+
+    @staticmethod
+    def validate_percentile_arguments(  # noqa: D
+        context: ValidationContext,
+        object_name: str,
+        object_type: Literal["Measure", "Metric"],
+        agg_type: Optional[AggregationType],
+        agg_params: Optional[MeasureAggregationParameters],
+    ) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        if agg_type == AggregationType.PERCENTILE:
+            if agg_params is None or agg_params.percentile is None:
+                issues.append(
+                    ValidationError(
+                        context=context,
+                        message=(
+                            f"{object_type} '{object_name}' uses a PERCENTILE aggregation, which requires "
+                            "agg_params.percentile to be provided."
+                        ),
+                    )
+                )
+            elif agg_params.percentile <= 0 or agg_params.percentile >= 1:
+                issues.append(
+                    ValidationError(
+                        context=context,
+                        message=(
+                            f"Percentile aggregation parameter for {object_type.lower()} '{object_name}' is "
+                            f"'{agg_params.percentile}', but must be between 0 and 1 (non-inclusive). "
+                            "For example, to indicate the 65th percentile value, set 'percentile: 0.65'. "
+                            "For percentile values of 0, please use MIN, for percentile values of 1, please "
+                            "use MAX."
+                        ),
+                    )
+                )
+        elif agg_type == AggregationType.MEDIAN:
+            if agg_params:
+                if agg_params.percentile is not None and agg_params.percentile != 0.5:
+                    issues.append(
+                        ValidationError(
+                            context=context,
+                            message=f"{object_type} '{object_name}' uses a MEDIAN aggregation, while percentile is "
+                            f"set to '{agg_params.percentile}', a conflicting value. Please remove "
+                            "the parameter or set to '0.5'.",
+                        )
+                    )
+                if agg_params.use_discrete_percentile:
+                    issues.append(
+                        ValidationError(
+                            context=context,
+                            message=f"{object_type} '{object_name}' uses a MEDIAN aggregation, while "
+                            "use_discrete_percentile is set to true. Please remove the parameter or set "
+                            "to False.",
+                        )
+                    )
+        elif agg_params and (
+            agg_params.percentile or agg_params.use_discrete_percentile or agg_params.use_approximate_percentile
+        ):
+            wrong_params = []
+            if agg_params.percentile:
+                wrong_params.append("percentile")
+            if agg_params.use_discrete_percentile:
+                wrong_params.append("use_discrete_percentile")
+            if agg_params.use_approximate_percentile:
+                wrong_params.append("use_approximate_percentile")
+
+            wrong_params_str = ", ".join(wrong_params)
+            agg_type_str = agg_type.value if agg_type else "None"
+
+            issues.append(
+                ValidationError(
+                    context=context,
+                    message=(
+                        f"{object_type} '{object_name}' with aggregation '{agg_type_str}' uses agg_params "
+                        f"({wrong_params_str}) only relevant to Percentile {object_type.lower()}s."
                     ),
                 )
             )

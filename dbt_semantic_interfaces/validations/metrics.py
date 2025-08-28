@@ -628,6 +628,40 @@ class MetricsCountAggregationExprRule(SemanticManifestValidationRule[SemanticMan
         return issues
 
 
+class MetricsPercentileAggregationRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """Checks that only PERCENTILE metrics have agg_params and a valid percentile value is provided."""
+
+    @staticmethod
+    @validate_safely(
+        whats_being_done="running model validation ensuring the agg_params.percentile value exist for metrics with "
+        "percentile aggregation"
+    )
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+
+        for metric in semantic_manifest.metrics or []:
+            if (
+                metric.type == MetricType.SIMPLE
+                and metric.type_params is not None
+                and metric.type_params.metric_aggregation_params is not None
+            ):
+                context = MetricContext(
+                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                    metric=MetricModelReference(metric_name=metric.name),
+                )
+                issues.extend(
+                    SharedMeasureAndMetricHelpers.validate_percentile_arguments(
+                        context=context,
+                        object_name=metric.name,
+                        object_type="Metric",
+                        agg_type=metric.type_params.metric_aggregation_params.agg,
+                        agg_params=metric.type_params.metric_aggregation_params.agg_params,
+                    )
+                )
+
+        return issues
+
+
 class MetricTimeGranularityRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that time_granularity set for metric is queryable for that metric."""
 

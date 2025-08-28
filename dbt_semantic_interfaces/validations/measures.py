@@ -9,7 +9,6 @@ from dbt_semantic_interfaces.protocols import (
     SemanticManifestT,
 )
 from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
-from dbt_semantic_interfaces.type_enums import AggregationType
 from dbt_semantic_interfaces.validations.shared_measure_and_metric_helpers import (
     SharedMeasureAndMetricHelpers,
 )
@@ -281,7 +280,7 @@ class CountAggregationExprRule(SemanticManifestValidationRule[SemanticManifestT]
 
 
 class PercentileAggregationRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
-    """Checks that only PERCENTILE measures have agg_params and valid percentile value provided."""
+    """Checks that only PERCENTILE measures have agg_params and a valid percentile value is provided."""
 
     @staticmethod
     @validate_safely(
@@ -300,74 +299,15 @@ class PercentileAggregationRule(SemanticManifestValidationRule[SemanticManifestT
                     ),
                     element_type=SemanticModelElementType.MEASURE,
                 )
-                if measure.agg == AggregationType.PERCENTILE:
-                    if measure.agg_params is None or measure.agg_params.percentile is None:
-                        issues.append(
-                            ValidationError(
-                                context=context,
-                                message=(
-                                    f"Measure '{measure.name}' uses a PERCENTILE aggregation, which requires "
-                                    "agg_params.percentile to be provided."
-                                ),
-                            )
-                        )
-                    elif measure.agg_params.percentile <= 0 or measure.agg_params.percentile >= 1:
-                        issues.append(
-                            ValidationError(
-                                context=context,
-                                message=(
-                                    f"Percentile aggregation parameter for measure '{measure.name}' is "
-                                    f"'{measure.agg_params.percentile}', but must be between 0 and 1 (non-inclusive). "
-                                    "For example, to indicate the 65th percentile value, set 'percentile: 0.65'. "
-                                    "For percentile values of 0, please use MIN, for percentile values of 1, please "
-                                    "use MAX."
-                                ),
-                            )
-                        )
-                elif measure.agg == AggregationType.MEDIAN:
-                    if measure.agg_params:
-                        if measure.agg_params.percentile is not None and measure.agg_params.percentile != 0.5:
-                            issues.append(
-                                ValidationError(
-                                    context=context,
-                                    message=f"Measure '{measure.name}' uses a MEDIAN aggregation, while percentile is "
-                                    f"set to '{measure.agg_params.percentile}', a conflicting value. Please remove "
-                                    "the parameter or set to '0.5'.",
-                                )
-                            )
-                        if measure.agg_params.use_discrete_percentile:
-                            issues.append(
-                                ValidationError(
-                                    context=context,
-                                    message=f"Measure '{measure.name}' uses a MEDIAN aggregation, while "
-                                    "use_discrete_percentile is set to true. Please remove the parameter or set "
-                                    "to False.",
-                                )
-                            )
-                elif measure.agg_params and (
-                    measure.agg_params.percentile
-                    or measure.agg_params.use_discrete_percentile
-                    or measure.agg_params.use_approximate_percentile
-                ):
-                    wrong_params = []
-                    if measure.agg_params.percentile:
-                        wrong_params.append("percentile")
-                    if measure.agg_params.use_discrete_percentile:
-                        wrong_params.append("use_discrete_percentile")
-                    if measure.agg_params.use_approximate_percentile:
-                        wrong_params.append("use_approximate_percentile")
-
-                    wrong_params_str = ", ".join(wrong_params)
-
-                    issues.append(
-                        ValidationError(
-                            context=context,
-                            message=(
-                                f"Measure '{measure.name}' with aggregation '{measure.agg.value}' uses agg_params "
-                                f"({wrong_params_str}) only relevant to Percentile measures."
-                            ),
-                        )
+                issues.extend(
+                    SharedMeasureAndMetricHelpers.validate_percentile_arguments(
+                        context=context,
+                        object_name=measure.name,
+                        object_type="Measure",
+                        agg_type=measure.agg,
+                        agg_params=measure.agg_params,
                     )
+                )
         return issues
 
 
