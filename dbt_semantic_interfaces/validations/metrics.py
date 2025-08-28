@@ -662,6 +662,33 @@ class MetricsPercentileAggregationRule(SemanticManifestValidationRule[SemanticMa
         return issues
 
 
+class MetricAggregationParamsAreOnlyForSimpleMetricsRule(
+    SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]
+):
+    """Checks that metric aggregation params are only set for simple metrics."""
+
+    @staticmethod
+    @validate_safely(
+        whats_being_done="running model validation ensuring metric aggregation params are only set for simple metrics"
+    )
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+
+        for metric in semantic_manifest.metrics or []:
+            if metric.type != MetricType.SIMPLE and metric.type_params.metric_aggregation_params is not None:
+                issues.append(
+                    ValidationError(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric.metadata),
+                            metric=MetricModelReference(metric_name=metric.name),
+                        ),
+                        message=f"Metric '{metric.name}' is not a Simple metric, so it cannot have values for "
+                        "metric_aggregation_params.",
+                    )
+                )
+        return issues
+
+
 class MetricTimeGranularityRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that time_granularity set for metric is queryable for that metric."""
 

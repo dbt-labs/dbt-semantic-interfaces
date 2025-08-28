@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Add a validation that the new measure-like fields added to metrics can only be used in Simple Metrics.
+time: 2025-08-27T23:57:34.048732-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
