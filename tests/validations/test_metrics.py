@@ -51,7 +51,7 @@ from dbt_semantic_interfaces.validations.metrics import (
     ConversionMetricRule,
     CumulativeMetricRule,
     DerivedMetricRule,
-    MetricAggregationParamsAreOnlyForSimpleMetricsRule,
+    MetricAggregationParamsInForSimpleMetricsRule,
     MetricsCountAggregationExprRule,
     MetricsNonAdditiveDimensionsRule,
     MetricsPercentileAggregationRule,
@@ -513,7 +513,108 @@ def test_simple_metrics_are_the_only_metrics_allowed_to_have_agg_params(  # noqa
     error_substring_if_error: Optional[str],
 ) -> None:
     model_validator = SemanticManifestValidator[PydanticSemanticManifest](
-        [MetricAggregationParamsAreOnlyForSimpleMetricsRule()]
+        [MetricAggregationParamsInForSimpleMetricsRule()]
+    )
+    validation_results = model_validator.validate_semantic_manifest(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="sum_measure",
+                    measures=[
+                        PydanticMeasure(
+                            name="this_measure_name",
+                            agg=AggregationType.SUM,
+                            agg_time_dimension="ename",
+                        )
+                    ],
+                    dimensions=[
+                        PydanticDimension(name="country", type=DimensionType.CATEGORICAL),
+                        PydanticDimension(
+                            name="time_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                        PydanticDimension(
+                            name="weekly_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.WEEK,
+                            ),
+                        ),
+                    ],
+                    entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
+                ),
+            ],
+            metrics=[metric],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+    if error_substring_if_error:
+        check_error_in_issues(error_substrings=[error_substring_if_error], issues=validation_results.all_issues)
+    else:
+        assert len(validation_results.all_issues) == 0, "expected this metric to pass validation, but it did not"
+
+
+@pytest.mark.parametrize(
+    "metric, error_substring_if_error",
+    [
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_measure_only",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    measure=PydanticMetricInputMeasure(name="this_measure_name"),
+                ),
+            ),
+            None,  # No error; this should pass
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_agg_params_only",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.SUM,
+                    ),
+                ),
+            ),
+            None,  # No error; this should pass
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_both_measure_and_agg_params",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    measure=PydanticMetricInputMeasure(name="this_measure_name"),
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.SUM,
+                    ),
+                ),
+            ),
+            "Metric 'metric_with_both_measure_and_agg_params' cannot have both "
+            "metric_aggregation_params and a measure.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_neither_measure_nor_agg_params",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(),
+            ),
+            "Metric 'metric_with_neither_measure_nor_agg_params' is a Simple metric, so it must have either "
+            "metric_aggregation_params or a measure.",
+        ),
+    ],
+)
+def test_simple_metrics_have_measures_xor_agg_params(  # noqa: D
+    metric: PydanticMetric,
+    error_substring_if_error: Optional[str],
+) -> None:
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest](
+        [MetricAggregationParamsInForSimpleMetricsRule()]
     )
     validation_results = model_validator.validate_semantic_manifest(
         PydanticSemanticManifest(
