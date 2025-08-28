@@ -8,6 +8,7 @@ from dbt_semantic_interfaces.protocols.entity import Entity
 from dbt_semantic_interfaces.protocols.measure import Measure
 from dbt_semantic_interfaces.protocols.meta import SemanticLayerElementConfig
 from dbt_semantic_interfaces.protocols.metadata import Metadata
+from dbt_semantic_interfaces.protocols.metric import Metric
 from dbt_semantic_interfaces.protocols.node_relation import NodeRelation
 from dbt_semantic_interfaces.references import (
     EntityReference,
@@ -145,6 +146,14 @@ class SemanticModel(Protocol):
     @abstractmethod
     def checked_agg_time_dimension_for_measure(self, measure_reference: MeasureReference) -> TimeDimensionReference:
         """Returns the `TimeDimensionReference` what a measure should use for it's `agg_time_dimension`.
+
+        Should raise an exception if a TimeDimensionReference cannot be built
+        """
+        ...
+
+    @abstractmethod
+    def checked_agg_time_dimension_for_metric(self, metric: Metric) -> TimeDimensionReference:
+        """Returns the `TimeDimensionReference` what a metric should use for it's `agg_time_dimension`.
 
         Should raise an exception if a TimeDimensionReference cannot be built
         """
