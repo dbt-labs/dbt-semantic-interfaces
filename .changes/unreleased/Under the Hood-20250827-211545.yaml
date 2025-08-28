@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Added a validation that metrics with COUNT aggregations defined on them have valid expr values for that kind of aggregation.
+time: 2025-08-27T21:15:45.575327-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"

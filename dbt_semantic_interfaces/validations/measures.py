@@ -268,35 +268,15 @@ class CountAggregationExprRule(SemanticManifestValidationRule[SemanticManifestT]
                     ),
                     element_type=SemanticModelElementType.MEASURE,
                 )
-                if measure.agg == AggregationType.COUNT and measure.expr is None:
-                    issues.append(
-                        ValidationError(
-                            context=context,
-                            message=(
-                                f"Measure '{measure.name}' uses a COUNT aggregation, which requires an expr to be "
-                                "provided. Provide 'expr: 1' if a count of all rows is desired."
-                            ),
-                        )
+                issues.extend(
+                    SharedMeasureAndMetricHelpers.validate_expr_for_count_aggregation(
+                        context=context,
+                        object_name=measure.name,
+                        object_type="Measure",
+                        agg_type=measure.agg,
+                        expr=measure.expr,
                     )
-                if (
-                    measure.agg == AggregationType.COUNT
-                    and measure.expr
-                    and measure.expr.lower().startswith("distinct ")
-                ):
-                    # TODO: Expand this to include SUM and potentially AVG agg types as well
-                    # Note expansion of this guard requires the addition of sum_distinct and avg_distinct agg types
-                    # or else an adjustment to the error message below.
-                    issues.append(
-                        ValidationError(
-                            context=context,
-                            message=(
-                                f"Measure '{measure.name}' uses a '{measure.agg.value}' aggregation with a DISTINCT "
-                                f"expr: '{measure.expr}. This is not supported as it effectively converts an additive "
-                                f"measure into a non-additive one, and this could cause certain queries to return "
-                                f"incorrect results. Please use the {measure.agg.value}_distinct aggregation type."
-                            ),
-                        )
-                    )
+                )
         return issues
 
 
