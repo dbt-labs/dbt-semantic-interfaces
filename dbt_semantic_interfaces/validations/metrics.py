@@ -683,7 +683,7 @@ class MetricAggregationParamsAreOnlyForSimpleMetricsRule(
                             metric=MetricModelReference(metric_name=metric.name),
                         ),
                         message=f"Metric '{metric.name}' is not a Simple metric, so it cannot have values for "
-                        "metric_aggregation_params.",
+                        "'agg', 'agg_time_dimension', 'non_additive_dimension', 'percentile', or 'expr'.",
                     )
                 )
         return issues
