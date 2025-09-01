@@ -1,15 +1,21 @@
 from typing import List, Literal, Sequence, Union
 
+from typing_extensions import assert_never
+
 from dbt_semantic_interfaces.protocols import Metric
 from dbt_semantic_interfaces.protocols.measure import (
     Measure,
     NonAdditiveDimensionParameters,
 )
 from dbt_semantic_interfaces.protocols.semantic_model import SemanticModel
-from dbt_semantic_interfaces.references import TimeDimensionReference
+from dbt_semantic_interfaces.references import (
+    MetricModelReference,
+    TimeDimensionReference,
+)
 from dbt_semantic_interfaces.type_enums import AggregationType, DimensionType
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
+    MetricContext,
     SemanticModelElementContext,
     SemanticModelElementReference,
     SemanticModelElementType,
@@ -35,17 +41,28 @@ class SharedMeasureAndMetricHelpers:
             (dim for dim in semantic_model.dimensions if agg_time_dimension_reference.element_name == dim.name),
             None,
         )
+
+        def get_context() -> Union[SemanticModelElementContext, MetricContext]:
+            if object_type_for_errors == "Metric":
+                return SemanticModelElementContext(
+                    file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                    semantic_model_element=SemanticModelElementReference(
+                        semantic_model_name=semantic_model.name, element_name=object.name
+                    ),
+                    element_type=SemanticModelElementType.MEASURE,
+                )
+            elif object_type_for_errors == "Measure":
+                return MetricContext(
+                    file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
+                    metric=MetricModelReference(metric_name=object.name),
+                )
+            assert_never(object_type_for_errors)
+
         if agg_time_dimension is None:
             # Sanity check, should never hit this
             issues.append(
                 ValidationError(
-                    context=SemanticModelElementContext(
-                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                        semantic_model_element=SemanticModelElementReference(
-                            semantic_model_name=semantic_model.name, element_name=object.name
-                        ),
-                        element_type=SemanticModelElementType.MEASURE,
-                    ),
+                    context=get_context(),
                     message=(
                         f"{object_type_for_errors} '{object.name}' has a agg_time_dimension of "
                         f"{agg_time_dimension_reference.element_name} "
@@ -62,13 +79,7 @@ class SharedMeasureAndMetricHelpers:
         if matching_dimension is None:
             issues.append(
                 ValidationError(
-                    context=SemanticModelElementContext(
-                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                        semantic_model_element=SemanticModelElementReference(
-                            semantic_model_name=semantic_model.name, element_name=object.name
-                        ),
-                        element_type=SemanticModelElementType.MEASURE,
-                    ),
+                    context=get_context(),
                     message=(
                         f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with name "
                         f"'{non_additive_dimension.name}' that is not defined as a dimension in semantic "
@@ -81,13 +92,7 @@ class SharedMeasureAndMetricHelpers:
             if matching_dimension.type != DimensionType.TIME:
                 issues.append(
                     ValidationError(
-                        context=SemanticModelElementContext(
-                            file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                            semantic_model_element=SemanticModelElementReference(
-                                semantic_model_name=semantic_model.name, element_name=object.name
-                            ),
-                            element_type=SemanticModelElementType.MEASURE,
-                        ),
+                        context=get_context(),
                         message=(
                             f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with name"
                             f"'{non_additive_dimension.name}' "
@@ -105,13 +110,7 @@ class SharedMeasureAndMetricHelpers:
             ):
                 issues.append(
                     ValidationError(
-                        context=SemanticModelElementContext(
-                            file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                            semantic_model_element=SemanticModelElementReference(
-                                semantic_model_name=semantic_model.name, element_name=object.name
-                            ),
-                            element_type=SemanticModelElementType.MEASURE,
-                        ),
+                        context=get_context(),
                         message=(
                             f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with name "
                             f"'{non_additive_dimension.name}' that has a base time granularity "
@@ -126,13 +125,7 @@ class SharedMeasureAndMetricHelpers:
         if non_additive_dimension.window_choice not in {AggregationType.MIN, AggregationType.MAX}:
             issues.append(
                 ValidationError(
-                    context=SemanticModelElementContext(
-                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                        semantic_model_element=SemanticModelElementReference(
-                            semantic_model_name=semantic_model.name, element_name=object.name
-                        ),
-                        element_type=SemanticModelElementType.MEASURE,
-                    ),
+                    context=get_context(),
                     message=(
                         f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with an invalid "
                         f"'window_choice' of '{non_additive_dimension.window_choice.value}'. "
@@ -148,13 +141,7 @@ class SharedMeasureAndMetricHelpers:
         if len(intersected_entities) != len(window_groupings):
             issues.append(
                 ValidationError(
-                    context=SemanticModelElementContext(
-                        file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-                        semantic_model_element=SemanticModelElementReference(
-                            semantic_model_name=semantic_model.name, element_name=object.name
-                        ),
-                        element_type=SemanticModelElementType.MEASURE,
-                    ),
+                    context=get_context(),
                     message=(
                         f"{object_type_for_errors} '{object.name}' has a non_additive_dimension with an invalid "
                         "'window_groupings'. These entities "
