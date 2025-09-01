@@ -475,7 +475,8 @@ def test_simple_metrics_percentile_aggregation(  # noqa: D
                 ),
             ),
             "Metric 'cumulative_metric_with_agg_params_are_not_allowed' is not a Simple "
-            "metric, so it cannot have values for metric_aggregation_params.",
+            "metric, so it cannot have values for 'agg', 'agg_time_dimension', "
+            "'non_additive_dimension', 'percentile', or 'expr'.",
         ),
         (
             metric_with_guaranteed_meta(
@@ -489,7 +490,8 @@ def test_simple_metrics_percentile_aggregation(  # noqa: D
                 ),
             ),
             "Metric 'conversion_metric_with_agg_params_are_not_allowed' is not a Simple "
-            "metric, so it cannot have values for metric_aggregation_params.",
+            "metric, so it cannot have values for 'agg', 'agg_time_dimension', "
+            "'non_additive_dimension', 'percentile', or 'expr'.",
         ),
         (
             metric_with_guaranteed_meta(
