@@ -676,17 +676,37 @@ class MetricAggregationParamsInForSimpleMetricsRule(
 
         for metric in semantic_manifest.metrics or []:
             # Non-simple metrics cannot use these measure-like fields!
-            if metric.type != MetricType.SIMPLE and metric.type_params.metric_aggregation_params is not None:
-                issues.append(
-                    ValidationError(
-                        context=MetricContext(
-                            file_context=FileContext.from_metadata(metadata=metric.metadata),
-                            metric=MetricModelReference(metric_name=metric.name),
-                        ),
-                        message=f"Metric '{metric.name}' is not a Simple metric, so it cannot have values for "
-                        "'agg', 'agg_time_dimension', 'non_additive_dimension', 'percentile', or 'expr'.",
+            if metric.type != MetricType.SIMPLE:
+                if metric.type_params.metric_aggregation_params is not None:
+                    issues.append(
+                        ValidationError(
+                            context=MetricContext(
+                                file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                metric=MetricModelReference(metric_name=metric.name),
+                            ),
+                            message=f"Metric '{metric.name}' is not a Simple metric, so it cannot have values for "
+                            "'agg', 'agg_time_dimension', 'non_additive_dimension', 'percentile', or 'expr'.",
+                        )
                     )
-                )
+                other_illegal_fields = []
+                if metric.type_params.fill_nulls_with is not None:
+                    other_illegal_fields.append("fill_nulls_with")
+                if metric.type_params.join_to_timespine:
+                    other_illegal_fields.append("join_to_timespine")
+                if other_illegal_fields:
+                    other_illegal_fields.sort()
+                    # Ruff struggles with nested f-strings, so we must do this in two steps.
+                    other_illegal_fields = [f"'{f}'" for f in other_illegal_fields]
+                    issues.append(
+                        ValidationError(
+                            context=MetricContext(
+                                file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                metric=MetricModelReference(metric_name=metric.name),
+                            ),
+                            message=f"Metric '{metric.name}' is not a Simple metric, so it cannot have a value for "
+                            f"for the following fields: {', '.join(other_illegal_fields)}.",
+                        )
+                    )
             # Simple metrics must have agg_params (measure-like fields) XOR an input measure
             if metric.type == MetricType.SIMPLE:
                 has_agg_params = metric.type_params.metric_aggregation_params is not None

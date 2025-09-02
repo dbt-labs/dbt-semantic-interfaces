@@ -662,6 +662,113 @@ def test_simple_metrics_have_measures_xor_agg_params(  # noqa: D
         assert len(validation_results.all_issues) == 0, "expected this metric to pass validation, but it did not"
 
 
+@pytest.mark.parametrize(
+    "metric, error_substring_if_error",
+    [
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_measure_only",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    measure=PydanticMetricInputMeasure(name="this_measure_name"),
+                    fill_nulls_with=1,
+                    join_to_timespine=True,
+                ),
+            ),
+            None,  # No error; this should pass
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="non_simple_metric_with_fill_nulls_with",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    fill_nulls_with=1,
+                ),
+            ),
+            # There will be other errors because this metric is missing fields,
+            # but we don't care about them.
+            "Metric 'non_simple_metric_with_fill_nulls_with' is not a Simple metric, so it "
+            "cannot have a value for for the following fields: 'fill_nulls_with'.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="non_simple_metric_with_join_to_timespine",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    join_to_timespine=True,
+                ),
+            ),
+            # There will be other errors because this metric is missing fields,
+            # but we don't care about them.
+            "Metric 'non_simple_metric_with_join_to_timespine' is not a Simple metric, so it "
+            "cannot have a value for for the following fields: 'join_to_timespine'.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="non_simple_metric_both_filter_nulls_with_and_join_to_timespine",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    join_to_timespine=True,
+                    fill_nulls_with=1,
+                ),
+            ),
+            # There will be other errors because this metric is missing fields,
+            # but we don't care about them.
+            "Metric 'non_simple_metric_both_filter_nulls_with_and_join_to_timespine' is not a Simple metric, so it "
+            "cannot have a value for for the following fields: 'fill_nulls_with', 'join_to_timespine'.",
+        ),
+    ],
+)
+def test_non_simple_metrics_cannot_have_input_fields(
+    metric: PydanticMetric,
+    error_substring_if_error: Optional[str],
+) -> None:
+    """Validate that things like fill_nulls_with and join_to_timespine are not allowed on non-simple metrics."""
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest](
+        [MetricAggregationParamsInForSimpleMetricsRule()]
+    )
+    validation_results = model_validator.validate_semantic_manifest(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="sum_measure",
+                    measures=[
+                        PydanticMeasure(
+                            name="this_measure_name",
+                            agg=AggregationType.SUM,
+                            agg_time_dimension="ename",
+                        )
+                    ],
+                    dimensions=[
+                        PydanticDimension(name="country", type=DimensionType.CATEGORICAL),
+                        PydanticDimension(
+                            name="time_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                        PydanticDimension(
+                            name="weekly_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.WEEK,
+                            ),
+                        ),
+                    ],
+                    entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
+                ),
+            ],
+            metrics=[metric],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+    if error_substring_if_error:
+        check_error_in_issues(error_substrings=[error_substring_if_error], issues=validation_results.all_issues)
+    else:
+        assert len(validation_results.all_issues) == 0, "expected this metric to pass validation, but it did not"
+
+
 def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
     dim_name = "country"
     dim2_name = "ename"

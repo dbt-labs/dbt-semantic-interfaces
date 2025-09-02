@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Added validation that join_with_timespine and fill_nulls_with cannot be added as top-level type args to any metrics other than simple metrics.
+time: 2025-09-01T17:54:12.607754-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
