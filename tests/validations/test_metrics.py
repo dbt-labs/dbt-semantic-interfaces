@@ -7,7 +7,10 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
     PydanticDimensionTypeParams,
 )
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
-from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.elements.measure import (
+    PydanticMeasure,
+    PydanticNonAdditiveDimensionParameters,
+)
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
     PydanticWhereFilter,
     PydanticWhereFilterIntersection,
@@ -16,6 +19,8 @@ from dbt_semantic_interfaces.implementations.metric import (
     PydanticConstantPropertyInput,
     PydanticConversionTypeParams,
     PydanticCumulativeTypeParams,
+    PydanticMetric,
+    PydanticMetricAggregationParams,
     PydanticMetricInput,
     PydanticMetricInputMeasure,
     PydanticMetricTimeWindow,
@@ -45,6 +50,7 @@ from dbt_semantic_interfaces.validations.metrics import (
     ConversionMetricRule,
     CumulativeMetricRule,
     DerivedMetricRule,
+    MetricsNonAdditiveDimensionsRule,
     MetricTimeGranularityRule,
 )
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
@@ -67,6 +73,126 @@ def check_error_in_issues(error_substrings: List[str], issues: Tuple[ValidationI
         "Failed to match one or more expected issues: "
         + f"{missing_error_strings} in {set([x.as_readable_str() for x in issues])}"
     )
+
+
+@pytest.mark.parametrize(
+    "metric, error_substring",
+    [
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_an_invalid_non_additive_dimension_name",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure2",
+                        non_additive_dimension=PydanticNonAdditiveDimensionParameters(
+                            name="this_name_does_not_exist",
+                            window_choice=AggregationType.MIN,
+                            window_groupings=["ds"],
+                        ),
+                        agg_time_dimension="time_dim",
+                    ),
+                ),
+            ),
+            "that is not defined as a dimension in semantic model 'sum_measure2'.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_invalid_window_groupings",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure2",
+                        non_additive_dimension=PydanticNonAdditiveDimensionParameters(
+                            name="country",
+                            window_choice=AggregationType.MIN,
+                            window_groupings=["bloopbloopiamnotrealohhhhnooooooooo"],
+                        ),
+                        agg_time_dimension="time_dim",
+                    ),
+                ),
+            ),
+            "has a non_additive_dimension with an invalid 'window_groupings'",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_a_categorical_non_additive_dimension_name",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure2",
+                        non_additive_dimension=PydanticNonAdditiveDimensionParameters(
+                            name="country",
+                            window_choice=AggregationType.MIN,
+                        ),
+                        agg_time_dimension="time_dim",
+                    ),
+                ),
+            ),
+            "that is defined as a categorical dimension which is not supported.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_a_non_additive_dimension_name_with_mismatched_time_granularity",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure2",
+                        non_additive_dimension=PydanticNonAdditiveDimensionParameters(
+                            name="weekly_dim",
+                            window_choice=AggregationType.MIN,
+                        ),
+                        agg_time_dimension="time_dim",
+                    ),
+                ),
+            ),
+            "base time granularity (WEEK) that is not equal to the metric's "
+            "agg_time_dimension time_dim with a base granularity of (DAY)",
+        ),
+    ],
+)
+def test_simple_metrics_non_additive_dimension(  # noqa: D
+    metric: PydanticMetric,
+    error_substring: str,
+) -> None:
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([MetricsNonAdditiveDimensionsRule()])
+    validation_results = model_validator.validate_semantic_manifest(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="sum_measure2",
+                    measures=[
+                        PydanticMeasure(
+                            name="this_measure_name",
+                            agg=AggregationType.SUM,
+                            agg_time_dimension="ename",
+                        )
+                    ],
+                    dimensions=[
+                        PydanticDimension(name="country", type=DimensionType.CATEGORICAL),
+                        PydanticDimension(
+                            name="time_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                        PydanticDimension(
+                            name="weekly_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.WEEK,
+                            ),
+                        ),
+                    ],
+                    entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
+                ),
+            ],
+            metrics=[metric],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+    check_error_in_issues(error_substrings=[error_substring], issues=validation_results.all_issues)
 
 
 def test_metric_no_time_dim_dim_only_source() -> None:  # noqa:D
