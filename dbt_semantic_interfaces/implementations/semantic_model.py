@@ -158,7 +158,7 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
 
         assert agg_time_dimension_name is not None, (
             f"Aggregation time dimension for metric {metric.name} is not set! This should either be set directly on "
-            f"the metric specification in the model, or else defaulted to the primary time dimension in the data "
+            f"the metric specification in the model, or else defaulted to the time dimension in the data "
             f"source containing the metric."
         )
         return TimeDimensionReference(element_name=agg_time_dimension_name)
