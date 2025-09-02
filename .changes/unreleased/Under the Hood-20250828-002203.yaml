@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Added validation that simple metrics have agg params XOR an input measure.
+time: 2025-08-28T00:22:03.808349-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
