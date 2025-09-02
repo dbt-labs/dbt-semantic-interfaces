@@ -9,6 +9,7 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import (
     PydanticMeasure,
+    PydanticMeasureAggregationParameters,
     PydanticNonAdditiveDimensionParameters,
 )
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
@@ -52,6 +53,7 @@ from dbt_semantic_interfaces.validations.metrics import (
     DerivedMetricRule,
     MetricsCountAggregationExprRule,
     MetricsNonAdditiveDimensionsRule,
+    MetricsPercentileAggregationRule,
     MetricTimeGranularityRule,
 )
 from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
@@ -237,7 +239,188 @@ def test_simple_metrics_expr_for_count_aggregation(  # noqa: D
 ) -> None:
     model_validator = SemanticManifestValidator[PydanticSemanticManifest]([MetricsCountAggregationExprRule()])
     validation_results = model_validator.validate_semantic_manifest(
-        # model_validator.checked_validations(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="sum_measure2",
+                    measures=[
+                        PydanticMeasure(
+                            name="this_measure_name",
+                            agg=AggregationType.SUM,
+                            agg_time_dimension="ename",
+                        )
+                    ],
+                    dimensions=[
+                        PydanticDimension(name="country", type=DimensionType.CATEGORICAL),
+                        PydanticDimension(
+                            name="time_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                        PydanticDimension(
+                            name="weekly_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.WEEK,
+                            ),
+                        ),
+                    ],
+                    entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
+                ),
+            ],
+            metrics=[metric],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+    check_error_in_issues(error_substrings=[error_substring], issues=validation_results.all_issues)
+
+
+@pytest.mark.parametrize(
+    "metric, error_substring",
+    [
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_no_percentile",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.PERCENTILE,
+                    ),
+                ),
+            ),
+            "uses a PERCENTILE aggregation, which requires agg_params.percentile to be provided.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_percentile_too_large",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.PERCENTILE,
+                        agg_params=PydanticMeasureAggregationParameters(
+                            percentile=1.1,
+                        ),
+                    ),
+                ),
+            ),
+            "Percentile aggregation parameter for metric 'metric_with_percentile_too_large' is '1.1', but must "
+            "be between 0 and 1 (non-inclusive). For example, to indicate the 65th percentile value, set 'percentile: "
+            "0.65'. For percentile values of 0, please use MIN, for percentile values of 1, please use MAX.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_percentile_too_small",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.PERCENTILE,
+                        agg_params=PydanticMeasureAggregationParameters(
+                            percentile=-0.1,
+                        ),
+                    ),
+                ),
+            ),
+            "Percentile aggregation parameter for metric 'metric_with_percentile_too_small' is '-0.1', but must "
+            "be between 0 and 1 (non-inclusive). For example, to indicate the 65th percentile value, set 'percentile: "
+            "0.65'. For percentile values of 0, please use MIN, for percentile values of 1, please use MAX.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_percentile_0_is_not_included",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.PERCENTILE,
+                        agg_params=PydanticMeasureAggregationParameters(
+                            percentile=0,
+                        ),
+                    ),
+                ),
+            ),
+            "Percentile aggregation parameter for metric 'metric_with_percentile_0_is_not_included' is '0.0', but must "
+            "be between 0 and 1 (non-inclusive). For example, to indicate the 65th percentile value, set 'percentile: "
+            "0.65'. For percentile values of 0, please use MIN, for percentile values of 1, please use MAX.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_percentile_1_is_not_included",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.PERCENTILE,
+                        agg_params=PydanticMeasureAggregationParameters(
+                            percentile=1,
+                        ),
+                    ),
+                ),
+            ),
+            "Percentile aggregation parameter for metric 'metric_with_percentile_1_is_not_included' is '1.0', but must "
+            "be between 0 and 1 (non-inclusive). For example, to indicate the 65th percentile value, set 'percentile: "
+            "0.65'. For percentile values of 0, please use MIN, for percentile values of 1, please use MAX.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_missing_percentile_parameter",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.PERCENTILE,
+                        agg_params=PydanticMeasureAggregationParameters(),
+                    ),
+                ),
+            ),
+            "Metric 'metric_with_missing_percentile_parameter' uses a PERCENTILE aggregation, which "
+            "requires agg_params.percentile to be provided.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_no_agg_params",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.PERCENTILE,
+                    ),
+                ),
+            ),
+            "Metric 'metric_with_no_agg_params' uses a PERCENTILE aggregation, which "
+            "requires agg_params.percentile to be provided.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_percentile_value_but_wrong_agg_type",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.SUM,
+                        agg_params=PydanticMeasureAggregationParameters(
+                            percentile=0.5,
+                        ),
+                    ),
+                ),
+            ),
+            "Metric 'metric_with_percentile_value_but_wrong_agg_type' with aggregation 'sum' "
+            "uses agg_params (percentile) only relevant to Percentile metrics.",
+        ),
+        # TODO SL-4116: Figure out if 'agg' actually should be optional or if it is
+        # required, and then either update the structs or add tests, as appropriate.
+    ],
+)
+def test_simple_metrics_percentile_aggregation(  # noqa: D
+    metric: PydanticMetric,
+    error_substring: str,
+) -> None:
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([MetricsPercentileAggregationRule()])
+    validation_results = model_validator.validate_semantic_manifest(
         PydanticSemanticManifest(
             semantic_models=[
                 semantic_model_with_guaranteed_meta(
