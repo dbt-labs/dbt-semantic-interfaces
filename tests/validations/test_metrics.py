@@ -50,6 +50,7 @@ from dbt_semantic_interfaces.validations.metrics import (
     ConversionMetricRule,
     CumulativeMetricRule,
     DerivedMetricRule,
+    MetricsCountAggregationExprRule,
     MetricsNonAdditiveDimensionsRule,
     MetricTimeGranularityRule,
 )
@@ -157,6 +158,86 @@ def test_simple_metrics_non_additive_dimension(  # noqa: D
 ) -> None:
     model_validator = SemanticManifestValidator[PydanticSemanticManifest]([MetricsNonAdditiveDimensionsRule()])
     validation_results = model_validator.validate_semantic_manifest(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="sum_measure2",
+                    measures=[
+                        PydanticMeasure(
+                            name="this_measure_name",
+                            agg=AggregationType.SUM,
+                            agg_time_dimension="ename",
+                        )
+                    ],
+                    dimensions=[
+                        PydanticDimension(name="country", type=DimensionType.CATEGORICAL),
+                        PydanticDimension(
+                            name="time_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                        PydanticDimension(
+                            name="weekly_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.WEEK,
+                            ),
+                        ),
+                    ],
+                    entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
+                ),
+            ],
+            metrics=[metric],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+    check_error_in_issues(error_substrings=[error_substring], issues=validation_results.all_issues)
+
+
+@pytest.mark.parametrize(
+    "metric, error_substring",
+    [
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_no_expr",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.COUNT,
+                    ),
+                ),
+            ),
+            "uses a COUNT aggregation, which requires an expr to be provided. Provide "
+            "'expr: 1' if a count of all rows is desired.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_distinct_expr",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        semantic_model="sum_measure",
+                        agg=AggregationType.COUNT,
+                        expr="distinct 1",
+                    ),
+                ),
+            ),
+            "uses a 'count' aggregation with a DISTINCT expr: 'distinct 1'. This is not supported as it "
+            "effectively converts an additive metric into a non-additive one, and this could cause certain "
+            "queries to return incorrect results. Please use the count_distinct aggregation type",
+        ),
+    ],
+)
+def test_simple_metrics_expr_for_count_aggregation(  # noqa: D
+    metric: PydanticMetric,
+    error_substring: str,
+) -> None:
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([MetricsCountAggregationExprRule()])
+    validation_results = model_validator.validate_semantic_manifest(
+        # model_validator.checked_validations(
         PydanticSemanticManifest(
             semantic_models=[
                 semantic_model_with_guaranteed_meta(

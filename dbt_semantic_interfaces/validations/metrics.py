@@ -597,6 +597,37 @@ class MetricsNonAdditiveDimensionsRule(SemanticManifestValidationRule[SemanticMa
         return issues
 
 
+class MetricsCountAggregationExprRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """Checks that COUNT metrics have an expr provided."""
+
+    @staticmethod
+    @validate_safely(whats_being_done="validating the expr for metrics with COUNT aggregation")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+
+        for metric in semantic_manifest.metrics or []:
+            if (
+                metric.type == MetricType.SIMPLE
+                and metric.type_params is not None
+                and metric.type_params.metric_aggregation_params is not None
+                and metric.type_params.metric_aggregation_params.agg == AggregationType.COUNT
+            ):
+                context = MetricContext(
+                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                    metric=MetricModelReference(metric_name=metric.name),
+                )
+                issues.extend(
+                    SharedMeasureAndMetricHelpers.validate_expr_for_count_aggregation(
+                        context=context,
+                        object_name=metric.name,
+                        object_type="Metric",
+                        agg_type=metric.type_params.metric_aggregation_params.agg,
+                        expr=metric.type_params.metric_aggregation_params.expr,
+                    )
+                )
+        return issues
+
+
 class MetricTimeGranularityRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
     """Checks that time_granularity set for metric is queryable for that metric."""
 
