@@ -1,15 +1,10 @@
 from typing import Dict, Generic, List, Sequence
 
-from dbt_semantic_interfaces.protocols import (
-    Dimension,
-    SemanticManifestT,
-    SemanticModel,
-)
+from dbt_semantic_interfaces.protocols import SemanticManifestT, SemanticModel
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     SemanticModelElementReference,
 )
-from dbt_semantic_interfaces.type_enums import DimensionType, TimeGranularity
 from dbt_semantic_interfaces.validations.validator_helpers import (
     DimensionInvariants,
     FileContext,
@@ -33,66 +28,12 @@ class DimensionConsistencyRule(SemanticManifestValidationRule[SemanticManifestT]
     @validate_safely(whats_being_done="running model validation ensuring dimension consistency")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         dimension_to_invariant: Dict[DimensionReference, DimensionInvariants] = {}
-        time_dims_to_granularity: Dict[DimensionReference, TimeGranularity] = {}
         issues: List[ValidationIssue] = []
 
         for semantic_model in semantic_manifest.semantic_models:
             issues += DimensionConsistencyRule._validate_semantic_model(
                 semantic_model=semantic_model, dimension_to_invariant=dimension_to_invariant, update_invariant_dict=True
             )
-
-            for dimension in semantic_model.dimensions:
-                issues += DimensionConsistencyRule._validate_dimension(
-                    dimension=dimension,
-                    time_dims_to_granularity=time_dims_to_granularity,
-                    semantic_model=semantic_model,
-                )
-        return issues
-
-    @staticmethod
-    @validate_safely(
-        whats_being_done="checking that time dimensions of the same name that are not primary "
-        "have the same time granularity specifications"
-    )
-    def _validate_dimension(
-        dimension: Dimension,
-        time_dims_to_granularity: Dict[DimensionReference, TimeGranularity],
-        semantic_model: SemanticModel,
-    ) -> Sequence[ValidationIssue]:
-        """Check that time dimensions of the same name and aren't primary have the same time granularity.
-
-        Args:
-            dimension: the dimension to check
-            time_dims_to_granularity: a dict from the dimension to the time granularity it should have
-            semantic_model: the associated semantic model. Used for generated issue messages
-        Throws: MdoValidationError if there is an inconsistent dimension in the semantic model.
-        """
-        issues: List[ValidationIssue] = []
-        context = SemanticModelElementContext(
-            file_context=FileContext.from_metadata(metadata=semantic_model.metadata),
-            semantic_model_element=SemanticModelElementReference(
-                semantic_model_name=semantic_model.name, element_name=dimension.name
-            ),
-            element_type=SemanticModelElementType.DIMENSION,
-        )
-
-        if dimension.type == DimensionType.TIME:
-            if dimension.reference not in time_dims_to_granularity and dimension.type_params:
-                time_dims_to_granularity[dimension.reference] = dimension.type_params.time_granularity
-
-                if (
-                    dimension.type_params is not None
-                    and dimension.type_params.time_granularity != time_dims_to_granularity[dimension.reference]
-                ):
-                    expected_granularity = time_dims_to_granularity[dimension.reference]
-                    issues.append(
-                        ValidationError(
-                            context=context,
-                            message=f"Time granularity must be the same for time dimensions with the same name. "
-                            f"Problematic dimension: {dimension.name} in semantic model with name: "
-                            f"`{semantic_model.name}`. Expected granularity is {expected_granularity.name}.",
-                        )
-                    )
 
         return issues
 
