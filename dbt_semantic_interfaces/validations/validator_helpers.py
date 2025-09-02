@@ -189,7 +189,7 @@ class ValidationIssue(ABC, BaseModel):
 
     message: str
     context: Optional[ValidationContext] = None
-    extra_detail: Optional[str]
+    extra_detail: Optional[str] = None
 
     @property
     @abstractmethod
@@ -396,7 +396,7 @@ def validate_safely(
     """Decorator to safely run validation checks."""
 
     def decorator_check_element_safely(
-        func: Callable[P, Sequence[ValidationIssue]]
+        func: Callable[P, Sequence[ValidationIssue]],
     ) -> Callable[P, Sequence[ValidationIssue]]:
         @functools.wraps(func)
         def wrapper(*args: P.args, **kwargs: P.kwargs) -> Sequence[ValidationIssue]:  # type: ignore
