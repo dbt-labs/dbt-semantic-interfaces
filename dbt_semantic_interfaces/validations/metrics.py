@@ -428,23 +428,19 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         assert (
             conversion_type_params is not None
         ), "For a conversion metric, type_params.conversion_type_params must exist."
-        # TODO SL-4116: these assertions on base_measure and conversion_measure are only necessary until we add
-        # validation for using a measure XOR metric in each field.
-        assert (
-            conversion_type_params.base_measure is not None
-        ), "For a conversion metric, type_params.base_measure must exist."
-        _validate_measure(
-            input_measure=conversion_type_params.base_measure,
-            semantic_model=base_semantic_model,
-        )
-        assert (
-            conversion_type_params.conversion_measure is not None
-        ), "For a conversion metric, type_params.conversion_measure must exist."
-        _validate_measure(
-            input_measure=conversion_type_params.conversion_measure,
-            semantic_model=conversion_semantic_model,
-            is_base_measure=False,
-        )
+        if conversion_type_params.base_measure is not None:
+            # TODO SL-4116, SL-4188: mimic this validation for base_metric
+            _validate_measure(
+                input_measure=conversion_type_params.base_measure,
+                semantic_model=base_semantic_model,
+            )
+        if conversion_type_params.conversion_measure is not None:
+            # TODO SL-4116, SL-4188: mimic this validation for conversion_metric
+            _validate_measure(
+                input_measure=conversion_type_params.conversion_measure,
+                semantic_model=conversion_semantic_model,
+                is_base_measure=False,
+            )
         return issues
 
     @staticmethod
