@@ -3,11 +3,16 @@ from __future__ import annotations
 from abc import abstractmethod
 from typing import Optional, Protocol, Sequence
 
+from dbt_semantic_interfaces.protocols.measure import (
+    MeasureAggregationParameters,
+    NonAdditiveDimensionParameters,
+)
 from dbt_semantic_interfaces.protocols.meta import SemanticLayerElementConfig
 from dbt_semantic_interfaces.protocols.metadata import Metadata
 from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
+    AggregationType,
     ConversionCalculationType,
     MetricType,
     PeriodAggregation,
@@ -155,14 +160,30 @@ class ConversionTypeParams(Protocol):
 
     @property
     @abstractmethod
-    def base_measure(self) -> MetricInputMeasure:
+    def base_measure(self) -> Optional[MetricInputMeasure]:
         """Measure used to calculate the base event."""
+        # TODO SL-4116: Validate that this is used IFF base_metric is not
         pass
 
     @property
     @abstractmethod
-    def conversion_measure(self) -> MetricInputMeasure:
+    def conversion_measure(self) -> Optional[MetricInputMeasure]:
         """Measure used to calculate the conversion event."""
+        # TODO SL-4116: Validate that this is used IFF conversion_metric is not
+        pass
+
+    @property
+    @abstractmethod
+    def base_metric(self) -> Optional[MetricInput]:
+        """Metric used to calculate the base event."""
+        # TODO SL-4116: Validate that this is used IFF base_measure is not
+        pass
+
+    @property
+    @abstractmethod
+    def conversion_metric(self) -> Optional[MetricInput]:
+        """Metric used to calculate the conversion event."""
+        # TODO SL-4116: Validate that this is used IFF conversion_measure is not
         pass
 
     @property
@@ -206,6 +227,58 @@ class CumulativeTypeParams(Protocol):
     @property
     @abstractmethod
     def period_agg(self) -> Optional[PeriodAggregation]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def metric(self) -> Optional[MetricInput]:  # noqa: D
+        # TODO SL-4116: Validate that this is used IFF measure is not set
+        # TODO SL-4116: Validate that measure is NOT used if this is used.
+        pass
+
+
+class MetricAggregationParams(Protocol):
+    """Type params to provide context for metrics that are used as source nodes.
+
+    At this point, this is specifically for simple metrics that do not have a
+    measure included.
+    """
+
+    @property
+    @abstractmethod
+    def agg(self) -> Optional[AggregationType]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def agg_params(self) -> Optional[MeasureAggregationParameters]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def agg_time_dimension(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def non_additive_dimension(self) -> Optional[NonAdditiveDimensionParameters]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def expr(self) -> Optional[str]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def join_to_timespine(self) -> bool:
+        """If the measure should be joined to the timespine."""
+        pass
+
+    @property
+    @abstractmethod
+    def fill_nulls_with(self) -> Optional[int]:
+        """What null values should be filled with if set."""
         pass
 
 
@@ -261,6 +334,11 @@ class MetricTypeParams(Protocol):
     @property
     @abstractmethod
     def cumulative_type_params(self) -> Optional[CumulativeTypeParams]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def metric_aggregation_params(self) -> Optional[MetricAggregationParams]:  # noqa: D
         pass
 
 
@@ -319,6 +397,8 @@ class Metric(Protocol):
     @property
     @abstractmethod
     def config(self) -> Optional[SemanticLayerElementConfig]:  # noqa: D
+        # TODO SL-4116: Validate that we accept measure-only config fields here
+        # IFF we are using a metric as a source node (i.e. without a measure)
         pass
 
     @property
