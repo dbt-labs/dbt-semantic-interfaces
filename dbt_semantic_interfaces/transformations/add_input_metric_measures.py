@@ -44,9 +44,13 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
                     )
             elif matched_metric.type is MetricType.CONVERSION:
                 conversion_type_params = matched_metric.type_params.conversion_type_params
+                # TODO SL-4116: this logic will need to change when we auto-transform
+                # away measures into simple metrics.
                 assert conversion_type_params, "Conversion metric should have conversion_type_params."
-                measures.add(conversion_type_params.base_measure)
-                measures.add(conversion_type_params.conversion_measure)
+                if conversion_type_params.base_measure is not None:
+                    measures.add(conversion_type_params.base_measure)
+                if conversion_type_params.conversion_measure is not None:
+                    measures.add(conversion_type_params.conversion_measure)
             else:
                 assert_values_exhausted(matched_metric.type)
         else:
