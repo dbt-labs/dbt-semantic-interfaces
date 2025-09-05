@@ -13,6 +13,7 @@ from dbt_semantic_interfaces.implementations.elements.measure import (
     PydanticNonAdditiveDimensionParameters,
 )
 from dbt_semantic_interfaces.implementations.metric import (
+    PydanticConversionTypeParams,
     PydanticCumulativeTypeParams,
     PydanticMetric,
     PydanticMetricAggregationParams,
@@ -42,6 +43,7 @@ from dbt_semantic_interfaces.type_enums import (
     TimeGranularity,
 )
 from dbt_semantic_interfaces.validations.metrics import (
+    ConversionMetricRule,
     CumulativeMetricRule,
     DerivedMetricRule,
     MetricAggregationParamsInForSimpleMetricsRule,
@@ -1011,6 +1013,164 @@ def test_derived_metric() -> None:  # noqa: D
         "Invalid time granularity found in `offset_to_grain`: 'martian_week'",
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
+
+
+@pytest.mark.parametrize(
+    "metric, error_substring_if_error",
+    [
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_both_base_measure_and_base_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_measure=PydanticMetricInputMeasure(name="base_measure"),
+                        base_metric=PydanticMetricInput(name="base_metric"),
+                        conversion_measure=PydanticMetricInputMeasure(
+                            name="conversion_measure",
+                        ),
+                        entity="primary_entity",
+                    ),
+                ),
+            ),
+            "Conversion metric 'bad_metric_has_both_base_measure_and_base_metric' cannot have both a base measure "
+            "and a base metric as inputs. Please remove one of them.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_neither_base_measure_nor_base_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        conversion_measure=PydanticMetricInputMeasure(
+                            name="conversion_measure",
+                        ),
+                        entity="primary_entity",
+                    ),
+                ),
+            ),
+            "Conversion metric 'bad_metric_has_neither_base_measure_nor_base_metric' must have either a base measure "
+            "or a base metric as inputs. Please add one of them.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_both_conversion_measure_and_conversion_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_metric=PydanticMetricInput(name="base_metric"),
+                        conversion_measure=PydanticMetricInputMeasure(name="measure_1"),
+                        conversion_metric=PydanticMetricInput(name="conversion_metric"),
+                        entity="primary_entity",
+                    ),
+                ),
+            ),
+            "Conversion metric 'bad_metric_has_both_conversion_measure_and_conversion_metric' cannot have both a "
+            "conversion measure and a conversion metric as inputs. Please remove one of them.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_neither_conversion_measure_nor_conversion_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        entity="primary_entity",
+                        base_metric=PydanticMetricInput(name="base_metric"),
+                    ),
+                ),
+            ),
+            "Conversion metric 'bad_metric_has_neither_conversion_measure_nor_conversion_metric' must have either a "
+            "conversion measure or a conversion metric as inputs. Please add one of them.",
+        ),
+    ],
+)
+def test_conversion_metrics_have_measure_xor_metric(
+    metric: PydanticMetric,
+    error_substring_if_error: Optional[str],
+) -> None:
+    """Validate that things like fill_nulls_with and join_to_timespine are not allowed on non-simple metrics."""
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([ConversionMetricRule()])
+    entity_name = "primary_entity"
+    validation_results = model_validator.validate_semantic_manifest(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="base_model",
+                    measures=[
+                        PydanticMeasure(
+                            name="base_measure",
+                            agg=AggregationType.COUNT,
+                            agg_time_dimension="ds",
+                            expr="1",
+                        ),
+                    ],
+                    dimensions=[
+                        PydanticDimension(
+                            name="ds",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                    ],
+                    entities=[PydanticEntity(name=entity_name, type=EntityType.PRIMARY)],
+                ),
+                semantic_model_with_guaranteed_meta(
+                    name="conversion_model",
+                    measures=[
+                        PydanticMeasure(
+                            name="conversion_measure",
+                            agg=AggregationType.COUNT,
+                            agg_time_dimension="ds",
+                            expr="1",
+                        ),
+                    ],
+                    dimensions=[
+                        PydanticDimension(
+                            name="ds",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                    ],
+                    entities=[PydanticEntity(name=entity_name, type=EntityType.PRIMARY)],
+                ),
+            ],
+            metrics=[
+                metric_with_guaranteed_meta(
+                    name="base_metric",
+                    type=MetricType.SIMPLE,
+                    type_params=PydanticMetricTypeParams(
+                        metric_aggregation_params=PydanticMetricAggregationParams(
+                            semantic_model="base_model",
+                            agg=AggregationType.COUNT,
+                            agg_time_dimension="ds",
+                            expr="1",
+                        ),
+                    ),
+                ),
+                metric_with_guaranteed_meta(
+                    name="conversion_metric",
+                    type=MetricType.SIMPLE,
+                    type_params=PydanticMetricTypeParams(
+                        metric_aggregation_params=PydanticMetricAggregationParams(
+                            semantic_model="conversion_model",
+                            agg=AggregationType.COUNT,
+                            agg_time_dimension="ds",
+                            expr="1",
+                        ),
+                    ),
+                ),
+                metric,
+            ],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+    if error_substring_if_error:
+        check_error_in_issues(error_substrings=[error_substring_if_error], issues=validation_results.all_issues)
+    else:
+        assert len(validation_results.all_issues) == 0, "expected this metric to pass validation, but it did not"
 
 
 def test_cumulative_metrics() -> None:  # noqa: D
