@@ -1,4 +1,4 @@
-from typing import List, Optional, Tuple
+from typing import Optional
 
 import pytest
 
@@ -12,13 +12,7 @@ from dbt_semantic_interfaces.implementations.elements.measure import (
     PydanticMeasureAggregationParameters,
     PydanticNonAdditiveDimensionParameters,
 )
-from dbt_semantic_interfaces.implementations.filters.where_filter import (
-    PydanticWhereFilter,
-    PydanticWhereFilterIntersection,
-)
 from dbt_semantic_interfaces.implementations.metric import (
-    PydanticConstantPropertyInput,
-    PydanticConversionTypeParams,
     PydanticCumulativeTypeParams,
     PydanticMetric,
     PydanticMetricAggregationParams,
@@ -48,7 +42,6 @@ from dbt_semantic_interfaces.type_enums import (
     TimeGranularity,
 )
 from dbt_semantic_interfaces.validations.metrics import (
-    ConversionMetricRule,
     CumulativeMetricRule,
     DerivedMetricRule,
     MetricAggregationParamsInForSimpleMetricsRule,
@@ -62,21 +55,9 @@ from dbt_semantic_interfaces.validations.semantic_manifest_validator import (
 )
 from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationException,
-    ValidationIssue,
 )
 from tests.example_project_configuration import EXAMPLE_PROJECT_CONFIGURATION
-
-
-def check_error_in_issues(error_substrings: List[str], issues: Tuple[ValidationIssue, ...]) -> None:
-    """Check error substrings in build issues."""
-    missing_error_strings = set()
-    for expected_str in error_substrings:
-        if not any(actual_str.as_readable_str().find(expected_str) != -1 for actual_str in issues):
-            missing_error_strings.add(expected_str)
-    assert len(missing_error_strings) == 0, (
-        "Failed to match one or more expected issues: "
-        + f"{missing_error_strings} in {set([x.as_readable_str() for x in issues])}"
-    )
+from tests.validations.validation_test_utils import check_error_in_issues
 
 
 @pytest.mark.parametrize(
@@ -1028,195 +1009,6 @@ def test_derived_metric() -> None:  # noqa: D
         "Invalid time granularity 'weekies' in window: '3 weekies'",
         "Custom granularities are not supported",
         "Invalid time granularity found in `offset_to_grain`: 'martian_week'",
-    ]
-    check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
-
-
-def test_conversion_metrics() -> None:  # noqa: D
-    base_measure_name = "base_measure"
-    conversion_measure_name = "conversion_measure"
-    entity = "entity"
-    invalid_entity = "bad"
-    invalid_measure = "invalid_measure"
-    window = PydanticMetricTimeWindow.parse("7 days")
-    validator = SemanticManifestValidator[PydanticSemanticManifest]([ConversionMetricRule()])
-    result = validator.validate_semantic_manifest(
-        PydanticSemanticManifest(
-            semantic_models=[
-                semantic_model_with_guaranteed_meta(
-                    name="base",
-                    measures=[
-                        PydanticMeasure(
-                            name=base_measure_name, agg=AggregationType.COUNT, agg_time_dimension="ds", expr="1"
-                        ),
-                        PydanticMeasure(name=invalid_measure, agg=AggregationType.MAX, agg_time_dimension="ds"),
-                    ],
-                    dimensions=[
-                        PydanticDimension(
-                            name="ds",
-                            type=DimensionType.TIME,
-                            type_params=PydanticDimensionTypeParams(
-                                time_granularity=TimeGranularity.DAY,
-                            ),
-                        ),
-                    ],
-                    entities=[
-                        PydanticEntity(name=entity, type=EntityType.PRIMARY),
-                    ],
-                ),
-                semantic_model_with_guaranteed_meta(
-                    name="conversion",
-                    measures=[
-                        PydanticMeasure(
-                            name=conversion_measure_name, agg=AggregationType.COUNT, agg_time_dimension="ds", expr="1"
-                        )
-                    ],
-                    dimensions=[
-                        PydanticDimension(
-                            name="ds",
-                            type=DimensionType.TIME,
-                            type_params=PydanticDimensionTypeParams(
-                                time_granularity=TimeGranularity.DAY,
-                            ),
-                        ),
-                    ],
-                    entities=[
-                        PydanticEntity(name=entity, type=EntityType.PRIMARY),
-                    ],
-                ),
-            ],
-            metrics=[
-                metric_with_guaranteed_meta(
-                    name="proper_metric",
-                    type=MetricType.CONVERSION,
-                    type_params=PydanticMetricTypeParams(
-                        conversion_type_params=PydanticConversionTypeParams(
-                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
-                            conversion_measure=PydanticMetricInputMeasure(name=conversion_measure_name),
-                            window=window,
-                            entity=entity,
-                        )
-                    ),
-                ),
-                metric_with_guaranteed_meta(
-                    name="bad_measure_metric",
-                    type=MetricType.CONVERSION,
-                    type_params=PydanticMetricTypeParams(
-                        conversion_type_params=PydanticConversionTypeParams(
-                            base_measure=PydanticMetricInputMeasure(name=invalid_measure),
-                            conversion_measure=PydanticMetricInputMeasure(name=conversion_measure_name),
-                            window=window,
-                            entity=entity,
-                        )
-                    ),
-                ),
-                metric_with_guaranteed_meta(
-                    name="entity_doesnt_exist",
-                    type=MetricType.CONVERSION,
-                    type_params=PydanticMetricTypeParams(
-                        conversion_type_params=PydanticConversionTypeParams(
-                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
-                            conversion_measure=PydanticMetricInputMeasure(name=conversion_measure_name),
-                            window=window,
-                            entity=invalid_entity,
-                        )
-                    ),
-                ),
-                metric_with_guaranteed_meta(
-                    name="constant_property_doesnt_exist",
-                    type=MetricType.CONVERSION,
-                    type_params=PydanticMetricTypeParams(
-                        conversion_type_params=PydanticConversionTypeParams(
-                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
-                            conversion_measure=PydanticMetricInputMeasure(name=conversion_measure_name),
-                            window=window,
-                            entity=entity,
-                            constant_properties=[
-                                PydanticConstantPropertyInput(base_property="bad_dim", conversion_property="bad_dim2")
-                            ],
-                        )
-                    ),
-                ),
-                metric_with_guaranteed_meta(
-                    name="filter_on_conversion_measure",
-                    type=MetricType.CONVERSION,
-                    type_params=PydanticMetricTypeParams(
-                        conversion_type_params=PydanticConversionTypeParams(
-                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
-                            conversion_measure=PydanticMetricInputMeasure(
-                                name=conversion_measure_name,
-                                filter=PydanticWhereFilterIntersection(
-                                    where_filters=[
-                                        PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}""")
-                                    ]
-                                ),
-                            ),
-                            window=window,
-                            entity=entity,
-                        )
-                    ),
-                ),
-                metric_with_guaranteed_meta(
-                    name="bad_window",
-                    type=MetricType.CONVERSION,
-                    type_params=PydanticMetricTypeParams(
-                        conversion_type_params=PydanticConversionTypeParams(
-                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
-                            conversion_measure=PydanticMetricInputMeasure(
-                                name=conversion_measure_name,
-                            ),
-                            window=PydanticMetricTimeWindow.parse("7 moons"),
-                            entity=entity,
-                        )
-                    ),
-                ),
-                metric_with_guaranteed_meta(
-                    name="custom_grain_window",
-                    type=MetricType.CONVERSION,
-                    type_params=PydanticMetricTypeParams(
-                        conversion_type_params=PydanticConversionTypeParams(
-                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
-                            conversion_measure=PydanticMetricInputMeasure(
-                                name=conversion_measure_name,
-                            ),
-                            window=PydanticMetricTimeWindow.parse("7 martian_week"),
-                            entity=entity,
-                        )
-                    ),
-                ),
-                metric_with_guaranteed_meta(
-                    name="custom_grain_window_plural",
-                    type=MetricType.CONVERSION,
-                    type_params=PydanticMetricTypeParams(
-                        conversion_type_params=PydanticConversionTypeParams(
-                            base_measure=PydanticMetricInputMeasure(name=base_measure_name),
-                            conversion_measure=PydanticMetricInputMeasure(
-                                name=conversion_measure_name,
-                            ),
-                            window=PydanticMetricTimeWindow.parse("7 martian_weeks"),
-                            entity=entity,
-                        )
-                    ),
-                ),
-            ],
-            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
-        )
-    )
-
-    build_issues = result.all_issues
-    assert len(result.errors) == 8
-    assert len(result.warnings) == 1
-
-    expected_substrings = [
-        f"{invalid_entity} not found in base semantic model",
-        f"{invalid_entity} not found in conversion semantic model",
-        "the measure must be COUNT/SUM(1)/COUNT_DISTINCT",
-        "The provided constant property: bad_dim, cannot be found",
-        "The provided constant property: bad_dim2, cannot be found",
-        "filtering on a conversion input measure is not fully supported yet",
-        "Invalid time granularity 'moons' in window",
-        "Invalid time granularity 'martian_week' in window: '7 martian_weeks'",
-        "Invalid time granularity 'martian_week' in window: '7 martian_week'",
     ]
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
