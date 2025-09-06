@@ -361,7 +361,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                         file_context=FileContext.from_metadata(metadata=metric.metadata),
                         metric=MetricModelReference(metric_name=metric.name),
                     ),
-                    message="Conversion metric '{metric.name}' cannot have both a base measure "
+                    message=f"Conversion metric '{metric.name}' cannot have both a base measure "
                     "and a base metric as inputs. Please remove one of them.",
                 )
             )
@@ -372,7 +372,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                         file_context=FileContext.from_metadata(metadata=metric.metadata),
                         metric=MetricModelReference(metric_name=metric.name),
                     ),
-                    message="Conversion metric '{metric.name}' must have either a base measure or a base metric "
+                    message=f"Conversion metric '{metric.name}' must have either a base measure or a base metric "
                     "as inputs. Please add one of them.",
                 )
             )
@@ -386,7 +386,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                         file_context=FileContext.from_metadata(metadata=metric.metadata),
                         metric=MetricModelReference(metric_name=metric.name),
                     ),
-                    message="Conversion metric '{metric.name}' cannot have both a conversion measure "
+                    message=f"Conversion metric '{metric.name}' cannot have both a conversion measure "
                     "and a conversion metric as inputs. Please remove one of them.",
                 )
             )
@@ -475,7 +475,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                         metric=MetricModelReference(metric_name=main_metric.name),
                     ),
                     message=f"For conversion metrics, the input {input_object_type.lower()} must be "
-                    f"COUNT/SUM(1)/COUNT_DISTINCT. {input_object_type}: {input_name} is agg type: {agg_type}",
+                    f"COUNT/SUM(1)/COUNT_DISTINCT. {input_object_type} '{input_name}' is agg type: {agg_type}",
                 )
             )
         return issues
@@ -496,9 +496,9 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                         file_context=FileContext.from_metadata(metadata=main_metric.metadata),
                         metric=MetricModelReference(metric_name=main_metric.name),
                     ),
-                    message=f"For conversion metrics, the filtering on the conversion input "
-                    f"{input_object_type.lower()} must not have a filter. "
-                    f"{input_object_type} '{input_name}' has a filter: {filter}",
+                    message=f"{input_object_type} input '{input_name}' has a filter. "
+                    "For conversion metrics, filtering on the conversion "
+                    "input is not fully supported yet. ",
                 )
             )
         return issues
@@ -698,6 +698,23 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     ) -> Tuple[Optional[SemanticModel], List[ValidationIssue]]:
         issues: List[ValidationIssue] = []
 
+        if input_metric is not None:
+            real_input_metric = MetricValidationRuleHelpers.get_metric_from_manifest(
+                input_metric.name,
+                semantic_manifest,
+            )
+            if real_input_metric is not None and real_input_metric.type != MetricType.SIMPLE:
+                issues.append(
+                    ValidationError(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=real_input_metric.metadata),
+                            metric=MetricModelReference(metric_name=real_input_metric.name),
+                        ),
+                        message=f"Metric '{real_input_metric.name}' is not a Simple metric, so it cannot "
+                        f"be used as an input for Conversion metric '{metric_name}'.",
+                    )
+                )
+
         model: Optional[SemanticModel] = None
         if input_measure is not None and input_metric is not None:
             issues.append(
@@ -718,7 +735,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                         metric=MetricModelReference(metric_name=metric_name),
                     ),
                     message=f"Conversion metric '{metric_name}' must have either a {input_type} measure "
-                    f"or a {input_type} metric as inputs. Please add one of them.",
+                    f"or a {input_type} metric as an input. Please add one of them.",
                 )
             )
         elif input_measure is not None:

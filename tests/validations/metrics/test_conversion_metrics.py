@@ -16,6 +16,8 @@ from dbt_semantic_interfaces.implementations.metric import (
     PydanticConstantPropertyInput,
     PydanticConversionTypeParams,
     PydanticMetric,
+    PydanticMetricAggregationParams,
+    PydanticMetricInput,
     PydanticMetricInputMeasure,
     PydanticMetricTimeWindow,
     PydanticMetricTypeParams,
@@ -47,6 +49,54 @@ ENTITY_NAME = "entity"
 INVALID_ENTITY_NAME = "bad_entity"
 INVALID_MEASURE_NAME = "invalid_measure"
 DEFAULT_WINDOW = PydanticMetricTimeWindow.parse("7 days")
+
+INPUT_CONVERSION_METRIC_NAME = "conversion_input_metric"
+INPUT_CONVERSION_METRIC = metric_with_guaranteed_meta(
+    name=INPUT_CONVERSION_METRIC_NAME,
+    type=MetricType.SIMPLE,
+    type_params=PydanticMetricTypeParams(
+        metric_aggregation_params=PydanticMetricAggregationParams(
+            agg=AggregationType.COUNT,
+            semantic_model="conversion",
+            expr="1",
+        ),
+    ),
+)
+
+INPUT_BASE_METRIC_NAME = "base_input_metric"
+INPUT_BASE_METRIC = metric_with_guaranteed_meta(
+    name=INPUT_BASE_METRIC_NAME,
+    type=MetricType.SIMPLE,
+    type_params=PydanticMetricTypeParams(
+        metric_aggregation_params=PydanticMetricAggregationParams(
+            agg=AggregationType.COUNT,
+            semantic_model="base",
+            expr="1",
+        ),
+    ),
+)
+
+BASE_SUM_METRIC_NAME = "sum_metric"
+BASE_SUM_METRIC = metric_with_guaranteed_meta(
+    name=BASE_SUM_METRIC_NAME,
+    type=MetricType.SIMPLE,
+    type_params=PydanticMetricTypeParams(
+        metric_aggregation_params=PydanticMetricAggregationParams(
+            agg=AggregationType.SUM,
+            semantic_model="base",
+        ),
+    ),
+)
+
+NON_SIMPLE_METRIC_NAME = "non_simple_metric"
+NON_SIMPLE_METRIC = metric_with_guaranteed_meta(
+    name=NON_SIMPLE_METRIC_NAME,
+    type=MetricType.CUMULATIVE,
+    type_params=PydanticMetricTypeParams(
+        measure=PydanticMetricInputMeasure(name=BASE_MEASURE_NAME),
+        grain_to_date=TimeGranularity.MONTH,
+    ),
+)
 
 VALIDATOR = SemanticManifestValidator[PydanticSemanticManifest]([ConversionMetricRule()])
 SEMANTIC_MODELS = [
@@ -93,9 +143,10 @@ SEMANTIC_MODELS = [
 @pytest.mark.parametrize(
     "metric, error_substrings_if_errors, warning_substrings_if_warnings",
     [
+        # ======================= Basic Happy Example Tests =======================
         (
             metric_with_guaranteed_meta(
-                name="proper_metric",
+                name="proper_metric_with_measure_base_and_measure_conversion",
                 type=MetricType.CONVERSION,
                 type_params=PydanticMetricTypeParams(
                     conversion_type_params=PydanticConversionTypeParams(
@@ -111,23 +162,53 @@ SEMANTIC_MODELS = [
         ),
         (
             metric_with_guaranteed_meta(
-                name="bad_measure_metric",
+                name="proper_metric_with_metric_base_and_measure_conversion",
                 type=MetricType.CONVERSION,
                 type_params=PydanticMetricTypeParams(
                     conversion_type_params=PydanticConversionTypeParams(
-                        base_measure=PydanticMetricInputMeasure(name=INVALID_MEASURE_NAME),
+                        base_metric=PydanticMetricInput(name=INPUT_BASE_METRIC_NAME),
                         conversion_measure=PydanticMetricInputMeasure(name=CONVERSION_MEASURE_NAME),
                         window=DEFAULT_WINDOW,
                         entity=ENTITY_NAME,
                     )
                 ),
             ),
-            [
-                "For conversion metrics, the measure must be COUNT/SUM(1)/COUNT_DISTINCT. "
-                f"Measure: {INVALID_MEASURE_NAME} is agg type: AggregationType.MAX",
-            ],
+            None,  # No error; this should pass
             None,  # No warning; this should pass
         ),
+        (
+            metric_with_guaranteed_meta(
+                name="proper_metric_with_measure_base_and_metric_conversion",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_measure=PydanticMetricInputMeasure(name=BASE_MEASURE_NAME),
+                        conversion_metric=PydanticMetricInput(name=INPUT_CONVERSION_METRIC_NAME),
+                        window=DEFAULT_WINDOW,
+                        entity=ENTITY_NAME,
+                    )
+                ),
+            ),
+            None,  # No error; this should pass
+            None,  # No warning; this should pass
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="proper_metric_with_metric_base_and_metric_conversion",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_metric=PydanticMetricInput(name=INPUT_BASE_METRIC_NAME),
+                        conversion_metric=PydanticMetricInput(name=INPUT_CONVERSION_METRIC_NAME),
+                        window=DEFAULT_WINDOW,
+                        entity=ENTITY_NAME,
+                    )
+                ),
+            ),
+            None,  # No error; this should pass
+            None,  # No warning; this should pass
+        ),
+        # =============== Entity, Constant, Window, Grain - General Tests ===============
         (
             metric_with_guaranteed_meta(
                 name="entity_doesnt_exist",
@@ -167,32 +248,6 @@ SEMANTIC_MODELS = [
                 "The provided constant property: bad_dim2, cannot be found in semantic model conversion",
             ],
             None,  # No warning; this should pass
-        ),
-        (
-            metric_with_guaranteed_meta(
-                name="filter_on_conversion_measure",
-                type=MetricType.CONVERSION,
-                type_params=PydanticMetricTypeParams(
-                    conversion_type_params=PydanticConversionTypeParams(
-                        base_measure=PydanticMetricInputMeasure(name=BASE_MEASURE_NAME),
-                        conversion_measure=PydanticMetricInputMeasure(
-                            name=CONVERSION_MEASURE_NAME,
-                            filter=PydanticWhereFilterIntersection(
-                                where_filters=[
-                                    PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}""")
-                                ]
-                            ),
-                        ),
-                        window=DEFAULT_WINDOW,
-                        entity=ENTITY_NAME,
-                    )
-                ),
-            ),
-            None,  # This only fires a warning, not an error.
-            [
-                f"Measure input {CONVERSION_MEASURE_NAME} has a filter. For conversion metrics, "
-                "filtering on a conversion input measure is not fully supported yet.",
-            ],
         ),
         (
             metric_with_guaranteed_meta(
@@ -256,6 +311,195 @@ SEMANTIC_MODELS = [
             ],
             None,
         ),
+        # =============== Input Measures / Metrics Property Validations ====================
+        (
+            metric_with_guaranteed_meta(
+                name="bad_measure_agg_type_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_measure=PydanticMetricInputMeasure(name=INVALID_MEASURE_NAME),
+                        conversion_measure=PydanticMetricInputMeasure(name=CONVERSION_MEASURE_NAME),
+                        window=DEFAULT_WINDOW,
+                        entity=ENTITY_NAME,
+                    )
+                ),
+            ),
+            [
+                "For conversion metrics, the input measure must be COUNT/SUM(1)/COUNT_DISTINCT. "
+                f"Measure '{INVALID_MEASURE_NAME}' is agg type: AggregationType.MAX",
+            ],
+            None,  # No warning; this should pass
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_agg_type_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_metric=PydanticMetricInput(name=BASE_SUM_METRIC_NAME),
+                        conversion_measure=PydanticMetricInputMeasure(name=CONVERSION_MEASURE_NAME),
+                        window=DEFAULT_WINDOW,
+                        entity=ENTITY_NAME,
+                    )
+                ),
+            ),
+            [
+                "For conversion metrics, the input metric must be COUNT/SUM(1)/COUNT_DISTINCT. "
+                f"Metric '{BASE_SUM_METRIC_NAME}' is agg type: AggregationType.SUM",
+            ],
+            None,  # No warning; this should pass
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="filter_on_conversion_metric_is_not_supported_warning",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_measure=PydanticMetricInputMeasure(name=BASE_MEASURE_NAME),
+                        conversion_metric=PydanticMetricInput(
+                            name=INPUT_CONVERSION_METRIC_NAME,
+                            filter=PydanticWhereFilterIntersection(
+                                where_filters=[
+                                    PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}""")
+                                ]
+                            ),
+                        ),
+                        window=DEFAULT_WINDOW,
+                        entity=ENTITY_NAME,
+                    )
+                ),
+            ),
+            None,  # This only fires a warning, not an error.
+            [
+                f"Metric input '{INPUT_CONVERSION_METRIC_NAME}' has a filter. For conversion metrics, "
+                "filtering on the conversion input is not fully supported yet.",
+            ],
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="filter_on_conversion_measure_is_not_supported_warning",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_measure=PydanticMetricInputMeasure(name=BASE_MEASURE_NAME),
+                        conversion_measure=PydanticMetricInputMeasure(
+                            name=CONVERSION_MEASURE_NAME,
+                            filter=PydanticWhereFilterIntersection(
+                                where_filters=[
+                                    PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}""")
+                                ]
+                            ),
+                        ),
+                        window=DEFAULT_WINDOW,
+                        entity=ENTITY_NAME,
+                    )
+                ),
+            ),
+            None,  # This only fires a warning, not an error.
+            [
+                f"Measure input '{CONVERSION_MEASURE_NAME}' has a filter. For conversion metrics, "
+                "filtering on the conversion input is not fully supported yet.",
+            ],
+        ),
+        # =============== Correct Inputs Provided Validations ====================
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_both_base_measure_and_base_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_measure=PydanticMetricInputMeasure(name="base_measure"),
+                        base_metric=PydanticMetricInput(name="base_metric"),
+                        conversion_measure=PydanticMetricInputMeasure(
+                            name="conversion_measure",
+                        ),
+                        entity="primary_entity",
+                    ),
+                ),
+            ),
+            [
+                "Conversion metric 'bad_metric_has_both_base_measure_and_base_metric' cannot have both a base measure "
+                "and a base metric as inputs. Please remove one of them.",
+            ],
+            None,  # No warnings
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_neither_base_measure_nor_base_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        conversion_measure=PydanticMetricInputMeasure(
+                            name="conversion_measure",
+                        ),
+                        entity="primary_entity",
+                    ),
+                ),
+            ),
+            [
+                "Conversion metric 'bad_metric_has_neither_base_measure_nor_base_metric' must "
+                "have either a base measure "
+                "or a base metric as an input. Please add one of them.",
+            ],
+            None,  # No warnings
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_both_conversion_measure_and_conversion_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_metric=PydanticMetricInput(name="base_metric"),
+                        conversion_measure=PydanticMetricInputMeasure(name="measure_1"),
+                        conversion_metric=PydanticMetricInput(name="conversion_metric"),
+                        entity="primary_entity",
+                    ),
+                ),
+            ),
+            [
+                "Conversion metric 'bad_metric_has_both_conversion_measure_and_conversion_metric' "
+                "cannot have both a "
+                "conversion measure and a conversion metric as inputs. Please remove one of them.",
+            ],
+            None,  # No warnings
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_neither_conversion_measure_nor_conversion_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        entity="primary_entity",
+                        base_metric=PydanticMetricInput(name=INPUT_BASE_METRIC_NAME),
+                    ),
+                ),
+            ),
+            [
+                "Conversion metric 'bad_metric_has_neither_conversion_measure_nor_conversion_metric' "
+                "must have either a "
+                "conversion measure or a conversion metric as an input. Please add one of them.",
+            ],
+            None,  # No warnings
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_non_simple_metric_as_base_metric",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_metric=PydanticMetricInput(name=NON_SIMPLE_METRIC_NAME),
+                        conversion_measure=PydanticMetricInputMeasure(name=CONVERSION_MEASURE_NAME),
+                        entity="primary_entity",
+                    ),
+                ),
+            ),
+            [
+                f"Metric '{NON_SIMPLE_METRIC_NAME}' is not a Simple metric, so it cannot be "
+                "used as an input for Conversion metric 'bad_metric_has_non_simple_metric_as_base_metric'.",
+            ],
+            None,  # No warnings
+        ),
     ],
 )
 def test_conversion_metrics(  # noqa: D
@@ -268,6 +512,10 @@ def test_conversion_metrics(  # noqa: D
             semantic_models=SEMANTIC_MODELS,
             metrics=[
                 metric,
+                INPUT_CONVERSION_METRIC,
+                INPUT_BASE_METRIC,
+                BASE_SUM_METRIC,
+                NON_SIMPLE_METRIC,
             ],
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )

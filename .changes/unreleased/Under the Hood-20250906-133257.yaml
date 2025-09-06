@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Added validations for metric inputs to conversion metrics.
+time: 2025-09-06T13:32:57.680547-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
