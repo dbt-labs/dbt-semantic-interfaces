@@ -30,6 +30,7 @@ from dbt_semantic_interfaces.references import (
     SemanticModelReference,
     TimeDimensionReference,
 )
+from dbt_semantic_interfaces.type_enums.metric_type import MetricType
 from dsi_pydantic_shim import Field
 
 
@@ -141,11 +142,12 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
     def _get_default_agg_time_dimension(self) -> Optional[str]:  # noqa: D
         return self.defaults.agg_time_dimension if self.defaults is not None else None
 
-    def checked_agg_time_dimension_for_metric(  # noqa: D
+    def checked_agg_time_dimension_for_simple_metric(  # noqa: D
         self,
         metric: Metric,
     ) -> TimeDimensionReference:
         metric_time_dimension_name = None
+        assert metric.type == MetricType.SIMPLE, "Only simple metrics can have a time dimension."
         if (
             metric.type_params
             and metric.type_params.metric_aggregation_params

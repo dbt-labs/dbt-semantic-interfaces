@@ -896,12 +896,33 @@ class MetricsNonAdditiveDimensionsRule(SemanticManifestValidationRule[SemanticMa
                 and metric.type_params.metric_aggregation_params is not None
                 and metric.type_params.metric_aggregation_params.non_additive_dimension is not None
             ):
-                semantic_model = next(
-                    model
-                    for model in semantic_models
-                    if model.name == metric.type_params.metric_aggregation_params.semantic_model
+                model_iter = iter(
+                    [
+                        model
+                        for model in semantic_models
+                        if model.name == metric.type_params.metric_aggregation_params.semantic_model
+                    ]
                 )
-                agg_time_dimension_reference = semantic_model.checked_agg_time_dimension_for_metric(metric=metric)
+                semantic_model = next(
+                    model_iter,
+                    None,
+                )
+                if not semantic_model:
+                    issues.append(
+                        ValidationError(
+                            context=MetricContext(
+                                file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                metric=MetricModelReference(metric_name=metric.name),
+                            ),
+                            message=f"Metric '{metric.name}' references semantic model "
+                            f"'{metric.type_params.metric_aggregation_params.semantic_model}', "
+                            "but that semantic model could not be found.",
+                        )
+                    )
+                    continue
+                agg_time_dimension_reference = semantic_model.checked_agg_time_dimension_for_simple_metric(
+                    metric=metric
+                )
                 issues.extend(
                     SharedMeasureAndMetricHelpers.validate_non_additive_dimension(
                         object=metric,
