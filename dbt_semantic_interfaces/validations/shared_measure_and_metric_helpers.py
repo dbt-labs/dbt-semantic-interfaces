@@ -1,4 +1,4 @@
-from typing import List, Literal, Sequence, Union
+from typing import List, Literal, Optional, Sequence, Union
 
 from typing_extensions import assert_never
 
@@ -19,6 +19,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticModelElementContext,
     SemanticModelElementReference,
     SemanticModelElementType,
+    ValidationContext,
     ValidationError,
     ValidationIssue,
 )
@@ -147,6 +148,44 @@ class SharedMeasureAndMetricHelpers:
                         "'window_groupings'. These entities "
                         f"{window_groupings.difference(intersected_entities)} do not exist in the "
                         "semantic model."
+                    ),
+                )
+            )
+        return issues
+
+    @staticmethod
+    def validate_expr_for_count_aggregation(  # noqa: D
+        context: ValidationContext,
+        object_name: str,
+        object_type: Literal["Measure", "Metric"],
+        agg_type: AggregationType,
+        expr: Optional[str],
+    ) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+        if agg_type != AggregationType.COUNT:
+            return []
+        if expr is None:
+            issues.append(
+                ValidationError(
+                    context=context,
+                    message=(
+                        f"{object_type} '{object_name}' uses a COUNT aggregation, which requires an expr to be "
+                        "provided. Provide 'expr: 1' if a count of all rows is desired."
+                    ),
+                )
+            )
+        if expr and expr.lower().startswith("distinct "):
+            # TODO: Expand this to include SUM and potentially AVG agg types as well
+            # Note expansion of this guard requires the addition of sum_distinct and avg_distinct agg types
+            # or else an adjustment to the error message below.
+            issues.append(
+                ValidationError(
+                    context=context,
+                    message=(
+                        f"{object_type} '{object_name}' uses a '{agg_type.value}' aggregation with a DISTINCT "
+                        f"expr: '{expr}'. This is not supported as it effectively converts an additive "
+                        f"{object_type.lower()} into a non-additive one, and this could cause certain queries to "
+                        f"return incorrect results. Please use the {agg_type.value}_distinct aggregation type."
                     ),
                 )
             )
