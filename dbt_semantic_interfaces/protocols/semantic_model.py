@@ -152,7 +152,7 @@ class SemanticModel(Protocol):
         ...
 
     @abstractmethod
-    def checked_agg_time_dimension_for_metric(self, metric: Metric) -> TimeDimensionReference:
+    def checked_agg_time_dimension_for_simple_metric(self, metric: Metric) -> TimeDimensionReference:
         """Returns the `TimeDimensionReference` what a metric should use for it's `agg_time_dimension`.
 
         Should raise an exception if a TimeDimensionReference cannot be built

@@ -138,6 +138,25 @@ from tests.validations.validation_test_utils import check_error_in_issues
             "base time granularity (WEEK) that is not equal to the metric's "
             "agg_time_dimension time_dim with a base granularity of (DAY)",
         ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_a_bogus_semantic_model",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.SUM,
+                        semantic_model="i_am_missing",
+                        non_additive_dimension=PydanticNonAdditiveDimensionParameters(
+                            name="weekly_dim",
+                            window_choice=AggregationType.MIN,
+                        ),
+                        agg_time_dimension="time_dim",
+                    ),
+                ),
+            ),
+            "Metric 'metric_with_a_bogus_semantic_model' references semantic model "
+            "'i_am_missing', but that semantic model could not be found.",
+        ),
     ],
 )
 def test_simple_metrics_non_additive_dimension(  # noqa: D
