@@ -179,6 +179,8 @@ class PydanticCumulativeTypeParams(HashableBaseModel):
 class PydanticMetricAggregationParams(HashableBaseModel):
     """Type params to provide context for metrics that are used as source nodes."""
 
+    semantic_model: str
+
     # TODO SL-4116: make sure we recreate/reuse all the validations for measures
     # for these fields, too.
     agg: Optional[AggregationType]
@@ -186,13 +188,6 @@ class PydanticMetricAggregationParams(HashableBaseModel):
     agg_time_dimension: Optional[str]
     non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters]
     expr: Optional[str]
-
-    # These fields are applied directly to a simple metric.
-    # Previously, these lived in the "PydanticMetricInput",
-    # which was only everattached to a consumer metric.  Now, they are attached to the
-    # producing metric, which may require more total metrics to be created.
-    join_to_timespine: bool = False
-    fill_nulls_with: Optional[int] = None
 
 
 class PydanticMetricTypeParams(HashableBaseModel):
@@ -214,9 +209,17 @@ class PydanticMetricTypeParams(HashableBaseModel):
 
     # TODO SL-4116: Validate that we accept measure-only config fields here IFF
     # this is a simple metric and does not have a measure argument.
-    # These fields are required and allowed IFF this metric is a simple metric
+    # This field is required and allowed IFF this metric is a simple metric
     # that does not have any measure arguments.
     metric_aggregation_params: Optional[PydanticMetricAggregationParams]
+
+    # These fields are allowed for simple metrics only.
+    # Previously, these lived in the "PydanticMetricInput",
+    # which was only everattached to a consumer metric.  Now, they are attached to the
+    # producing metric, which may require more total metrics to be created.
+    # TODO: SL-4116: Add validation that these are only on simple metrics.
+    join_to_timespine: bool = False
+    fill_nulls_with: Optional[int] = None
 
 
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[Metric]):

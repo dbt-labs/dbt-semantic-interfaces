@@ -246,6 +246,11 @@ class MetricAggregationParams(Protocol):
 
     @property
     @abstractmethod
+    def semantic_model(self) -> str:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
     def agg(self) -> Optional[AggregationType]:  # noqa: D
         pass
 
@@ -267,18 +272,6 @@ class MetricAggregationParams(Protocol):
     @property
     @abstractmethod
     def expr(self) -> Optional[str]:  # noqa: D
-        pass
-
-    @property
-    @abstractmethod
-    def join_to_timespine(self) -> bool:
-        """If the measure should be joined to the timespine."""
-        pass
-
-    @property
-    @abstractmethod
-    def fill_nulls_with(self) -> Optional[int]:
-        """What null values should be filled with if set."""
         pass
 
 
@@ -339,6 +332,18 @@ class MetricTypeParams(Protocol):
     @property
     @abstractmethod
     def metric_aggregation_params(self) -> Optional[MetricAggregationParams]:  # noqa: D
+        pass
+
+    @property
+    @abstractmethod
+    def join_to_timespine(self) -> bool:
+        """If the measure should be joined to the timespine.  Allowed only on simple metrics."""
+        pass
+
+    @property
+    @abstractmethod
+    def fill_nulls_with(self) -> Optional[int]:
+        """What null values should be filled with if set.  Allowed only on simple metrics."""
         pass
 
 
