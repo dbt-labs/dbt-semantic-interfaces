@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Adding new fields to metrics so Simple Metrics can eventually operate in place of Measures.
+time: 2025-08-19T16:37:44.048088-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
