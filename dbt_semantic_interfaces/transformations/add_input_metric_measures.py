@@ -4,7 +4,10 @@ from typing_extensions import override
 
 from dbt_semantic_interfaces.enum_extension import assert_values_exhausted
 from dbt_semantic_interfaces.errors import ModelTransformError
-from dbt_semantic_interfaces.implementations.metric import PydanticMetricInputMeasure
+from dbt_semantic_interfaces.implementations.metric import (
+    PydanticMetric,
+    PydanticMetricInputMeasure,
+)
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
@@ -43,10 +46,13 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
                         AddInputMetricMeasuresRule._get_measures_for_metric(semantic_manifest, input_metric.name)
                     )
             elif matched_metric.type is MetricType.CONVERSION:
-                conversion_type_params = matched_metric.type_params.conversion_type_params
-                assert conversion_type_params, "Conversion metric should have conversion_type_params."
-                measures.add(conversion_type_params.base_measure)
-                measures.add(conversion_type_params.conversion_measure)
+                conversion_type_params = PydanticMetric.get_checked_conversion_type_params(matched_metric)
+                # TODO SL-4116: this logic will need to change when we auto-transform
+                # away measures into simple metrics.
+                if conversion_type_params.base_measure is not None:
+                    measures.add(conversion_type_params.base_measure)
+                if conversion_type_params.conversion_measure is not None:
+                    measures.add(conversion_type_params.conversion_measure)
             else:
                 assert_values_exhausted(matched_metric.type)
         else:

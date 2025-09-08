@@ -25,6 +25,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.protocols import Metric, ProtocolHint
+from dbt_semantic_interfaces.protocols.metric import ConversionTypeParams
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
     AggregationType,
@@ -201,6 +202,7 @@ class PydanticMetricTypeParams(HashableBaseModel):
     window: Optional[PydanticMetricTimeWindow]
     # Legacy, will not support custom granularity
     grain_to_date: Optional[TimeGranularity]
+    # Only used for derived metrics so far
     metrics: Optional[List[PydanticMetricInput]]
     conversion_type_params: Optional[PydanticConversionTypeParams]
     cumulative_type_params: Optional[PydanticCumulativeTypeParams]
@@ -250,7 +252,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         if isinstance(grain_to_date, str):
             data["type_params"]["cumulative_type_params"]["grain_to_date"] = grain_to_date.lower()
 
-        # Ensure offset_to_grain is lowercased
+        # Ensure offset_to_grain is lowercased (only used in derived metrics)
         input_metrics = type_params.get("metrics", [])
         if input_metrics:
             for input_metric in input_metrics:
@@ -283,6 +285,14 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
                 self.type_params.numerator is not None and self.type_params.denominator is not None
             ), f"{self} is metric type {MetricType.RATIO}, so neither the numerator and denominator should not be None"
             return (self.type_params.numerator, self.type_params.denominator)
+        elif self.type is MetricType.CONVERSION:
+            conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=self)
+            metrics: Set[PydanticMetricInput] = set()
+            if conversion_type_params.base_metric is not None:
+                metrics.add(conversion_type_params.base_metric)
+            if conversion_type_params.conversion_metric is not None:
+                metrics.add(conversion_type_params.conversion_metric)
+            return list(metrics)
         else:
             assert_values_exhausted(self.type)
 
@@ -305,18 +315,20 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
                     PydanticMetric.all_input_measures_for_metric(metric=nested_metric, metric_index=metric_index)
                 )
         elif metric.type is MetricType.CONVERSION:
-            conversion_type_params = metric.type_params.conversion_type_params
-            assert conversion_type_params, "Conversion metric should have conversion_type_params."
-            # TODO SL-4116: the `is not None` assertions below on base_measure and conversion_measure
-            # are temporary while we update the validations to allow the use of metrics instead as inputs
-            # of measures
-            assert conversion_type_params.base_measure is not None, "Conversion metric must have base_measure."
-            measures.add(conversion_type_params.base_measure.measure_reference)
-            assert (
-                conversion_type_params.conversion_measure is not None
-            ), "Conversion metric must have conversion_measure."
-            measures.add(conversion_type_params.conversion_measure.measure_reference)
+            conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
+            if conversion_type_params.base_measure is not None:
+                measures.add(conversion_type_params.base_measure.measure_reference)
+            if conversion_type_params.conversion_measure is not None:
+                measures.add(conversion_type_params.conversion_measure.measure_reference)
         else:
             assert_values_exhausted(metric.type)
 
         return measures
+
+    @staticmethod
+    def get_checked_conversion_type_params(metric: Metric) -> ConversionTypeParams:
+        """Returns the conversion type params for a metric, checking that they are valid."""
+        assert metric.type is MetricType.CONVERSION, "Only conversion metrics can have conversion type params."
+        conversion_type_params = metric.type_params.conversion_type_params
+        assert conversion_type_params, f"Conversion metric '{metric.name}' must have conversion_type_params."
+        return conversion_type_params

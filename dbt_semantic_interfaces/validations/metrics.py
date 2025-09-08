@@ -1,4 +1,4 @@
-from typing import Dict, Generic, List, Optional, Sequence, Set
+from typing import Dict, Generic, List, Literal, Optional, Sequence, Set, Tuple, Union
 
 from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.protocols import (
@@ -11,6 +11,9 @@ from dbt_semantic_interfaces.protocols import (
     SemanticManifestT,
     SemanticModel,
 )
+from dbt_semantic_interfaces.protocols.metadata import Metadata
+from dbt_semantic_interfaces.protocols.metric import MetricInput
+from dbt_semantic_interfaces.protocols.where_filter import WhereFilterIntersection
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     MeasureReference,
@@ -42,6 +45,17 @@ from dbt_semantic_interfaces.validations.where_filters import (
 )
 
 TEMP_CUSTOM_GRAIN_MSG = "Custom granularities are not supported for this field yet."
+
+
+class MetricValidationRuleHelpers:
+    """Helpers for metric validation rules."""
+
+    @staticmethod
+    def get_metric_from_manifest(metric_name: str, semantic_manifest: SemanticManifest) -> Optional[Metric]:
+        """Get a metric from the manifest by name."""
+        return next((metric for metric in semantic_manifest.metrics if metric.name == metric_name), None)
+
+    # TODO add a function for default context.
 
 
 class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
@@ -328,6 +342,66 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     """Checks that conversion metrics are configured properly."""
 
     @staticmethod
+    def _validate_measure_xor_metric_for_each_input(metric: Metric) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        if metric.type_params.conversion_type_params is None:
+            return issues
+
+        conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
+        base_measure = conversion_type_params.base_measure
+        base_metric = conversion_type_params.base_metric
+        if base_measure is not None and base_metric is not None:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric.metadata),
+                        metric=MetricModelReference(metric_name=metric.name),
+                    ),
+                    message=f"Conversion metric '{metric.name}' cannot have both a base measure "
+                    "and a base metric as inputs. Please remove one of them.",
+                )
+            )
+        elif base_measure is None and base_metric is None:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric.metadata),
+                        metric=MetricModelReference(metric_name=metric.name),
+                    ),
+                    message=f"Conversion metric '{metric.name}' must have either a base measure or a base metric "
+                    "as inputs. Please add one of them.",
+                )
+            )
+
+        conversion_measure = metric.type_params.conversion_type_params.conversion_measure
+        conversion_metric = metric.type_params.conversion_type_params.conversion_metric
+        if conversion_measure is not None and conversion_metric is not None:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric.metadata),
+                        metric=MetricModelReference(metric_name=metric.name),
+                    ),
+                    message=f"Conversion metric '{metric.name}' cannot have both a conversion measure "
+                    "and a conversion metric as inputs. Please remove one of them.",
+                )
+            )
+        elif conversion_measure is None and conversion_metric is None:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric.metadata),
+                        metric=MetricModelReference(metric_name=metric.name),
+                    ),
+                    message="Conversion metric '{metric.name}' must have either a conversion measure or "
+                    "a conversion metric as inputs. Please add one of them.",
+                )
+            )
+
+        return issues
+
+    @staticmethod
     @validate_safely(whats_being_done="checking that the params of metric are valid if it is a conversion metric")
     def _validate_type_params(
         metric: Metric, conversion_type_params: ConversionTypeParams, custom_granularity_names: Set[str]
@@ -378,6 +452,55 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         return issues
 
     @staticmethod
+    def _validate_agg_and_expr(
+        agg_type: AggregationType,
+        expr: Optional[str],
+        input_name: str,
+        input_object_type: Literal["Measure", "Metric"],
+        main_metric: Metric,
+    ) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+        if (
+            agg_type != AggregationType.COUNT
+            and agg_type != AggregationType.COUNT_DISTINCT
+            and (agg_type != AggregationType.SUM or expr != "1")
+        ):
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=main_metric.metadata),
+                        metric=MetricModelReference(metric_name=main_metric.name),
+                    ),
+                    message=f"For conversion metrics, the input {input_object_type.lower()} must be "
+                    f"COUNT/SUM(1)/COUNT_DISTINCT. {input_object_type} '{input_name}' is agg type: {agg_type}",
+                )
+            )
+        return issues
+
+    @staticmethod
+    def _validate_no_filter_for_conversion_input(
+        filter: Optional[WhereFilterIntersection],
+        input_name: str,
+        input_object_type: Literal["Measure", "Metric"],
+        is_base_input: bool,
+        main_metric: Metric,
+    ) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+        if filter is not None and not is_base_input:
+            issues.append(
+                ValidationWarning(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=main_metric.metadata),
+                        metric=MetricModelReference(metric_name=main_metric.name),
+                    ),
+                    message=f"{input_object_type} input '{input_name}' has a filter. "
+                    "For conversion metrics, filtering on the conversion "
+                    "input is not fully supported yet. ",
+                )
+            )
+        return issues
+
+    @staticmethod
     @validate_safely(whats_being_done="checks that the provided measures are valid for conversion metrics")
     def _validate_measures(
         metric: Metric, base_semantic_model: SemanticModel, conversion_semantic_model: SemanticModel
@@ -385,7 +508,9 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         issues: List[ValidationIssue] = []
 
         def _validate_measure(
-            input_measure: MetricInputMeasure, semantic_model: SemanticModel, is_base_measure: bool = True
+            input_measure: MetricInputMeasure,
+            semantic_model: SemanticModel,
+            is_base_input: bool = True,
         ) -> None:
             measure = None
             for model_measure in semantic_model.measures:
@@ -395,56 +520,94 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
             assert measure, f"Measure '{model_measure.name}' wasn't found in semantic model '{semantic_model.name}'"
 
-            if (
-                measure.agg != AggregationType.COUNT
-                and measure.agg != AggregationType.COUNT_DISTINCT
-                and (measure.agg != AggregationType.SUM or measure.expr != "1")
-            ):
-                issues.append(
-                    ValidationError(
-                        context=MetricContext(
-                            file_context=FileContext.from_metadata(metadata=metric.metadata),
-                            metric=MetricModelReference(metric_name=metric.name),
-                        ),
-                        message=f"For conversion metrics, the measure must be COUNT/SUM(1)/COUNT_DISTINCT. "
-                        f"Measure: {measure.name} is agg type: {measure.agg}",
-                    )
+            issues.extend(
+                ConversionMetricRule._validate_agg_and_expr(
+                    agg_type=measure.agg,
+                    expr=measure.expr,
+                    input_name=measure.name,
+                    input_object_type="Measure",
+                    main_metric=metric,
                 )
-
-            if input_measure.filter is not None and not is_base_measure:
-                # Filters for conversion measure input are not fully supported.
-                issues.append(
-                    ValidationWarning(
-                        context=MetricContext(
-                            file_context=FileContext.from_metadata(metadata=metric.metadata),
-                            metric=MetricModelReference(metric_name=metric.name),
-                        ),
-                        message=f"Measure input {measure.name} has a filter. For conversion metrics,"
-                        " filtering on a conversion input measure is not fully supported yet.",
-                    )
+            )
+            issues.extend(
+                ConversionMetricRule._validate_no_filter_for_conversion_input(
+                    filter=input_measure.filter,
+                    input_name=measure.name,
+                    input_object_type="Measure",
+                    is_base_input=is_base_input,
+                    main_metric=metric,
                 )
+            )
 
-        conversion_type_params = metric.type_params.conversion_type_params
-        assert (
-            conversion_type_params is not None
-        ), "For a conversion metric, type_params.conversion_type_params must exist."
-        # TODO SL-4116: these assertions on base_measure and conversion_measure are only necessary until we add
-        # validation for using a measure XOR metric in each field.
-        assert (
-            conversion_type_params.base_measure is not None
-        ), "For a conversion metric, type_params.base_measure must exist."
-        _validate_measure(
-            input_measure=conversion_type_params.base_measure,
-            semantic_model=base_semantic_model,
-        )
-        assert (
-            conversion_type_params.conversion_measure is not None
-        ), "For a conversion metric, type_params.conversion_measure must exist."
-        _validate_measure(
-            input_measure=conversion_type_params.conversion_measure,
-            semantic_model=conversion_semantic_model,
-            is_base_measure=False,
-        )
+        conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
+        if conversion_type_params.base_measure is not None:
+            # TODO SL-4116, SL-4188: mimic this validation for base_metric
+            _validate_measure(
+                input_measure=conversion_type_params.base_measure,
+                semantic_model=base_semantic_model,
+                is_base_input=True,
+            )
+        if conversion_type_params.conversion_measure is not None:
+            # TODO SL-4116, SL-4188: mimic this validation for conversion_metric
+            _validate_measure(
+                input_measure=conversion_type_params.conversion_measure,
+                semantic_model=conversion_semantic_model,
+                is_base_input=False,
+            )
+        return issues
+
+    @staticmethod
+    def _validate_metrics(
+        metric: Metric,
+        semantic_manifest: SemanticManifest,
+    ) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+
+        def _validate_metric(
+            input_metric: MetricInput,
+            semantic_manifest: SemanticManifest,
+            is_base_metric: bool = True,
+        ) -> None:
+            metric = MetricValidationRuleHelpers.get_metric_from_manifest(input_metric.name, semantic_manifest)
+
+            assert metric, f"Metric '{input_metric.name}' was not found.'"
+            agg_params = metric.type_params.metric_aggregation_params
+            assert agg_params, f"Metric '{input_metric.name}' is missing aggregation parameters "
+            "such as the type of aggregation."
+
+            issues.extend(
+                ConversionMetricRule._validate_agg_and_expr(
+                    agg_type=agg_params.agg,
+                    expr=agg_params.expr,
+                    input_name=metric.name,
+                    input_object_type="Metric",
+                    main_metric=metric,
+                )
+            )
+
+            issues.extend(
+                ConversionMetricRule._validate_no_filter_for_conversion_input(
+                    filter=input_metric.filter,
+                    input_name=metric.name,
+                    input_object_type="Metric",
+                    is_base_input=is_base_metric,
+                    main_metric=metric,
+                )
+            )
+
+        conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
+        if conversion_type_params.base_metric is not None:
+            _validate_metric(
+                input_metric=conversion_type_params.base_metric,
+                semantic_manifest=semantic_manifest,
+                is_base_metric=True,
+            )
+        if conversion_type_params.conversion_metric is not None:
+            _validate_metric(
+                input_metric=conversion_type_params.conversion_metric,
+                semantic_manifest=semantic_manifest,
+                is_base_metric=False,
+            )
         return issues
 
     @staticmethod
@@ -471,10 +634,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                         )
                     )
 
-        conversion_type_params = metric.type_params.conversion_type_params
-        assert (
-            conversion_type_params is not None
-        ), "For a conversion metric, type_params.conversion_type_params must exist."
+        conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
         constant_properties = conversion_type_params.constant_properties or []
         base_properties = []
         conversion_properties = []
@@ -499,6 +659,127 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         return semantic_model
 
     @staticmethod
+    def _get_semantic_model_pointed_to_by_metric(
+        metric_name: str, semantic_manifest: SemanticManifest
+    ) -> Optional[SemanticModel]:
+        """Retrieve the semantic model from a given metric reference.
+
+        This is used to handle several steps of indirection - we get a MetricInput,
+        which provides a metric name through which we can access the Metric, which
+        then may point at a specific SemanticModel if it was defined as part of that
+        model in its YAML specification.
+
+        This returns None if any part of this look up chain fails.
+        """
+        semantic_model = None
+        for model in semantic_manifest.semantic_models:
+            metric = MetricValidationRuleHelpers.get_metric_from_manifest(metric_name, semantic_manifest)
+            if (
+                metric is not None
+                and metric.type_params.metric_aggregation_params is not None
+                and metric.type_params.metric_aggregation_params.semantic_model == model.name
+            ):
+                semantic_model = model
+                break
+        return semantic_model
+
+    @staticmethod
+    def _get_validated_model_for_input(
+        input_measure: Optional[MetricInputMeasure],
+        input_metric: Optional[MetricInput],
+        metric_name: str,
+        metric_metadata: Union[Metadata, None],
+        input_type: Literal["base", "conversion"],
+        semantic_manifest: SemanticManifest,
+    ) -> Tuple[Optional[SemanticModel], List[ValidationIssue]]:
+        issues: List[ValidationIssue] = []
+
+        if input_metric is not None:
+            real_input_metric = MetricValidationRuleHelpers.get_metric_from_manifest(
+                input_metric.name,
+                semantic_manifest,
+            )
+            if real_input_metric is not None and real_input_metric.type != MetricType.SIMPLE:
+                issues.append(
+                    ValidationError(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=real_input_metric.metadata),
+                            metric=MetricModelReference(metric_name=real_input_metric.name),
+                        ),
+                        message=f"Metric '{real_input_metric.name}' is not a Simple metric, so it cannot "
+                        f"be used as an input for Conversion metric '{metric_name}'.",
+                    )
+                )
+
+        model: Optional[SemanticModel] = None
+        if input_measure is not None and input_metric is not None:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric_metadata),
+                        metric=MetricModelReference(metric_name=metric_name),
+                    ),
+                    message=f"Conversion metric '{metric_name}' cannot have both a {input_type} measure "
+                    f"and a {input_type} metric as inputs. Please remove one of them.",
+                )
+            )
+        elif input_measure is None and input_metric is None:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric_metadata),
+                        metric=MetricModelReference(metric_name=metric_name),
+                    ),
+                    message=f"Conversion metric '{metric_name}' must have either a {input_type} measure "
+                    f"or a {input_type} metric as an input. Please add one of them.",
+                )
+            )
+        elif input_measure is not None:
+            model = ConversionMetricRule._get_semantic_model_from_measure(
+                measure_reference=input_measure.measure_reference,
+                semantic_manifest=semantic_manifest,
+            )
+            if model is None:
+                input_measure_name = input_measure.measure_reference.element_name
+                issues.append(
+                    ValidationError(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric_metadata),
+                            metric=MetricModelReference(metric_name=metric_name),
+                        ),
+                        message=f"Input measure '{input_measure_name}' for conversion metric "
+                        f"'{metric_name}' does not exist in your manifest.",
+                    )
+                )
+
+        elif input_metric is not None:
+            # TODO - am i validating that the metric exists?
+            input_metric_name = input_metric.name
+            model = ConversionMetricRule._get_semantic_model_pointed_to_by_metric(
+                metric_name=input_metric_name,
+                semantic_manifest=semantic_manifest,
+            )
+            if model is None:
+                issues.append(
+                    ValidationError(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric_metadata),
+                            metric=MetricModelReference(metric_name=metric_name),
+                        ),
+                        message=f"Input metric '{input_metric_name}' for conversion metric "
+                        f"'{metric_name}' is linked to a semantic model that does "
+                        "not exist in your manifest.",
+                    )
+                )
+        else:
+            # since this depends on two inputs, we can't really use assert_never,
+            # but we want to future proof this against mistakes in later maintenance.
+            assert (
+                False
+            ), f"Failed to parse {input_type} model for conversion metric '{metric_name}' for unknown reason."
+        return model, issues
+
+    @staticmethod
     @validate_safely(whats_being_done="running manifest validation ensuring conversion metrics are valid")
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
@@ -511,38 +792,38 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
         for metric in semantic_manifest.metrics or []:
             if metric.type == MetricType.CONVERSION:
+                issues.extend(ConversionMetricRule._validate_measure_xor_metric_for_each_input(metric=metric))
                 # Validates that the measure exists and corresponds to a semantic model
-                assert (
-                    metric.type_params.conversion_type_params is not None
-                ), "For a conversion metric, type_params.conversion_type_params must exist."
-                # TODO SL-4116: these assertions are only necessary until we add validation for
-                # using a measure XOR metric in each field
-                assert metric.type_params.conversion_type_params.base_measure is not None
-                base_semantic_model = ConversionMetricRule._get_semantic_model_from_measure(
-                    measure_reference=metric.type_params.conversion_type_params.base_measure.measure_reference,
+                conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
+                base_semantic_model, added_issues_from_base_model = ConversionMetricRule._get_validated_model_for_input(
+                    input_measure=conversion_type_params.base_measure,
+                    input_metric=conversion_type_params.base_metric,
+                    metric_name=metric.name,
+                    metric_metadata=metric.metadata,
+                    input_type="base",
                     semantic_manifest=semantic_manifest,
                 )
-                assert metric.type_params.conversion_type_params.conversion_measure is not None
-                conversion_semantic_model = ConversionMetricRule._get_semantic_model_from_measure(
-                    measure_reference=metric.type_params.conversion_type_params.conversion_measure.measure_reference,
+                issues.extend(added_issues_from_base_model)
+                (
+                    conversion_semantic_model,
+                    added_issues_from_conversion_model,
+                ) = ConversionMetricRule._get_validated_model_for_input(
+                    input_measure=conversion_type_params.conversion_measure,
+                    input_metric=conversion_type_params.conversion_metric,
+                    metric_name=metric.name,
+                    metric_metadata=metric.metadata,
+                    input_type="conversion",
                     semantic_manifest=semantic_manifest,
                 )
+                issues.extend(added_issues_from_conversion_model)
+
                 if base_semantic_model is None or conversion_semantic_model is None:
                     # If measure's don't exist, stop this metric's validation as it will fail later validations
-                    issues.append(
-                        ValidationError(
-                            context=MetricContext(
-                                file_context=FileContext.from_metadata(metadata=metric.metadata),
-                                metric=MetricModelReference(metric_name=metric.name),
-                            ),
-                            message=f"For metric '{metric.name}', conversion measures specified was not found.",
-                        )
-                    )
                     continue
 
                 issues += ConversionMetricRule._validate_entity_exists(
                     metric=metric,
-                    entity=metric.type_params.conversion_type_params.entity,
+                    entity=conversion_type_params.entity,
                     base_semantic_model=base_semantic_model,
                     conversion_semantic_model=conversion_semantic_model,
                 )
@@ -551,9 +832,13 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                     base_semantic_model=base_semantic_model,
                     conversion_semantic_model=conversion_semantic_model,
                 )
+                issues += ConversionMetricRule._validate_metrics(
+                    metric=metric,
+                    semantic_manifest=semantic_manifest,
+                )
                 issues += ConversionMetricRule._validate_type_params(
                     metric=metric,
-                    conversion_type_params=metric.type_params.conversion_type_params,
+                    conversion_type_params=conversion_type_params,
                     custom_granularity_names=custom_granularity_names,
                 )
                 issues += ConversionMetricRule._validate_constant_properties(
