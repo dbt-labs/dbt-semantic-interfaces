@@ -76,6 +76,19 @@ INPUT_BASE_METRIC = metric_with_guaranteed_meta(
     ),
 )
 
+METRIC_WITH_NON_EXISTENT_MODEL_NAME = "metric_with_nonexistent_model"
+METRIC_WITH_NON_EXISTENT_MODEL = metric_with_guaranteed_meta(
+    name=METRIC_WITH_NON_EXISTENT_MODEL_NAME,
+    type=MetricType.SIMPLE,
+    type_params=PydanticMetricTypeParams(
+        metric_aggregation_params=PydanticMetricAggregationParams(
+            agg=AggregationType.COUNT,
+            semantic_model="this_model_does_not_exist",
+            expr="1",
+        ),
+    ),
+)
+
 BASE_SUM_METRIC_NAME = "sum_metric"
 BASE_SUM_METRIC = metric_with_guaranteed_meta(
     name=BASE_SUM_METRIC_NAME,
@@ -412,6 +425,75 @@ SEMANTIC_MODELS = [
                 "filtering on the conversion input is not fully supported yet.",
             ],
         ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_has_bogus_filter",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_measure=PydanticMetricInputMeasure(name=BASE_MEASURE_NAME),
+                        conversion_measure=PydanticMetricInputMeasure(
+                            name=CONVERSION_MEASURE_NAME,
+                            filter=PydanticWhereFilterIntersection(
+                                where_filters=[
+                                    PydanticWhereFilter(where_sql_template="""{{ dimension('some_bool') }}""")
+                                ]
+                            ),
+                        ),
+                        window=DEFAULT_WINDOW,
+                        entity=ENTITY_NAME,
+                    )
+                ),
+            ),
+            None,  # This only fires a warning, not an error.
+            [
+                f"Measure input '{CONVERSION_MEASURE_NAME}' has a filter. For conversion metrics, "
+                "filtering on the conversion input is not fully supported yet.",
+            ],
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="input_metric_has_nonexistent_model",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_metric=PydanticMetricInput(name=METRIC_WITH_NON_EXISTENT_MODEL_NAME),
+                        conversion_measure=PydanticMetricInputMeasure(
+                            name=CONVERSION_MEASURE_NAME,
+                        ),
+                        window=DEFAULT_WINDOW,
+                        entity=ENTITY_NAME,
+                    )
+                ),
+            ),
+            [
+                f"Input metric '{METRIC_WITH_NON_EXISTENT_MODEL_NAME}' for conversion metric "
+                "'input_metric_has_nonexistent_model' is linked to a semantic model "
+                "that does not exist in your manifest.",
+            ],
+            None,
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="input_measure_is_not_real",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=PydanticConversionTypeParams(
+                        base_measure=PydanticMetricInputMeasure(name=BASE_MEASURE_NAME),
+                        conversion_measure=PydanticMetricInputMeasure(
+                            name="i_am_not_real",
+                        ),
+                        window=DEFAULT_WINDOW,
+                        entity=ENTITY_NAME,
+                    )
+                ),
+            ),
+            [
+                "Input measure 'i_am_not_real' for conversion metric "
+                "'input_measure_is_not_real' does not exist in your manifest.",
+            ],
+            None,
+        ),
         # =============== Correct Inputs Provided Validations ====================
         (
             metric_with_guaranteed_meta(
@@ -526,6 +608,7 @@ def test_conversion_metrics(  # noqa: D
                 INPUT_BASE_METRIC,
                 BASE_SUM_METRIC,
                 NON_SIMPLE_METRIC,
+                METRIC_WITH_NON_EXISTENT_MODEL,
             ],
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )

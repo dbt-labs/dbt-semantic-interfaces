@@ -739,11 +739,38 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 measure_reference=input_measure.measure_reference,
                 semantic_manifest=semantic_manifest,
             )
+            if model is None:
+                input_measure_name = input_measure.measure_reference.element_name
+                issues.append(
+                    ValidationError(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric_metadata),
+                            metric=MetricModelReference(metric_name=metric_name),
+                        ),
+                        message=f"Input measure '{input_measure_name}' for conversion metric "
+                        f"'{metric_name}' does not exist in your manifest.",
+                    )
+                )
+
         elif input_metric is not None:
+            # TODO - am i validating that the metric exists?
+            input_metric_name = input_metric.name
             model = ConversionMetricRule._get_semantic_model_pointed_to_by_metric(
-                metric_name=input_metric.name,
+                metric_name=input_metric_name,
                 semantic_manifest=semantic_manifest,
             )
+            if model is None:
+                issues.append(
+                    ValidationError(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric_metadata),
+                            metric=MetricModelReference(metric_name=metric_name),
+                        ),
+                        message=f"Input metric '{input_metric_name}' for conversion metric "
+                        f"'{metric_name}' is linked to a semantic model that does "
+                        "not exist in your manifest.",
+                    )
+                )
         else:
             # since this depends on two inputs, we can't really use assert_never,
             # but we want to future proof this against mistakes in later maintenance.
@@ -792,22 +819,6 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
 
                 if base_semantic_model is None or conversion_semantic_model is None:
                     # If measure's don't exist, stop this metric's validation as it will fail later validations
-                    error_message = "inputs were not found"
-                    if base_semantic_model is None and conversion_semantic_model is None:
-                        error_message = "neither a base nor conversion input were found"
-                    elif base_semantic_model is None:
-                        error_message = "a base input was not found"
-                    elif conversion_semantic_model is None:
-                        error_message = "a conversion input was not found"
-                    issues.append(
-                        ValidationError(
-                            context=MetricContext(
-                                file_context=FileContext.from_metadata(metadata=metric.metadata),
-                                metric=MetricModelReference(metric_name=metric.name),
-                            ),
-                            message=f"For conversion metric '{metric.name}', {error_message}.",
-                        )
-                    )
                     continue
 
                 issues += ConversionMetricRule._validate_entity_exists(
