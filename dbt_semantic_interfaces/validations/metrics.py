@@ -22,6 +22,9 @@ from dbt_semantic_interfaces.type_enums import (
     MetricType,
     TimeGranularity,
 )
+from dbt_semantic_interfaces.validations.shared_measure_and_metric_helpers import (
+    SharedMeasureAndMetricHelpers,
+)
 from dbt_semantic_interfaces.validations.unique_valid_name import UniqueAndValidNameRule
 from dbt_semantic_interfaces.validations.validator_helpers import (
     FileContext,
@@ -557,6 +560,39 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                     metric=metric,
                     base_semantic_model=base_semantic_model,
                     conversion_semantic_model=conversion_semantic_model,
+                )
+        return issues
+
+
+class MetricsNonAdditiveDimensionsRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """Checks that the non_additive_dimension for a metric is valid."""
+
+    @staticmethod
+    @validate_safely(whats_being_done="ensuring that a metric's non_additive_dimension is valid")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+        semantic_models = semantic_manifest.semantic_models or []
+        for metric in semantic_manifest.metrics or []:
+            if (
+                metric.type == MetricType.SIMPLE
+                and metric.type_params is not None
+                and metric.type_params.metric_aggregation_params is not None
+                and metric.type_params.metric_aggregation_params.non_additive_dimension is not None
+            ):
+                semantic_model = next(
+                    model
+                    for model in semantic_models
+                    if model.name == metric.type_params.metric_aggregation_params.semantic_model
+                )
+                agg_time_dimension_reference = semantic_model.checked_agg_time_dimension_for_metric(metric=metric)
+                issues.extend(
+                    SharedMeasureAndMetricHelpers.validate_non_additive_dimension(
+                        object=metric,
+                        semantic_model=semantic_model,
+                        non_additive_dimension=metric.type_params.metric_aggregation_params.non_additive_dimension,
+                        agg_time_dimension_reference=agg_time_dimension_reference,
+                        object_type_for_errors="Metric",
+                    )
                 )
         return issues
 

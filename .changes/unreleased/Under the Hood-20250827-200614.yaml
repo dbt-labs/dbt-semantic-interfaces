@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Added validation for metrics with non_additive_dimension to match validations on measures.
+time: 2025-08-27T20:06:14.59119-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"

@@ -21,6 +21,7 @@ from dbt_semantic_interfaces.protocols import (
     SemanticModel,
     SemanticModelDefaults,
 )
+from dbt_semantic_interfaces.protocols.metric import Metric
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
@@ -137,8 +138,34 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
 
         raise ValueError(f"No entity with name ({entity_reference}) in semantic_model with name ({self.name})")
 
+    def _get_default_agg_time_dimension(self) -> Optional[str]:  # noqa: D
+        return self.defaults.agg_time_dimension if self.defaults is not None else None
+
+    def checked_agg_time_dimension_for_metric(  # noqa: D
+        self,
+        metric: Metric,
+    ) -> TimeDimensionReference:
+        metric_time_dimension_name = None
+        if (
+            metric.type_params
+            and metric.type_params.metric_aggregation_params
+            and metric.type_params.metric_aggregation_params.agg_time_dimension
+        ):
+            metric_time_dimension_name = metric.type_params.metric_aggregation_params.agg_time_dimension
+
+        default_agg_time_dimension = self._get_default_agg_time_dimension()
+        agg_time_dimension_name = metric_time_dimension_name or default_agg_time_dimension
+
+        assert agg_time_dimension_name is not None, (
+            f"Aggregation time dimension for metric {metric.name} is not set! This should either be set directly on "
+            f"the metric specification in the model, or else defaulted to the time dimension in the data "
+            f"source containing the metric."
+        )
+        return TimeDimensionReference(element_name=agg_time_dimension_name)
+
     def checked_agg_time_dimension_for_measure(  # noqa: D
-        self, measure_reference: MeasureReference
+        self,
+        measure_reference: MeasureReference,
     ) -> TimeDimensionReference:
         measure = self.get_measure(measure_reference=measure_reference)
         default_agg_time_dimension = self.defaults.agg_time_dimension if self.defaults is not None else None
