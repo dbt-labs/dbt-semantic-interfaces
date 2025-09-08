@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Add validations for percentiles in simple metrics.
+time: 2025-08-27T23:33:02.203688-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
