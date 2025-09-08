@@ -1177,6 +1177,109 @@ def test_cumulative_metrics() -> None:  # noqa: D
     check_error_in_issues(error_substrings=expected_substrings, issues=build_issues)
 
 
+@pytest.mark.parametrize(
+    "metric, error_substring_if_error",
+    [
+        (
+            metric_with_guaranteed_meta(
+                name="good_cuz_it_has_only_measure",
+                type=MetricType.CUMULATIVE,
+                type_params=PydanticMetricTypeParams(
+                    measure=PydanticMetricInputMeasure(name="sum_measure"),
+                    cumulative_type_params=PydanticCumulativeTypeParams(period_agg=PeriodAggregation.FIRST),
+                ),
+            ),
+            None,  # No error; this should pass
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="good_cuz_it_has_only_metric",
+                type=MetricType.CUMULATIVE,
+                type_params=PydanticMetricTypeParams(
+                    cumulative_type_params=PydanticCumulativeTypeParams(
+                        period_agg=PeriodAggregation.FIRST,
+                        metric=PydanticMetricInput(name="sum_metric"),
+                    ),
+                ),
+            ),
+            None,  # No error; this should pass
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_both_measure_and_metric_as_inputs",
+                type=MetricType.CUMULATIVE,
+                type_params=PydanticMetricTypeParams(
+                    measure=PydanticMetricInputMeasure(name="sum_measure"),
+                    cumulative_type_params=PydanticCumulativeTypeParams(
+                        period_agg=PeriodAggregation.FIRST,
+                        metric=PydanticMetricInput(name="sum_metric"),
+                    ),
+                ),
+            ),
+            "Cumulative metric 'bad_metric_has_both_measure_and_metric_as_inputs' cannot have both a measure "
+            "and a metric as inputs.  Please remove one of them.",
+        ),
+        (
+            metric_with_guaranteed_meta(
+                name="bad_metric_has_neither_measure_nor_metric_as_inputs",
+                type=MetricType.CUMULATIVE,
+                type_params=PydanticMetricTypeParams(
+                    cumulative_type_params=PydanticCumulativeTypeParams(period_agg=PeriodAggregation.FIRST),
+                ),
+            ),
+            "Cumulative metric 'bad_metric_has_neither_measure_nor_metric_as_inputs' must have either a measure "
+            "or a metric as inputs. Please add one of them.",
+        ),
+    ],
+)
+def test_cumulative_metrics_have_metric_xor_measure(
+    metric: PydanticMetric,
+    error_substring_if_error: Optional[str],
+) -> None:
+    """Validate that things like fill_nulls_with and join_to_timespine are not allowed on non-simple metrics."""
+    model_validator = SemanticManifestValidator[PydanticSemanticManifest]([CumulativeMetricRule()])
+    validation_results = model_validator.validate_semantic_manifest(
+        PydanticSemanticManifest(
+            semantic_models=[
+                semantic_model_with_guaranteed_meta(
+                    name="sum_measure",
+                    measures=[
+                        PydanticMeasure(
+                            name="this_measure_name",
+                            agg=AggregationType.SUM,
+                            agg_time_dimension="ename",
+                        )
+                    ],
+                    dimensions=[
+                        PydanticDimension(name="country", type=DimensionType.CATEGORICAL),
+                        PydanticDimension(
+                            name="time_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
+                        PydanticDimension(
+                            name="weekly_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.WEEK,
+                            ),
+                        ),
+                    ],
+                    entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
+                ),
+            ],
+            metrics=[metric],
+            project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+        )
+    )
+    if error_substring_if_error:
+        check_error_in_issues(error_substrings=[error_substring_if_error], issues=validation_results.all_issues)
+    else:
+        assert len(validation_results.all_issues) == 0, "expected this metric to pass validation, but it did not"
+
+
 def test_time_granularity() -> None:
     """Test that default grain is validated appropriately."""
     week_measure_name = "foo"

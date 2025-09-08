@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Add validations for cumulative metrics with metrics as inputs.
+time: 2025-09-06T13:37:35.919512-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"

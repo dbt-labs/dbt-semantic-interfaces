@@ -62,6 +62,36 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
     """Checks that cumulative metrics are configured properly."""
 
     @classmethod
+    def _validate_input_measure_xor_metric(cls, metric: Metric) -> Sequence[ValidationIssue]:
+        issues: List[ValidationIssue] = []
+        input_metric = (
+            metric.type_params.cumulative_type_params.metric if metric.type_params.cumulative_type_params else None
+        )
+        if metric.type_params.measure is not None and input_metric is not None:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric.metadata),
+                        metric=MetricModelReference(metric_name=metric.name),
+                    ),
+                    message=f"Cumulative metric '{metric.name}' cannot have both a measure and a metric as "
+                    "inputs.  Please remove one of them.",
+                )
+            )
+        elif metric.type_params.measure is None and input_metric is None:
+            issues.append(
+                ValidationError(
+                    context=MetricContext(
+                        file_context=FileContext.from_metadata(metadata=metric.metadata),
+                        metric=MetricModelReference(metric_name=metric.name),
+                    ),
+                    message=f"Cumulative metric '{metric.name}' must have either a measure or a metric as inputs. "
+                    "Please add one of them.",
+                )
+            )
+        return issues
+
+    @classmethod
     @validate_safely(whats_being_done="running model validation ensuring cumulative metrics are valid")
     def validate_manifest(cls, semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
@@ -76,6 +106,8 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         for metric in semantic_manifest.metrics or []:
             if metric.type != MetricType.CUMULATIVE:
                 continue
+
+            issues.extend(cls._validate_input_measure_xor_metric(metric=metric))
 
             metric_context = MetricContext(
                 file_context=FileContext.from_metadata(metadata=metric.metadata),
