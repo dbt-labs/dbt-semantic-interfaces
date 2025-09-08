@@ -147,7 +147,18 @@ class PydanticSemanticModel(HashableBaseModel, ModelWithMetadataParsing, Protoco
         metric: Metric,
     ) -> TimeDimensionReference:
         metric_time_dimension_name = None
-        assert metric.type == MetricType.SIMPLE, "Only simple metrics can have a time dimension."
+        assert metric.type == MetricType.SIMPLE, "Only simple metrics can have an agg time dimension."
+        metric_agg_params = metric.type_params.metric_aggregation_params
+        # There are validations elsewhere to check this for metrics and provide messaging for it.
+        assert metric_agg_params, "Simple metrics must have metric_aggregation_params."
+        # This indicates a validation bug / dev error, not a user error that should appear
+        # in a user's YAML.
+        assert (
+            metric_agg_params.semantic_model == self.name
+        ), "Cannot retrieve the agg time dimension for a metric from a different model "
+        f"than the one that the metric belongs to. Metric `{metric.name}` belongs to model "
+        f"`{metric_agg_params.semantic_model}`, but we requested the agg time dimension from model `{self.name}`."
+
         if (
             metric.type_params
             and metric.type_params.metric_aggregation_params
