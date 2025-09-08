@@ -251,7 +251,7 @@ class MetricAggregationParams(Protocol):
 
     @property
     @abstractmethod
-    def agg(self) -> Optional[AggregationType]:  # noqa: D
+    def agg(self) -> AggregationType:  # noqa: D
         pass
 
     @property
