@@ -208,6 +208,16 @@ SEMANTIC_MODELS = [
             None,  # No error; this should pass
             None,  # No warning; this should pass
         ),
+        # =============== Basic Missing Params Validation(s) =======================
+        (
+            metric_with_guaranteed_meta(
+                name="missing_conversion_type_params",
+                type=MetricType.CONVERSION,
+                type_params=PydanticMetricTypeParams(),
+            ),
+            ["Conversion metric 'missing_conversion_type_params' must have conversion_type_params."],
+            None,  # No warning; this should pass
+        ),
         # =============== Entity, Constant, Window, Grain - General Tests ===============
         (
             metric_with_guaranteed_meta(

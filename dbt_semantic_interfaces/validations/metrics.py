@@ -348,12 +348,9 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         if metric.type_params.conversion_type_params is None:
             return issues
 
-        assert (
-            metric.type_params.conversion_type_params is not None
-        ), "Conversion type params must exist for conversion metrics"
-
-        base_measure = metric.type_params.conversion_type_params.base_measure
-        base_metric = metric.type_params.conversion_type_params.base_metric
+        conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
+        base_measure = conversion_type_params.base_measure
+        base_metric = conversion_type_params.base_metric
         if base_measure is not None and base_metric is not None:
             issues.append(
                 ValidationError(
@@ -542,10 +539,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 )
             )
 
-        conversion_type_params = metric.type_params.conversion_type_params
-        assert (
-            conversion_type_params is not None
-        ), "For a conversion metric, type_params.conversion_type_params must exist."
+        conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
         if conversion_type_params.base_measure is not None:
             # TODO SL-4116, SL-4188: mimic this validation for base_metric
             _validate_measure(
@@ -601,10 +595,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 )
             )
 
-        conversion_type_params = metric.type_params.conversion_type_params
-        assert (
-            conversion_type_params is not None
-        ), "For a conversion metric, type_params.conversion_type_params must exist."
+        conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
         if conversion_type_params.base_metric is not None:
             _validate_metric(
                 input_metric=conversion_type_params.base_metric,
@@ -643,10 +634,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                         )
                     )
 
-        conversion_type_params = metric.type_params.conversion_type_params
-        assert (
-            conversion_type_params is not None
-        ), "For a conversion metric, type_params.conversion_type_params must exist."
+        conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
         constant_properties = conversion_type_params.constant_properties or []
         base_properties = []
         conversion_properties = []
@@ -671,10 +659,18 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         return semantic_model
 
     @staticmethod
-    def _get_semantic_model_from_metric(
+    def _get_semantic_model_pointed_to_by_metric(
         metric_name: str, semantic_manifest: SemanticManifest
     ) -> Optional[SemanticModel]:
-        """Retrieve the semantic model from a given metric reference."""
+        """Retrieve the semantic model from a given metric reference.
+
+        This is used to handle several steps of indirection - we get a MetricInput,
+        which provides a metric name through which we can access the Metric, which
+        then may point at a specific SemanticModel if it was defined as part of that
+        model in its YAML specification.
+
+        This returns None if any part of this look up chain fails.
+        """
         semantic_model = None
         for model in semantic_manifest.semantic_models:
             metric = MetricValidationRuleHelpers.get_metric_from_manifest(metric_name, semantic_manifest)
@@ -688,7 +684,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         return semantic_model
 
     @staticmethod
-    def _get_base_model(
+    def _get_validated_model_for_input(
         input_measure: Optional[MetricInputMeasure],
         input_metric: Optional[MetricInput],
         metric_name: str,
@@ -744,7 +740,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                 semantic_manifest=semantic_manifest,
             )
         elif input_metric is not None:
-            model = ConversionMetricRule._get_semantic_model_from_metric(
+            model = ConversionMetricRule._get_semantic_model_pointed_to_by_metric(
                 metric_name=input_metric.name,
                 semantic_manifest=semantic_manifest,
             )
@@ -771,11 +767,8 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
             if metric.type == MetricType.CONVERSION:
                 issues.extend(ConversionMetricRule._validate_measure_xor_metric_for_each_input(metric=metric))
                 # Validates that the measure exists and corresponds to a semantic model
-                conversion_type_params = metric.type_params.conversion_type_params
-                assert (
-                    conversion_type_params is not None
-                ), "For a conversion metric, type_params.conversion_type_params must exist."
-                base_semantic_model, added_issues_from_base_model = ConversionMetricRule._get_base_model(
+                conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
+                base_semantic_model, added_issues_from_base_model = ConversionMetricRule._get_validated_model_for_input(
                     input_measure=conversion_type_params.base_measure,
                     input_metric=conversion_type_params.base_metric,
                     metric_name=metric.name,
@@ -784,7 +777,10 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
                     semantic_manifest=semantic_manifest,
                 )
                 issues.extend(added_issues_from_base_model)
-                conversion_semantic_model, added_issues_from_conversion_model = ConversionMetricRule._get_base_model(
+                (
+                    conversion_semantic_model,
+                    added_issues_from_conversion_model,
+                ) = ConversionMetricRule._get_validated_model_for_input(
                     input_measure=conversion_type_params.conversion_measure,
                     input_metric=conversion_type_params.conversion_metric,
                     metric_name=metric.name,

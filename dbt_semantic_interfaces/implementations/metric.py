@@ -25,6 +25,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 )
 from dbt_semantic_interfaces.implementations.metadata import PydanticMetadata
 from dbt_semantic_interfaces.protocols import Metric, ProtocolHint
+from dbt_semantic_interfaces.protocols.metric import ConversionTypeParams
 from dbt_semantic_interfaces.references import MeasureReference, MetricReference
 from dbt_semantic_interfaces.type_enums import (
     AggregationType,
@@ -251,7 +252,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         if isinstance(grain_to_date, str):
             data["type_params"]["cumulative_type_params"]["grain_to_date"] = grain_to_date.lower()
 
-        # Ensure offset_to_grain is lowercased (only used in derived metrics so far)
+        # Ensure offset_to_grain is lowercased (only used in derived metrics)
         input_metrics = type_params.get("metrics", [])
         if input_metrics:
             for input_metric in input_metrics:
@@ -285,8 +286,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
             ), f"{self} is metric type {MetricType.RATIO}, so neither the numerator and denominator should not be None"
             return (self.type_params.numerator, self.type_params.denominator)
         elif self.type is MetricType.CONVERSION:
-            conversion_type_params = self.type_params.conversion_type_params
-            assert conversion_type_params, "Conversion metric should have conversion_type_params."
+            conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=self)
             metrics: Set[PydanticMetricInput] = set()
             if conversion_type_params.base_metric is not None:
                 metrics.add(conversion_type_params.base_metric)
@@ -315,8 +315,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
                     PydanticMetric.all_input_measures_for_metric(metric=nested_metric, metric_index=metric_index)
                 )
         elif metric.type is MetricType.CONVERSION:
-            conversion_type_params = metric.type_params.conversion_type_params
-            assert conversion_type_params, "Conversion metric should have conversion_type_params."
+            conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric=metric)
             if conversion_type_params.base_measure is not None:
                 measures.add(conversion_type_params.base_measure.measure_reference)
             if conversion_type_params.conversion_measure is not None:
@@ -325,3 +324,11 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
             assert_values_exhausted(metric.type)
 
         return measures
+
+    @staticmethod
+    def get_checked_conversion_type_params(metric: Metric) -> ConversionTypeParams:
+        """Returns the conversion type params for a metric, checking that they are valid."""
+        assert metric.type is MetricType.CONVERSION, "Only conversion metrics can have conversion type params."
+        conversion_type_params = metric.type_params.conversion_type_params
+        assert conversion_type_params, f"Conversion metric '{metric.name}' must have conversion_type_params."
+        return conversion_type_params
