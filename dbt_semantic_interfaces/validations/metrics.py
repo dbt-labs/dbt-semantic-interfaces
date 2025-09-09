@@ -80,7 +80,7 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
             )
         elif metric.type_params.measure is None and input_metric is None:
             issues.append(
-                ValidationError(
+                ValidationWarning(
                     context=MetricContext(
                         file_context=FileContext.from_metadata(metadata=metric.metadata),
                         metric=MetricModelReference(metric_name=metric.name),

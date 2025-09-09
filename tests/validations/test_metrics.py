@@ -1197,7 +1197,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
 
 
 @pytest.mark.parametrize(
-    "metric, error_substring_if_error",
+    "metric, error_substring_if_error, error_substring_if_warning",
     [
         (
             metric_with_guaranteed_meta(
@@ -1209,6 +1209,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
                 ),
             ),
             None,  # No error; this should pass
+            None,
         ),
         (
             metric_with_guaranteed_meta(
@@ -1222,6 +1223,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
                 ),
             ),
             None,  # No error; this should pass
+            None,
         ),
         (
             metric_with_guaranteed_meta(
@@ -1237,6 +1239,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
             ),
             "Cumulative metric 'bad_metric_has_both_measure_and_metric_as_inputs' cannot have both a measure "
             "and a metric as inputs.  Please remove one of them.",
+            None,
         ),
         (
             metric_with_guaranteed_meta(
@@ -1246,6 +1249,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
                     cumulative_type_params=PydanticCumulativeTypeParams(period_agg=PeriodAggregation.FIRST),
                 ),
             ),
+            None,
             "Cumulative metric 'bad_metric_has_neither_measure_nor_metric_as_inputs' must have either a measure "
             "or a metric as inputs. Please add one of them.",
         ),
@@ -1254,6 +1258,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
 def test_cumulative_metrics_have_metric_xor_measure(
     metric: PydanticMetric,
     error_substring_if_error: Optional[str],
+    error_substring_if_warning: Optional[str],
 ) -> None:
     """Validate that things like fill_nulls_with and join_to_timespine are not allowed on non-simple metrics."""
     model_validator = SemanticManifestValidator[PydanticSemanticManifest]([CumulativeMetricRule()])
@@ -1294,8 +1299,10 @@ def test_cumulative_metrics_have_metric_xor_measure(
         )
     )
     if error_substring_if_error:
-        check_error_in_issues(error_substrings=[error_substring_if_error], issues=validation_results.all_issues)
-    else:
+        check_error_in_issues(error_substrings=[error_substring_if_error], issues=validation_results.errors)
+    if error_substring_if_warning:
+        check_error_in_issues(error_substrings=[error_substring_if_warning], issues=validation_results.warnings)
+    if not error_substring_if_error and not error_substring_if_warning:
         assert len(validation_results.all_issues) == 0, "expected this metric to pass validation, but it did not"
 
 
