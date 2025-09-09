@@ -13,4 +13,4 @@
 * @dbt-labs/semantic-layer
 
 # Parsing, validations, and protocols
-/dbt_semantic_interfaces/**  @dbt-labs/semantic-layer @QMalcolm @graciegoheen
+/dbt_semantic_interfaces/**  @dbt-labs/semantic-layer
