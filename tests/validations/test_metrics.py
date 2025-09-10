@@ -228,8 +228,8 @@ def test_simple_metrics_non_additive_dimension(  # noqa: D
                     metric_aggregation_params=PydanticMetricAggregationParams(
                         semantic_model="sum_measure",
                         agg=AggregationType.COUNT,
-                        expr="distinct 1",
                     ),
+                    expr="distinct 1",
                 ),
             ),
             "uses a 'count' aggregation with a DISTINCT expr: 'distinct 1'. This is not supported as it "
