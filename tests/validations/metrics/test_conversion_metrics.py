@@ -58,8 +58,8 @@ INPUT_CONVERSION_METRIC = metric_with_guaranteed_meta(
         metric_aggregation_params=PydanticMetricAggregationParams(
             agg=AggregationType.COUNT,
             semantic_model="conversion",
-            expr="1",
         ),
+        expr="1",
     ),
 )
 
@@ -71,8 +71,8 @@ INPUT_BASE_METRIC = metric_with_guaranteed_meta(
         metric_aggregation_params=PydanticMetricAggregationParams(
             agg=AggregationType.COUNT,
             semantic_model="base",
-            expr="1",
         ),
+        expr="1",
     ),
 )
 
@@ -84,8 +84,8 @@ METRIC_WITH_NON_EXISTENT_MODEL = metric_with_guaranteed_meta(
         metric_aggregation_params=PydanticMetricAggregationParams(
             agg=AggregationType.COUNT,
             semantic_model="this_model_does_not_exist",
-            expr="1",
         ),
+        expr="1",
     ),
 )
 

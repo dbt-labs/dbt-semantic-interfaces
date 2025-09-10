@@ -269,11 +269,6 @@ class MetricAggregationParams(Protocol):
     def non_additive_dimension(self) -> Optional[NonAdditiveDimensionParameters]:  # noqa: D
         pass
 
-    @property
-    @abstractmethod
-    def expr(self) -> Optional[str]:  # noqa: D
-        pass
-
 
 class MetricTypeParams(Protocol):
     """Type params add additional context to certain metric types (the context depends on the metric type)."""

@@ -182,13 +182,12 @@ class PydanticMetricAggregationParams(HashableBaseModel):
 
     semantic_model: str
 
-    # TODO SL-4116: make sure we recreate/reuse all the validations for measures
-    # for these fields, too.
+    # If you add fields to this, please make sure to update the transformation
+    # helper PydanticMeasure.to_metric_aggregation_params()
     agg: AggregationType
     agg_params: Optional[PydanticMeasureAggregationParameters]
     agg_time_dimension: Optional[str]
     non_additive_dimension: Optional[PydanticNonAdditiveDimensionParameters]
-    expr: Optional[str]
 
 
 class PydanticMetricTypeParams(HashableBaseModel):

@@ -610,7 +610,7 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
             issues.extend(
                 ConversionMetricRule._validate_agg_and_expr(
                     agg_type=agg_params.agg,
-                    expr=agg_params.expr,
+                    expr=metric.type_params.expr,
                     input_name=metric.name,
                     input_object_type="Metric",
                     main_metric=metric,
@@ -960,7 +960,7 @@ class MetricsCountAggregationExprRule(SemanticManifestValidationRule[SemanticMan
                         object_name=metric.name,
                         object_type="Metric",
                         agg_type=metric.type_params.metric_aggregation_params.agg,
-                        expr=metric.type_params.metric_aggregation_params.expr,
+                        expr=metric.type_params.expr,
                     )
                 )
         return issues
