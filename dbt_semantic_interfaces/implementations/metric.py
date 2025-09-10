@@ -17,6 +17,7 @@ from dbt_semantic_interfaces.implementations.element_config import (
     PydanticSemanticLayerElementConfig,
 )
 from dbt_semantic_interfaces.implementations.elements.measure import (
+    PydanticMeasure,
     PydanticMeasureAggregationParameters,
     PydanticNonAdditiveDimensionParameters,
 )
@@ -336,3 +337,20 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         conversion_type_params = metric.type_params.conversion_type_params
         assert conversion_type_params, f"Conversion metric '{metric.name}' must have conversion_type_params."
         return conversion_type_params
+
+    @staticmethod
+    def get_metric_aggregation_params(
+        measure: PydanticMeasure,
+        semantic_model_name: str,
+    ) -> PydanticMetricAggregationParams:
+        """This helps us create simple metrics from measures.
+
+        It lives here instead of measures to avoid circular import issues.
+        """
+        return PydanticMetricAggregationParams(
+            semantic_model=semantic_model_name,
+            agg=measure.agg,
+            agg_params=measure.agg_params,
+            agg_time_dimension=measure.agg_time_dimension,
+            non_additive_dimension=measure.non_additive_dimension,
+        )
