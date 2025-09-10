@@ -157,11 +157,29 @@ from tests.validations.validation_test_utils import check_error_in_issues
             "Metric 'metric_with_a_bogus_semantic_model' references semantic model "
             "'i_am_missing', but that semantic model could not be found.",
         ),
+        (
+            metric_with_guaranteed_meta(
+                name="metric_with_valid_non_additive_dimension",
+                type=MetricType.SIMPLE,
+                type_params=PydanticMetricTypeParams(
+                    metric_aggregation_params=PydanticMetricAggregationParams(
+                        agg=AggregationType.SUM,
+                        semantic_model="sum_measure2",
+                        non_additive_dimension=PydanticNonAdditiveDimensionParameters(
+                            name="second_time_dim",
+                            window_choice=AggregationType.MIN,
+                        ),
+                        agg_time_dimension="time_dim",
+                    ),
+                ),
+            ),
+            None,
+        ),
     ],
 )
 def test_simple_metrics_non_additive_dimension(  # noqa: D
     metric: PydanticMetric,
-    error_substring: str,
+    error_substring: Optional[str],
 ) -> None:
     model_validator = SemanticManifestValidator[PydanticSemanticManifest]([MetricsNonAdditiveDimensionsRule()])
     validation_results = model_validator.validate_semantic_manifest(
@@ -192,6 +210,13 @@ def test_simple_metrics_non_additive_dimension(  # noqa: D
                                 time_granularity=TimeGranularity.WEEK,
                             ),
                         ),
+                        PydanticDimension(
+                            name="second_time_dim",
+                            type=DimensionType.TIME,
+                            type_params=PydanticDimensionTypeParams(
+                                time_granularity=TimeGranularity.DAY,
+                            ),
+                        ),
                     ],
                     entities=[PydanticEntity(name="primary_entity2", type=EntityType.PRIMARY)],
                 ),
@@ -200,7 +225,12 @@ def test_simple_metrics_non_additive_dimension(  # noqa: D
             project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
         )
     )
-    check_error_in_issues(error_substrings=[error_substring], issues=validation_results.all_issues)
+    if error_substring is not None:
+        check_error_in_issues(error_substrings=[error_substring], issues=validation_results.all_issues)
+    else:
+        assert len(validation_results.all_issues) == 0, "Expected no issues, but found validation issues: " + str(
+            validation_results.all_issues
+        )
 
 
 @pytest.mark.parametrize(
