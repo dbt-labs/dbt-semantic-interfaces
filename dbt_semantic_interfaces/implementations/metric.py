@@ -222,6 +222,10 @@ class PydanticMetricTypeParams(HashableBaseModel):
     join_to_timespine: bool = False
     fill_nulls_with: Optional[int] = None
 
+    # Indicates the metric is an implementation detail and should not be exposed to the user.
+    # Generally used for metrics we create implicitly to replace measures.
+    is_private: Optional[bool] = False
+
 
 class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[Metric]):
     """Describes a metric."""
