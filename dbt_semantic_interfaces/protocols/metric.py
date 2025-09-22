@@ -341,6 +341,12 @@ class MetricTypeParams(Protocol):
         """What null values should be filled with if set.  Allowed only on simple metrics."""
         pass
 
+    @property
+    @abstractmethod
+    def is_private(self) -> Optional[bool]:
+        """Indicates the metric should not be exposed in APIs and end users."""
+        pass
+
 
 class Metric(Protocol):
     """Describes a metric."""

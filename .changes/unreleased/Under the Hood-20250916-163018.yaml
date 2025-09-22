@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Adds ability for us to mark metrics as private to indicate they are implementation details and not user-defined.
+time: 2025-09-16T16:30:18.127999-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
