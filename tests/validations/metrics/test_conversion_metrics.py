@@ -510,11 +510,13 @@ SEMANTIC_MODELS = [
                     ),
                 ),
             ),
+            None,  # No errors
             [
-                "Conversion metric 'bad_metric_has_both_base_measure_and_base_metric' cannot have both a base measure "
-                "and a base metric as inputs. Please remove one of them.",
+                "Conversion metric 'bad_metric_has_both_base_measure_and_base_metric' "
+                "should not have both a base measure "
+                "and a base metric as inputs. The base measure will be ignored; "
+                "please remove one of these inputs to avoid confusion.",
             ],
-            None,  # No warnings
         ),
         (
             metric_with_guaranteed_meta(
@@ -542,19 +544,20 @@ SEMANTIC_MODELS = [
                 type=MetricType.CONVERSION,
                 type_params=PydanticMetricTypeParams(
                     conversion_type_params=PydanticConversionTypeParams(
-                        base_metric=PydanticMetricInput(name="base_metric"),
+                        base_metric=PydanticMetricInput(name=INPUT_BASE_METRIC_NAME),
                         conversion_measure=PydanticMetricInputMeasure(name="measure_1"),
                         conversion_metric=PydanticMetricInput(name="conversion_metric"),
                         entity="primary_entity",
                     ),
                 ),
             ),
+            None,  # No errors
             [
                 "Conversion metric 'bad_metric_has_both_conversion_measure_and_conversion_metric' "
-                "cannot have both a "
-                "conversion measure and a conversion metric as inputs. Please remove one of them.",
+                "should not have both a conversion measure and a conversion metric "
+                "as inputs. The conversion measure will be ignored; please remove "
+                "one of these inputs to avoid confusion.",
             ],
-            None,  # No warnings
         ),
         (
             metric_with_guaranteed_meta(
