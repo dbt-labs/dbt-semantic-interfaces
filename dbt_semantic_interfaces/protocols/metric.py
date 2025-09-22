@@ -344,7 +344,7 @@ class MetricTypeParams(Protocol):
     @property
     @abstractmethod
     def is_private(self) -> Optional[bool]:
-        """Indicates the metric is an implementation detail and should not be exposed to the user."""
+        """Indicates the metric should not be exposed in APIs and end users."""
         pass
 
 
