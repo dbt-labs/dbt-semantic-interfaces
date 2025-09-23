@@ -72,20 +72,27 @@ class MeasureFeaturesToMetricNameMapper:
                 return metric.name
         return None
 
-    def _build_metric_from_measure_configuration(
-        self,
+    @staticmethod
+    def build_metric_from_measure_configuration(
         measure: PydanticMeasure,
         semantic_model_name: str,
         fill_nulls_with: Optional[int],
         join_to_timespine: Optional[bool],
+        is_private: bool = True,
     ) -> PydanticMetric:
-        """Build a metric from the measure configuration."""
+        """Build a metric from the measure configuration.
+
+        Name defaults to the measure name, which will require overriding in many cases
+        (Name override is handled automatically if you are using
+        get_or_create_metric_for_measure instead of this method).
+        """
         type_params = PydanticMetricTypeParams(
             metric_aggregation_params=PydanticMetric.get_metric_aggregation_params(
                 measure=measure,
                 semantic_model_name=semantic_model_name,
             ),
             expr=measure.expr,
+            is_private=is_private,
         )
         # This allows us to avoid re-implementing the defaults in a second place.
         if fill_nulls_with is not None:
@@ -154,7 +161,7 @@ class MeasureFeaturesToMetricNameMapper:
             return stored_metric_name
 
         # if no, does a metric exist in the manifest that matches all required features?
-        metric = self._build_metric_from_measure_configuration(
+        metric = self.build_metric_from_measure_configuration(
             measure=measure,
             semantic_model_name=model_name,
             fill_nulls_with=fill_nulls_with,
