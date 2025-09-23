@@ -42,4 +42,6 @@ runs:
         AND additional_cache_key: "${{ inputs.additional-cache-key }}"
   - name: Install Hatch
     shell: bash
-    run: pip3 install hatch
+    run: |
+      pip3 install "click<8.3.0"
+      pip3 install hatch

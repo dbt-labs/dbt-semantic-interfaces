@@ -4,6 +4,8 @@ run:
 	export FORMAT_JSON_LOGS="1"
 
 install-hatch:
+	# required to avoid hatch install errors if you're in a venv
+	pip3 install "click<8.3.0"
 	pip3 install hatch
 
 # This edits your local pre-commit hook file to use Hatch when executing.
