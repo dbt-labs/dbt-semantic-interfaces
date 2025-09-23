@@ -5,6 +5,7 @@ from dbt_semantic_interfaces.implementations.elements.measure import PydanticMea
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
     PydanticMetricAggregationParams,
+    PydanticMetricInputMeasure,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
@@ -20,7 +21,7 @@ from tests.example_project_configuration import (
 )
 
 
-def test_proxy_measure_create_metric_generates_metric_with_equivalent_agg_params() -> None:
+def test_measure_with_create_metric_generates_metric_with_equivalent_agg_params() -> None:
     """Test that a measure with create_metric: true generates a metric with equivalent agg params."""
     primary_entity_name = "example_entity"
     measure_name = "my_sum_measure"
@@ -133,3 +134,8 @@ def test_proxy_measure_create_metric_generates_metric_with_equivalent_agg_params
     ], "Metric was constructed with the wrong non-additive dimension window groupings."
 
     assert metric.type_params.expr == measure_expr, "Metric was constructed with the wrong expr."
+
+    # Finally, make sure it still references the measure
+    assert metric.type_params.measure == PydanticMetricInputMeasure(
+        name=measure_name
+    ), "Metric was constructed with the wrong measure."

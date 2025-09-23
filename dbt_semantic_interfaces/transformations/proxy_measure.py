@@ -5,6 +5,7 @@ from typing_extensions import override
 from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
+    PydanticMetricInputMeasure,
     PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
@@ -43,7 +44,7 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                         if metric.type != MetricType.SIMPLE:
                             raise ModelTransformError(
                                 f"Cannot have metric with the same name as a measure ({measure.name}) that is not a "
-                                f"proxy for that measure"
+                                f"created mechanically from that measure using create_metric=True"
                             )
                         logger.warning(
                             f"Metric already exists with name ({measure.name}). *Not* adding measure proxy metric for "
@@ -52,12 +53,14 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                         add_metric = False
 
                 if add_metric is True:
-                    # just need to edit this and then add tests!
                     semantic_manifest.metrics.append(
                         PydanticMetric(
                             name=measure.name,
                             type=MetricType.SIMPLE,
                             type_params=PydanticMetricTypeParams(
+                                # Measure is left here for backward compatibility.  It will not be
+                                # used by metricflow.
+                                measure=PydanticMetricInputMeasure(name=measure.name),
                                 metric_aggregation_params=PydanticMetric.get_metric_aggregation_params(
                                     measure=measure,
                                     semantic_model_name=semantic_model.name,
