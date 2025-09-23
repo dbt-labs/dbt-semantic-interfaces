@@ -592,7 +592,7 @@ def test_simple_metrics_are_the_only_metrics_allowed_to_have_agg_params(  # noqa
 
 
 @pytest.mark.parametrize(
-    "metric, error_substring_if_error",
+    "metric, error_substring_if_error, warning_substring_if_warning",
     [
         (
             metric_with_guaranteed_meta(
@@ -603,6 +603,7 @@ def test_simple_metrics_are_the_only_metrics_allowed_to_have_agg_params(  # noqa
                 ),
             ),
             None,  # No error; this should pass
+            None,  # No warnings
         ),
         (
             metric_with_guaranteed_meta(
@@ -616,6 +617,7 @@ def test_simple_metrics_are_the_only_metrics_allowed_to_have_agg_params(  # noqa
                 ),
             ),
             None,  # No error; this should pass
+            None,  # No warnings
         ),
         (
             metric_with_guaranteed_meta(
@@ -629,8 +631,10 @@ def test_simple_metrics_are_the_only_metrics_allowed_to_have_agg_params(  # noqa
                     ),
                 ),
             ),
-            "Metric 'metric_with_both_measure_and_agg_params' cannot have both "
-            "metric_aggregation_params and a measure.",
+            None,  # No Errors
+            "Metric 'metric_with_both_measure_and_agg_params' should not have both "
+            "metric_aggregation_params and a measure. The measure will be ignored; please "
+            "remove it to avoid confusion.",
         ),
         (
             metric_with_guaranteed_meta(
@@ -640,12 +644,14 @@ def test_simple_metrics_are_the_only_metrics_allowed_to_have_agg_params(  # noqa
             ),
             "Metric 'metric_with_neither_measure_nor_agg_params' is a Simple metric, so it must have either "
             "metric_aggregation_params or a measure.",
+            None,  # No warnings
         ),
     ],
 )
 def test_simple_metrics_have_measures_xor_agg_params(  # noqa: D
     metric: PydanticMetric,
     error_substring_if_error: Optional[str],
+    warning_substring_if_warning: Optional[str],
 ) -> None:
     model_validator = SemanticManifestValidator[PydanticSemanticManifest](
         [MetricAggregationParamsInForSimpleMetricsRule()]
@@ -687,8 +693,10 @@ def test_simple_metrics_have_measures_xor_agg_params(  # noqa: D
         )
     )
     if error_substring_if_error:
-        check_error_in_issues(error_substrings=[error_substring_if_error], issues=validation_results.all_issues)
-    else:
+        check_error_in_issues(error_substrings=[error_substring_if_error], issues=validation_results.errors)
+    if warning_substring_if_warning:
+        check_error_in_issues(error_substrings=[warning_substring_if_warning], issues=validation_results.warnings)
+    if not error_substring_if_error and not warning_substring_if_warning:
         assert len(validation_results.all_issues) == 0, "expected this metric to pass validation, but it did not"
 
 
@@ -1267,9 +1275,10 @@ def test_cumulative_metrics() -> None:  # noqa: D
                     ),
                 ),
             ),
-            "Cumulative metric 'bad_metric_has_both_measure_and_metric_as_inputs' cannot have both a measure "
-            "and a metric as inputs.  Please remove one of them.",
             None,
+            "Cumulative metric 'bad_metric_has_both_measure_and_metric_as_inputs' should not have both a measure "
+            "and a metric as inputs. The measure will be ignored; please remove "
+            "it to avoid confusion.",
         ),
         (
             metric_with_guaranteed_meta(

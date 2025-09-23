@@ -69,13 +69,13 @@ class CumulativeMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         )
         if metric.type_params.measure is not None and input_metric is not None:
             issues.append(
-                ValidationError(
+                ValidationWarning(
                     context=MetricContext(
                         file_context=FileContext.from_metadata(metadata=metric.metadata),
                         metric=MetricModelReference(metric_name=metric.name),
                     ),
-                    message=f"Cumulative metric '{metric.name}' cannot have both a measure and a metric as "
-                    "inputs.  Please remove one of them.",
+                    message=f"Cumulative metric '{metric.name}' should not have both a measure and a metric as "
+                    "inputs. The measure will be ignored; please remove it to avoid confusion.",
                 )
             )
         elif metric.type_params.measure is None and input_metric is None:
@@ -385,13 +385,14 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         base_metric = conversion_type_params.base_metric
         if base_measure is not None and base_metric is not None:
             issues.append(
-                ValidationError(
+                ValidationWarning(
                     context=MetricContext(
                         file_context=FileContext.from_metadata(metadata=metric.metadata),
                         metric=MetricModelReference(metric_name=metric.name),
                     ),
-                    message=f"Conversion metric '{metric.name}' cannot have both a base measure "
-                    "and a base metric as inputs. Please remove one of them.",
+                    message=f"Conversion metric '{metric.name}' should not have both a base measure "
+                    "and a base metric as inputs. The base measure will be ignored; please "
+                    "remove it to avoid confusion.",
                 )
             )
         elif base_measure is None and base_metric is None:
@@ -410,13 +411,14 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         conversion_metric = metric.type_params.conversion_type_params.conversion_metric
         if conversion_measure is not None and conversion_metric is not None:
             issues.append(
-                ValidationError(
+                ValidationWarning(
                     context=MetricContext(
                         file_context=FileContext.from_metadata(metadata=metric.metadata),
                         metric=MetricModelReference(metric_name=metric.name),
                     ),
-                    message=f"Conversion metric '{metric.name}' cannot have both a conversion measure "
-                    "and a conversion metric as inputs. Please remove one of them.",
+                    message=f"Conversion metric '{metric.name}' should not have both a conversion measure "
+                    "and a conversion metric as inputs. The conversion measure will be ignored; please "
+                    "remove it to avoid confusion.",
                 )
             )
         elif conversion_measure is None and conversion_metric is None:
@@ -746,13 +748,14 @@ class ConversionMetricRule(SemanticManifestValidationRule[SemanticManifestT], Ge
         model: Optional[SemanticModel] = None
         if input_measure is not None and input_metric is not None:
             issues.append(
-                ValidationError(
+                ValidationWarning(
                     context=MetricContext(
                         file_context=FileContext.from_metadata(metadata=metric_metadata),
                         metric=MetricModelReference(metric_name=metric_name),
                     ),
-                    message=f"Conversion metric '{metric_name}' cannot have both a {input_type} measure "
-                    f"and a {input_type} metric as inputs. Please remove one of them.",
+                    message=f"Conversion metric '{metric_name}' should not have both a {input_type} measure "
+                    f"and a {input_type} metric as inputs. The measure input will be ignored; please "
+                    "remove it to avoid confusion.",
                 )
             )
         elif input_measure is None and input_metric is None:
@@ -1051,13 +1054,14 @@ class MetricAggregationParamsInForSimpleMetricsRule(
                 has_input_measure = metric.type_params.measure is not None
                 if has_agg_params and has_input_measure:
                     issues.append(
-                        ValidationError(
+                        ValidationWarning(
                             context=MetricContext(
                                 file_context=FileContext.from_metadata(metadata=metric.metadata),
                                 metric=MetricModelReference(metric_name=metric.name),
                             ),
-                            message=f"Metric '{metric.name}' cannot have both "
-                            "metric_aggregation_params and a measure.",
+                            message=f"Metric '{metric.name}' should not have both "
+                            "metric_aggregation_params and a measure. The measure will be ignored; "
+                            "please remove it to avoid confusion.",
                         )
                     )
                 elif not has_agg_params and not has_input_measure:

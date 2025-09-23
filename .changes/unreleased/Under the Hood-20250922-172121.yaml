@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Relaxed enforcement for metric input XOR measure to be a warning when both input types are present.
+time: 2025-09-22T17:21:21.113848-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
