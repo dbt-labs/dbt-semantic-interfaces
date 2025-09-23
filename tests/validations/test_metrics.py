@@ -634,7 +634,7 @@ def test_simple_metrics_are_the_only_metrics_allowed_to_have_agg_params(  # noqa
             None,  # No Errors
             "Metric 'metric_with_both_measure_and_agg_params' should not have both "
             "metric_aggregation_params and a measure. The measure will be ignored; please "
-            "remove one of these inputs to avoid confusion.",
+            "remove it to avoid confusion.",
         ),
         (
             metric_with_guaranteed_meta(
@@ -1278,7 +1278,7 @@ def test_cumulative_metrics() -> None:  # noqa: D
             None,
             "Cumulative metric 'bad_metric_has_both_measure_and_metric_as_inputs' should not have both a measure "
             "and a metric as inputs. The measure will be ignored; please remove "
-            "one of these inputs to avoid confusion.",
+            "it to avoid confusion.",
         ),
         (
             metric_with_guaranteed_meta(

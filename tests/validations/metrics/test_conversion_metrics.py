@@ -515,7 +515,7 @@ SEMANTIC_MODELS = [
                 "Conversion metric 'bad_metric_has_both_base_measure_and_base_metric' "
                 "should not have both a base measure "
                 "and a base metric as inputs. The base measure will be ignored; "
-                "please remove one of these inputs to avoid confusion.",
+                "please remove it to avoid confusion.",
             ],
         ),
         (
@@ -556,7 +556,7 @@ SEMANTIC_MODELS = [
                 "Conversion metric 'bad_metric_has_both_conversion_measure_and_conversion_metric' "
                 "should not have both a conversion measure and a conversion metric "
                 "as inputs. The conversion measure will be ignored; please remove "
-                "one of these inputs to avoid confusion.",
+                "it to avoid confusion.",
             ],
         ),
         (
