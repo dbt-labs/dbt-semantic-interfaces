@@ -111,6 +111,50 @@
       "config": {
         "meta": {}
       }
+    },
+    {
+      "name": "fct_another_orders",
+      "defaults": null,
+      "description": null,
+      "node_relation": {
+        "alias": "another_table",
+        "schema_name": "schema",
+        "database": null,
+        "relation_name": "schema.another_table"
+      },
+      "primary_entity": null,
+      "entities": [
+        {
+          "name": "my_primary_entity_column",
+          "description": null,
+          "type": "primary",
+          "role": null,
+          "expr": null,
+          "metadata": null,
+          "label": null,
+          "config": null
+        }
+      ],
+      "measures": [],
+      "dimensions": [
+        {
+          "name": "my_another_time_dimension_column",
+          "description": null,
+          "type": "time",
+          "is_partition": false,
+          "type_params": {
+            "time_granularity": "day",
+            "validity_params": null
+          },
+          "expr": null,
+          "metadata": null,
+          "label": null,
+          "config": null
+        }
+      ],
+      "label": null,
+      "metadata": null,
+      "config": null
     }
   ],
   "metrics": [
@@ -122,7 +166,7 @@
         "measure": null,
         "numerator": null,
         "denominator": null,
-        "expr": null,
+        "expr": "1",
         "window": null,
         "grain_to_date": null,
         "metrics": null,
@@ -130,14 +174,15 @@
         "cumulative_type_params": null,
         "input_measures": [],
         "metric_aggregation_params": {
+          "semantic_model": "fct_orders",
           "agg": "sum",
           "agg_params": null,
           "agg_time_dimension": null,
-          "non_additive_dimension": null,
-          "expr": "case when is_a then 1 else 0 end",
-          "join_to_timespine": false,
-          "fill_nulls_with": null
-        }
+          "non_additive_dimension": null
+        },
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
@@ -153,7 +198,7 @@
         "measure": null,
         "numerator": null,
         "denominator": null,
-        "expr": null,
+        "expr": "case when is_a then 1 else 0 end",
         "window": null,
         "grain_to_date": null,
         "metrics": null,
@@ -161,18 +206,19 @@
         "cumulative_type_params": null,
         "input_measures": [],
         "metric_aggregation_params": {
+          "semantic_model": "fct_orders",
           "agg": "sum",
           "agg_params": null,
           "agg_time_dimension": "my_other_time_dimension_column",
-          "non_additive_dimension": null,
-          "expr": null,
-          "join_to_timespine": false,
-          "fill_nulls_with": null
-        }
+          "non_additive_dimension": null
+        },
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
-      "label": "my label",
+      "label": "my time dimension label",
       "config": null,
       "time_granularity": null
     },
@@ -184,7 +230,7 @@
         "measure": null,
         "numerator": null,
         "denominator": null,
-        "expr": null,
+        "expr": "another_column",
         "window": null,
         "grain_to_date": null,
         "metrics": null,
@@ -192,6 +238,7 @@
         "cumulative_type_params": null,
         "input_measures": [],
         "metric_aggregation_params": {
+          "semantic_model": "fct_orders",
           "agg": "percentile",
           "agg_params": {
             "percentile": 50.0,
@@ -199,15 +246,15 @@
             "use_approximate_percentile": false
           },
           "agg_time_dimension": null,
-          "non_additive_dimension": null,
-          "expr": "another_column",
-          "join_to_timespine": false,
-          "fill_nulls_with": null
-        }
+          "non_additive_dimension": null
+        },
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
-      "label": "my label",
+      "label": "my percentile label",
       "config": null,
       "time_granularity": null
     },
@@ -227,6 +274,7 @@
         "cumulative_type_params": null,
         "input_measures": [],
         "metric_aggregation_params": {
+          "semantic_model": "fct_orders",
           "agg": "sum",
           "agg_params": null,
           "agg_time_dimension": null,
@@ -234,17 +282,17 @@
             "name": "my_derived_dimension",
             "window_choice": "max",
             "window_groupings": [
-              "my_entity_column"
+              "my_primary_entity_column"
             ]
-          },
-          "expr": null,
-          "join_to_timespine": true,
-          "fill_nulls_with": 0
-        }
+          }
+        },
+        "join_to_timespine": true,
+        "fill_nulls_with": 0,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
-      "label": "my label",
+      "label": "my non-additive label",
       "config": {
         "meta": {
           "key": "value"
@@ -269,7 +317,7 @@
             "filter": {
               "where_filters": [
                 {
-                  "where_sql_template": "{{ Dimension('my_cateogorical_dimension_column') }} > 10"
+                  "where_sql_template": "{{ Dimension('fct_orders__my_categorical_dimension_column') }} > 10"
                 }
               ]
             },
@@ -284,11 +332,14 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
-      "label": "my label",
+      "label": "my derived label",
       "config": null,
       "time_granularity": null
     },
@@ -301,17 +352,17 @@
         "numerator": null,
         "denominator": null,
         "expr": null,
-        "window": {
-          "count": 1,
-          "granularity": "week"
-        },
-        "grain_to_date": "hour",
+        "window": null,
+        "grain_to_date": null,
         "metrics": null,
         "conversion_type_params": null,
         "cumulative_type_params": {
-          "window": null,
+          "window": {
+            "count": 1,
+            "granularity": "week"
+          },
           "grain_to_date": null,
-          "period_agg": "first",
+          "period_agg": "last",
           "metric": {
             "name": "my_simple_metric",
             "filter": null,
@@ -321,11 +372,14 @@
           }
         },
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
-      "label": "my label",
+      "label": "my cumulative label",
       "config": null,
       "time_granularity": null
     },
@@ -356,11 +410,14 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
-      "label": "my label",
+      "label": "my ratio label",
       "config": null,
       "time_granularity": null
     },
@@ -375,7 +432,7 @@
           "filter": {
             "where_filters": [
               {
-                "where_sql_template": "{{ Dimension('my_cateogorical_dimension_column') }} > 10"
+                "where_sql_template": "{{ Dimension('fct_orders__my_categorical_dimension_column') }} > 10"
               }
             ]
           },
@@ -397,11 +454,14 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
-      "label": "my label",
+      "label": "my custom ratio label",
       "config": null,
       "time_granularity": null
     },
@@ -428,13 +488,19 @@
           },
           "conversion_measure": null,
           "conversion_metric": {
-            "name": "my_simple_metric_that_uses_the_other_time_dimension",
-            "filter": null,
+            "name": "my_simple_metric",
+            "filter": {
+              "where_filters": [
+                {
+                  "where_sql_template": "{{ Dimension('fct_orders__my_categorical_dimension_column') }} > 10"
+                }
+              ]
+            },
             "alias": null,
             "offset_window": null,
             "offset_to_grain": null
           },
-          "entity": "my_virtual_primary_entity",
+          "entity": "my_primary_entity_column",
           "calculation": "conversion_rate",
           "window": {
             "count": 1,
@@ -443,17 +509,116 @@
           "constant_properties": [
             {
               "base_property": "my_derived_dimension",
-              "conversion_property": "my_foreign_entity"
+              "conversion_property": "my_foreign_entity_column"
             }
           ]
         },
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
-      "label": "my label",
+      "label": "my conversion label",
+      "config": null,
+      "time_granularity": null
+    },
+    {
+      "name": "my_simple_metric_that_uses_the_other_time_dimension_but_is_also_from_another_semantic_model",
+      "description": "cool metric from another semantic model",
+      "type": "simple",
+      "type_params": {
+        "measure": null,
+        "numerator": null,
+        "denominator": null,
+        "expr": null,
+        "window": null,
+        "grain_to_date": null,
+        "metrics": null,
+        "conversion_type_params": null,
+        "cumulative_type_params": null,
+        "input_measures": [],
+        "metric_aggregation_params": {
+          "semantic_model": "fct_another_orders",
+          "agg": "sum",
+          "agg_params": null,
+          "agg_time_dimension": "my_another_time_dimension_column",
+          "non_additive_dimension": null
+        },
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
+      },
+      "filter": null,
+      "metadata": null,
+      "label": "my other semantic model label",
+      "config": null,
+      "time_granularity": null
+    },
+    {
+      "name": "my_metric_name_from_another_semantic_model",
+      "description": "another metric from another semantic model",
+      "type": "simple",
+      "type_params": {
+        "measure": null,
+        "numerator": null,
+        "denominator": null,
+        "expr": "1",
+        "window": null,
+        "grain_to_date": null,
+        "metrics": null,
+        "conversion_type_params": null,
+        "cumulative_type_params": null,
+        "input_measures": [],
+        "metric_aggregation_params": {
+          "semantic_model": "fct_another_orders",
+          "agg": "count",
+          "agg_params": null,
+          "agg_time_dimension": null,
+          "non_additive_dimension": null
+        },
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
+      },
+      "filter": null,
+      "metadata": null,
+      "label": "my another semantic model label",
+      "config": null,
+      "time_granularity": null
+    },
+    {
+      "name": "my_other_metric_from_another_semantic_model",
+      "description": "yet another metric from another semantic model",
+      "type": "simple",
+      "type_params": {
+        "measure": null,
+        "numerator": null,
+        "denominator": null,
+        "expr": "user_id",
+        "window": null,
+        "grain_to_date": null,
+        "metrics": null,
+        "conversion_type_params": null,
+        "cumulative_type_params": null,
+        "input_measures": [],
+        "metric_aggregation_params": {
+          "semantic_model": "fct_another_orders",
+          "agg": "count_distinct",
+          "agg_params": null,
+          "agg_time_dimension": null,
+          "non_additive_dimension": null
+        },
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
+      },
+      "filter": null,
+      "metadata": null,
+      "label": "my yet another label",
       "config": null,
       "time_granularity": null
     },
@@ -466,16 +631,27 @@
         "numerator": null,
         "denominator": null,
         "expr": null,
-        "window": {
-          "count": 1,
-          "granularity": "week"
-        },
-        "grain_to_date": "hour",
+        "window": null,
+        "grain_to_date": null,
         "metrics": null,
         "conversion_type_params": null,
-        "cumulative_type_params": null,
+        "cumulative_type_params": {
+          "window": null,
+          "grain_to_date": "hour",
+          "period_agg": "first",
+          "metric": {
+            "name": "my_simple_metric",
+            "filter": null,
+            "alias": null,
+            "offset_window": null,
+            "offset_to_grain": null
+          }
+        },
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
@@ -494,7 +670,7 @@
           "filter": {
             "where_filters": [
               {
-                "where_sql_template": "{{ Dimension('my_cateogorical_dimension_column') }} > 10"
+                "where_sql_template": "{{ Dimension('fct_orders__my_categorical_dimension_column') }} > 10"
               }
             ]
           },
@@ -516,7 +692,10 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
@@ -556,7 +735,10 @@
         "conversion_type_params": null,
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
@@ -601,14 +783,17 @@
           },
           "constant_properties": [
             {
-              "base_property": "DIMENSION or ENTITY",
-              "conversion_property": "DIMENSION or ENTITY"
+              "base_property": "my_categorical_dimension_column",
+              "conversion_property": "my_another_time_dimension_column"
             }
           ]
         },
         "cumulative_type_params": null,
         "input_measures": [],
-        "metric_aggregation_params": null
+        "metric_aggregation_params": null,
+        "join_to_timespine": false,
+        "fill_nulls_with": null,
+        "is_private": false
       },
       "filter": null,
       "metadata": null,
@@ -628,8 +813,8 @@
     "metadata": null,
     "dsi_package_version": {
       "major_version": "0",
-      "minor_version": "7",
-      "patch_version": "4"
+      "minor_version": "9",
+      "patch_version": "0"
     },
     "time_spines": [
       {
