@@ -1295,6 +1295,7 @@ def test_cumulative_metrics_have_metric_xor_measure(
     validation_results = model_validator.validate_semantic_manifest(
         PydanticSemanticManifest(
             semantic_models=[
+                # pointless comment
                 semantic_model_with_guaranteed_meta(
                     name="sum_measure",
                     measures=[
