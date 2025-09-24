@@ -1,3 +1,4 @@
+import logging
 from typing import Optional, Tuple
 
 from typing_extensions import override
@@ -16,6 +17,8 @@ from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
 from dbt_semantic_interfaces.type_enums import MetricType
+
+logger = logging.getLogger(__name__)
 
 
 class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
@@ -53,9 +56,13 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                     )
                 )
                 if model_and_measure is None:
-                    # This should have been caught by validations; we're including this here for
-                    # general code safety.
-                    raise ValueError(f"Measure {input_measure.name} not found in any semantic model")
+                    # Should be validated; see test_metric_missing_measure for tests that show that this
+                    # is the case.
+                    logger.warning(
+                        f"Measure {input_measure.name} not found in any semantic model; skipping flattening of metric. "
+                        "(This should also be caught by validations.)"
+                    )
+                    continue
                 semantic_model, measure = model_and_measure
 
                 metric.type_params.metric_aggregation_params = PydanticMetric.get_metric_aggregation_params(
