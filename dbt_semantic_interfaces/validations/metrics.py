@@ -1067,24 +1067,26 @@ class MetricAggregationParamsInForSimpleMetricsRule(
                         )
                     if metric.type_params.fill_nulls_with is not None:
                         issues.append(
-                            ValidationError(
+                            ValidationWarning(
                                 context=MetricContext(
                                     file_context=FileContext.from_metadata(metadata=metric.metadata),
                                     metric=MetricModelReference(metric_name=metric.name),
                                 ),
-                                message=f"Simple Metric '{metric.name}' cannot have a measure input as well as a "
-                                "value for fill_nulls_with.",
+                                message=f"Simple Metric '{metric.name}' should not have a measure input as well as a "
+                                "value for fill_nulls_with.  The metric's fill_nulls_with "
+                                "will be ignored until the measure is removed.",
                             )
                         )
                     if metric.type_params.join_to_timespine:
                         issues.append(
-                            ValidationError(
+                            ValidationWarning(
                                 context=MetricContext(
                                     file_context=FileContext.from_metadata(metadata=metric.metadata),
                                     metric=MetricModelReference(metric_name=metric.name),
                                 ),
-                                message=f"Simple Metric '{metric.name}' cannot have a measure input as well as a "
-                                "value for join_to_timespine.",
+                                message=f"Simple Metric '{metric.name}' should not have a measure input as well as a "
+                                "value for join_to_timespine.  The metric's join_to_timespine "
+                                "will be ignored until the measure is removed.",
                             )
                         )
                 elif not has_agg_params and not has_input_measure:
