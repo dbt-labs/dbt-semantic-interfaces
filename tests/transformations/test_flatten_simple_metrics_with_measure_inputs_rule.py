@@ -24,6 +24,9 @@ from dbt_semantic_interfaces.implementations.semantic_model import PydanticSeman
 from dbt_semantic_interfaces.transformations.flatten_simple_metrics_with_measure_inputs import (
     FlattenSimpleMetricsWithMeasureInputsRule,
 )
+from dbt_semantic_interfaces.transformations.semantic_manifest_transformer import (
+    PydanticSemanticManifestTransformer,
+)
 from dbt_semantic_interfaces.type_enums import (
     AggregationType,
     DimensionType,
@@ -92,7 +95,7 @@ def test_metric_with_measure_and_metric_agg_params_is_unchanged() -> None:
         project_configuration=_project_config(),
     )
 
-    transformed = FlattenSimpleMetricsWithMeasureInputsRule.transform_model(manifest)
+    transformed = PydanticSemanticManifestTransformer.transform(manifest)
 
     # Verify nothing has changed in the metric
     assert len(transformed.metrics) == 1
