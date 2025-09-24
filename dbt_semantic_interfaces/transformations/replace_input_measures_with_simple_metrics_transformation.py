@@ -14,14 +14,13 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.protocols import ProtocolHint
-from dbt_semantic_interfaces.transformations.measure_to_metric_transformation_pieces.measure_features_to_metric_name import (
+from dbt_semantic_interfaces.transformations.measure_to_metric_transformation_pieces.measure_features_to_metric_name import (  # noqa: E501
     MeasureFeaturesToMetricNameMapper,
 )
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
 from dbt_semantic_interfaces.type_enums import MetricType
-
 
 logger = logging.getLogger(__name__)
 
@@ -99,6 +98,17 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
     ) -> None:
         if metric.type != MetricType.CUMULATIVE:
             return
+        if metric.type_params.measure is None:
+            return
+        if metric.type_params.cumulative_type_params is None:
+            logger.warning(
+                (
+                    f"Cumulative metric {metric.name} has no cumulative type params; "
+                    "skipping replacement on cumulative metric. "
+                    "(This should also be caught by validations.)"
+                )
+            )
+            return
         new_metric_name = (
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_get_or_create_metric_and_retrieve_name(
                 mapper=mapper,
@@ -123,8 +133,16 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
     ) -> None:
         if metric.type != MetricType.CONVERSION:
             return
-        conversion_type_params = PydanticMetric.get_checked_conversion_type_params(metric)
-
+        if metric.type_params.conversion_type_params is None:
+            logger.warning(
+                (
+                    f"Conversion metric {metric.name} has no conversion type params; "
+                    "skipping replacement on conversion metric. "
+                    "(This should also be caught by validations.)"
+                )
+            )
+            return
+        conversion_type_params = metric.type_params.conversion_type_params
         new_conversion_metric_base_metric_name = (
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_get_or_create_metric_and_retrieve_name(
                 mapper=mapper,
@@ -136,8 +154,12 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
         if new_conversion_metric_base_metric_name is not None:
             metric.type_params.conversion_type_params.base_metric = PydanticMetricInput(
                 name=new_conversion_metric_base_metric_name,
-                filter=conversion_type_params.base_measure.filter,
-                alias=conversion_type_params.base_measure.alias,
+                filter=conversion_type_params.base_measure.filter
+                if conversion_type_params.base_measure is not None
+                else None,
+                alias=conversion_type_params.base_measure.alias
+                if conversion_type_params.base_measure is not None
+                else None,
             )
             # Note: we leave the old measure reference in place for backward compatibility.
 
@@ -152,8 +174,12 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
         if new_conversion_metric_conversion_metric_name is not None:
             metric.type_params.conversion_type_params.conversion_metric = PydanticMetricInput(
                 name=new_conversion_metric_conversion_metric_name,
-                filter=conversion_type_params.conversion_measure.filter,
-                alias=conversion_type_params.conversion_measure.alias,
+                filter=conversion_type_params.conversion_measure.filter
+                if conversion_type_params.conversion_measure is not None
+                else None,
+                alias=conversion_type_params.conversion_measure.alias
+                if conversion_type_params.conversion_measure is not None
+                else None,
             )
             # Note: we leave the old measure reference in place for backward compatibility.
 

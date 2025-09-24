@@ -100,6 +100,9 @@ def test_cumulative_no_measure_with_metric_input_is_unchanged() -> None:
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
 
     type_params = PydanticMetricTypeParams(cumulative_type_params=PydanticCumulativeTypeParams())
+    assert (
+        type_params.cumulative_type_params is not None
+    ), "cumulative_type_params should be set as part of the test setup here."
     type_params.cumulative_type_params.metric = PydanticMetricInput(name="preexisting_simple")
 
     metric = PydanticMetric(name="cum", type=MetricType.CUMULATIVE, type_params=type_params)
@@ -117,6 +120,9 @@ def test_cumulative_with_measure_and_metric_input_is_unchanged() -> None:
     input_measure = PydanticMetricInputMeasure(name="m1", fill_nulls_with=5, join_to_timespine=True)
     type_params = PydanticMetricTypeParams(cumulative_type_params=PydanticCumulativeTypeParams())
     type_params.measure = input_measure
+    assert (
+        type_params.cumulative_type_params is not None
+    ), "cumulative_type_params should be set as part of the test setup here."
     type_params.cumulative_type_params.metric = PydanticMetricInput(name="preexisting_simple")
 
     metric = PydanticMetric(name="cum", type=MetricType.CUMULATIVE, type_params=type_params)
@@ -157,6 +163,10 @@ def test_cumulative_with_measure_reuses_existing_simple_metric() -> None:
     assert post_simple_metric_count == initial_simple_metric_count
 
     out_metric = next(m for m in out.metrics if m.type == MetricType.CUMULATIVE)
+    assert (
+        out_metric.type_params.cumulative_type_params is not None
+        and out_metric.type_params.cumulative_type_params.metric is not None
+    ), "cumulative_type_params should be set as part of the test setup here."
     assert out_metric.type_params.cumulative_type_params.metric.name == "existing_simple_for_m1"
 
 
@@ -180,7 +190,15 @@ def test_cumulative_with_measure_creates_one_for_multiple_metrics() -> None:
 
     assert post_simple_metric_count == initial_simple_metric_count + 1
 
-    names = [m.type_params.cumulative_type_params.metric.name for m in out.metrics if m.type == MetricType.CUMULATIVE]
+    names = []
+    for m in out.metrics:
+        if m.type != MetricType.CUMULATIVE:
+            continue
+        # ughhh ugly type assertion here.
+        assert (
+            m.type_params.cumulative_type_params is not None and m.type_params.cumulative_type_params.metric is not None
+        ), "cumulative_type_params should be set as part of the test setup here."
+        names.append(m.type_params.cumulative_type_params.metric.name)
     assert len(set(names)) == 1
 
 
@@ -281,7 +299,13 @@ def test_conversion_with_measure_reuses_existing_simple_metric(side: str) -> Non
     assert post_simple_metric_count == initial_simple_metric_count
 
     out_params = next(m for m in out.metrics if m.type == MetricType.CONVERSION).type_params.conversion_type_params
-    chosen_name = out_params.base_metric.name if side == "base" else out_params.conversion_metric.name
+    assert out_params is not None, "no conversion metric found; this is a fundamental problem."
+    if side == "base":
+        assert out_params.base_metric is not None
+        chosen_name = out_params.base_metric.name
+    else:
+        assert out_params.conversion_metric is not None
+        chosen_name = out_params.conversion_metric.name
     assert chosen_name == "existing_simple_for_m1"
 
 
@@ -322,9 +346,12 @@ def test_conversion_with_measure_creates_one_for_multiple_metrics(side: str) -> 
     for m in out.metrics:
         if m.type != MetricType.CONVERSION:
             continue
+        assert m.type_params.conversion_type_params is not None, "Conversion metric lacked conversion type params."
         params = m.type_params.conversion_type_params
         if side == "base":
+            assert params.base_metric is not None
             names.append(params.base_metric.name)
         else:
+            assert params.conversion_metric is not None
             names.append(params.conversion_metric.name)
     assert len(set(names)) == 1
