@@ -71,7 +71,6 @@ def _build_semantic_model_with_measure(
 def _matching_simple_metric(
     name: str,
     sm_name: str,
-    measure_name: str,
     time_dim_name: str,
     fill_nulls_with: Optional[int],
     join_to_timespine: bool,
@@ -83,9 +82,7 @@ def _matching_simple_metric(
             metric_aggregation_params=PydanticMetricAggregationParams(
                 semantic_model=sm_name,
                 agg=AggregationType.SUM,
-                agg_params=None,
                 agg_time_dimension=time_dim_name,
-                non_additive_dimension=None,
             ),
             expr="value",
             join_to_timespine=join_to_timespine,
@@ -143,12 +140,11 @@ def test_cumulative_with_measure_reuses_existing_simple_metric() -> None:
     type_params = PydanticMetricTypeParams(cumulative_type_params=PydanticCumulativeTypeParams())
     type_params.measure = input_measure
 
-    metric = PydanticMetric(name="cum", type=MetricType.CUMULATIVE, type_params=type_params)
+    metric = PydanticMetric(name="cumulative_metric", type=MetricType.CUMULATIVE, type_params=type_params)
 
     existing_simple = _matching_simple_metric(
         name="existing_simple_for_m1",
         sm_name="sm",
-        measure_name="m1",
         time_dim_name="ds",
         fill_nulls_with=5,
         join_to_timespine=True,
@@ -376,7 +372,6 @@ def test_conversion_with_measure_reuses_existing_simple_metric(side: str) -> Non
     existing_simple = _matching_simple_metric(
         name="existing_simple_for_m1",
         sm_name="sm",
-        measure_name="m1",
         time_dim_name="ds",
         fill_nulls_with=7,
         join_to_timespine=True,

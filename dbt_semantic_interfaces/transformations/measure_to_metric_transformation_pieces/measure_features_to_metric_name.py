@@ -56,10 +56,10 @@ class MeasureFeaturesToMetricNameMapper:
         self,
         metric: PydanticMetric,
         manifest: PydanticSemanticManifest,
-    ) -> Optional[str]:
+    ) -> Optional[PydanticMetric]:
         """Check if a metric exists in the manifest that matches the metric (except for name).
 
-        returns the name of the metric if it exists, otherwise None
+        returns the metric if it exists, otherwise None
 
         Note: this can be further optimized by pre-caching metrics based on features,
         but let's not prematurely optimize.
