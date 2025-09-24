@@ -56,20 +56,25 @@ class MeasureFeaturesToMetricNameMapper:
         self,
         metric: PydanticMetric,
         manifest: PydanticSemanticManifest,
-    ) -> Optional[str]:
+    ) -> Optional[PydanticMetric]:
         """Check if a metric exists in the manifest that matches the metric (except for name).
 
-        returns the name of the metric if it exists, otherwise None
+        returns the metric if it exists, otherwise None
 
         Note: this can be further optimized by pre-caching metrics based on features,
         but let's not prematurely optimize.
         """
+        search_metric = metric.copy(deep=True)
         for existing_metric in manifest.metrics:
             # this allows us to a straight equality comparison, which is safer in the future
             # than implementing a custom comparison function.
-            metric.name = existing_metric.name
-            if metric == existing_metric:
-                return metric.name
+            search_metric.name = existing_metric.name
+            search_metric.metadata = existing_metric.metadata
+            search_metric.type_params.is_private = existing_metric.type_params.is_private
+            if search_metric == existing_metric:
+                return existing_metric
+            print("provided metric", search_metric)
+            print("existing metric", existing_metric)
         return None
 
     @staticmethod
@@ -161,18 +166,18 @@ class MeasureFeaturesToMetricNameMapper:
             return stored_metric_name
 
         # if no, does a metric exist in the manifest that matches all required features?
-        metric = self.build_metric_from_measure_configuration(
+        built_metric = self.build_metric_from_measure_configuration(
             measure=measure,
             semantic_model_name=model_name,
             fill_nulls_with=fill_nulls_with,
             join_to_timespine=join_to_timespine,
         )
-        metric_name = self._find_metric_clone_in_manifest(
-            metric=metric,
+        metric = self._find_metric_clone_in_manifest(
+            metric=built_metric,
             manifest=manifest,
         )
 
-        if metric_name is None:
+        if metric is None:
             # if we didn't find it, let's make a new name and add it to the manifest
             metric_name = self._generate_new_metric_name(
                 measure_name=measure.name,
@@ -180,6 +185,7 @@ class MeasureFeaturesToMetricNameMapper:
                 join_to_timespine=join_to_timespine,
                 manifest=manifest,
             )
+            metric = built_metric
             metric.name = metric_name
             manifest.metrics.append(metric)
 
@@ -187,6 +193,6 @@ class MeasureFeaturesToMetricNameMapper:
             measure_name=measure.name,
             fill_nulls_with=fill_nulls_with,
             join_to_timespine=join_to_timespine,
-            metric_name=metric_name,
+            metric_name=metric.name,
         )
-        return metric_name
+        return metric.name
