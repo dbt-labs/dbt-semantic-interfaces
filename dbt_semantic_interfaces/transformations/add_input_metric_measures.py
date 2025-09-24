@@ -36,10 +36,8 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
         )
         if matched_metric:
             if matched_metric.type is MetricType.SIMPLE or matched_metric.type is MetricType.CUMULATIVE:
-                assert (
-                    matched_metric.type_params.measure is not None
-                ), f"{matched_metric} should have a measure defined, but it does not."
-                measures.add(matched_metric.type_params.measure)
+                if matched_metric.type_params.measure is not None:
+                    measures.add(matched_metric.type_params.measure)
             elif matched_metric.type is MetricType.DERIVED or matched_metric.type is MetricType.RATIO:
                 for input_metric in matched_metric.input_metrics:
                     measures.update(
