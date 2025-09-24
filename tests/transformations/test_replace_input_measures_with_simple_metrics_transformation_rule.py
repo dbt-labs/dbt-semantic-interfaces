@@ -1,3 +1,5 @@
+from typing import List, Optional
+
 import pytest
 
 from dbt_semantic_interfaces.implementations.elements.dimension import (
@@ -71,7 +73,7 @@ def _matching_simple_metric(
     sm_name: str,
     measure_name: str,
     time_dim_name: str,
-    fill_nulls_with: int | None,
+    fill_nulls_with: Optional[int],
     join_to_timespine: bool,
 ) -> PydanticMetric:
     return PydanticMetric(
@@ -176,7 +178,7 @@ def test_cumulative_with_measure_creates_one_for_multiple_metrics() -> None:
 
     input_measure = PydanticMetricInputMeasure(name="m1", fill_nulls_with=5, join_to_timespine=True)
 
-    metrics: list[PydanticMetric] = []
+    metrics: List[PydanticMetric] = []
     for i in range(2):
         type_params = PydanticMetricTypeParams(cumulative_type_params=PydanticCumulativeTypeParams())
         type_params.measure = input_measure
@@ -237,7 +239,7 @@ def test_cumulative_grouped_measure_inputs_create_four_simple_metrics() -> None:
         ),
     )
 
-    metrics: list[PydanticMetric] = [existing_simple]
+    metrics: List[PydanticMetric] = [existing_simple]
 
     # Group 1: two cumulative metrics with default measure settings
     g1_input = PydanticMetricInputMeasure(name="m1", fill_nulls_with=None, join_to_timespine=False)
@@ -409,7 +411,7 @@ def test_conversion_with_measure_creates_one_for_multiple_metrics(side: str) -> 
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
     input_measure = PydanticMetricInputMeasure(name="m1", fill_nulls_with=7, join_to_timespine=True)
 
-    metrics: list[PydanticMetric] = []
+    metrics: List[PydanticMetric] = []
     for i in range(2):
         params = PydanticConversionTypeParams(entity="e1")
         if side == "base":
