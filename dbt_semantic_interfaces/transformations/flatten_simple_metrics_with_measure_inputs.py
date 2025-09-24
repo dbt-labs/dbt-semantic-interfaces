@@ -43,9 +43,7 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                 # If this is a simple metric with a measure input that does NOT already have some
                 # sort of metric input information overriding that measure input
                 input_measure = metric.type_params.measure
-                if input_measure is None:
-                    continue
-                if metric.type_params.metric_aggregation_params is not None:
+                if input_measure is None or metric.type_params.metric_aggregation_params is not None:
                     continue
 
                 model_and_measure = (
@@ -64,11 +62,12 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                     measure=measure,
                     semantic_model_name=semantic_model.name,
                 )
-                # TODO: add a validation that a simple metric does not have THESE fields if it has
-                # a measure input (cannot mix new and old style inputs in that way).  This is much
-                # cleaner than trying to handle those cases by spinning off additional metrics.
+                metric.type_params.expr = measure.expr
+
+                # MetricAggregationParamsInForSimpleMetricsRule enforces that fill_nulls_with
+                # and join_to_timespine are not allowed if a measure input is present, so this overwrite
+                # is safe.
                 metric.type_params.fill_nulls_with = input_measure.fill_nulls_with
                 metric.type_params.join_to_timespine = True
-                metric.type_params.expr = measure.expr
 
         return semantic_manifest
