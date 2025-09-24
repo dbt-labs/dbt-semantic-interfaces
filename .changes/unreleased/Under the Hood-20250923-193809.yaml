@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Automatically upgrade simple metrics with measure inputs to new metric-only style.
+time: 2025-09-23T19:38:09.69241-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
