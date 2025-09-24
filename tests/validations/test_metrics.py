@@ -651,34 +651,28 @@ def test_simple_metrics_are_the_only_metrics_allowed_to_have_agg_params(  # noqa
                 name="metric_with_measure_and_fill_nulls_with",
                 type=MetricType.SIMPLE,
                 type_params=PydanticMetricTypeParams(
-                    metric_aggregation_params=PydanticMetricAggregationParams(
-                        semantic_model="sum_measure",
-                        agg=AggregationType.SUM,
-                    ),
                     measure=PydanticMetricInputMeasure(name="this_measure_name"),
                     fill_nulls_with=1,
                 ),
             ),
-            "Simple Metric 'metric_with_measure_and_fill_nulls_with' cannot have a measure input as well as a "
-            "value for fill_nulls_with.",
             None,  # No warnings
+            "Simple Metric 'metric_with_measure_and_fill_nulls_with' should not have a measure input as well as a "
+            "value for fill_nulls_with.  The metric's fill_nulls_with "
+            "will be ignored until the measure is removed.",
         ),
         (
             metric_with_guaranteed_meta(
                 name="metric_with_measure_and_join_to_timespine",
                 type=MetricType.SIMPLE,
                 type_params=PydanticMetricTypeParams(
-                    metric_aggregation_params=PydanticMetricAggregationParams(
-                        semantic_model="sum_measure",
-                        agg=AggregationType.SUM,
-                    ),
                     measure=PydanticMetricInputMeasure(name="this_measure_name"),
                     join_to_timespine=True,
                 ),
             ),
-            "Simple Metric 'metric_with_measure_and_join_to_timespine' cannot have a measure input as well as a "
-            "value for join_to_timespine.",
             None,  # No warnings
+            "Simple Metric 'metric_with_measure_and_join_to_timespine' should not have a measure input as well as a "
+            "value for join_to_timespine.  The metric's join_to_timespine "
+            "will be ignored until the measure is removed.",
         ),
     ],
 )
