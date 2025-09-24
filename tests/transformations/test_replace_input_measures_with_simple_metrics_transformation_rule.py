@@ -202,6 +202,100 @@ def test_cumulative_with_measure_creates_one_for_multiple_metrics() -> None:
     assert len(set(names)) == 1
 
 
+def test_cumulative_grouped_measure_inputs_create_four_simple_metrics() -> None:
+    """Start with one simple metric; grouped cumulative measure inputs create four new simple metrics.
+
+    Groups:
+    - Group 1: two cumulative metrics with no fill/join settings
+    - Group 2: one with fill_nulls_with only
+    - Group 3: one with join_to_timespine only
+    - Group 4: two with both fill_nulls_with and join_to_timespine
+
+    Validate:
+    - Exactly four new simple metrics are added
+    - Group 1 metrics share the same created metric input
+    - Group 4 metrics share the same created metric input
+    """
+    sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
+
+    # Existing simple metric (for a different configuration) to ensure we add 4 new ones
+    existing_simple = PydanticMetric(
+        name="existing_unrelated_simple",
+        type=MetricType.SIMPLE,
+        type_params=PydanticMetricTypeParams(
+            metric_aggregation_params=PydanticMetricAggregationParams(
+                semantic_model="sm",
+                agg=AggregationType.SUM,
+                agg_params=None,
+                agg_time_dimension="ds",
+                non_additive_dimension=None,
+            ),
+            # Different expr than the measure in sm to avoid accidental equivalence
+            expr="other_value",
+            join_to_timespine=False,
+            fill_nulls_with=None,
+        ),
+    )
+
+    metrics: list[PydanticMetric] = [existing_simple]
+
+    # Group 1: two cumulative metrics with default measure settings
+    g1_input = PydanticMetricInputMeasure(name="m1", fill_nulls_with=None, join_to_timespine=False)
+    for i in range(2):
+        tp = PydanticMetricTypeParams(
+            cumulative_type_params=PydanticCumulativeTypeParams(),
+            measure=g1_input,
+        )
+        metrics.append(PydanticMetric(name=f"cumul_g1_{i}", type=MetricType.CUMULATIVE, type_params=tp))
+
+    # Group 2: one cumulative metric with fill only
+    g2_input = PydanticMetricInputMeasure(name="m1", fill_nulls_with=3, join_to_timespine=False)
+    tp2 = PydanticMetricTypeParams(
+        cumulative_type_params=PydanticCumulativeTypeParams(),
+        measure=g2_input,
+    )
+    metrics.append(PydanticMetric(name="cumul_g2", type=MetricType.CUMULATIVE, type_params=tp2))
+
+    # Group 3: one cumulative metric with join only
+    g3_input = PydanticMetricInputMeasure(name="m1", fill_nulls_with=None, join_to_timespine=True)
+    tp3 = PydanticMetricTypeParams(
+        cumulative_type_params=PydanticCumulativeTypeParams(),
+        measure=g3_input,
+    )
+    metrics.append(PydanticMetric(name="cumul_g3", type=MetricType.CUMULATIVE, type_params=tp3))
+
+    # Group 4: two cumulative metrics with both fill and join
+    g4_input = PydanticMetricInputMeasure(name="m1", fill_nulls_with=9, join_to_timespine=True)
+    for i in range(2):
+        tp4 = PydanticMetricTypeParams(
+            cumulative_type_params=PydanticCumulativeTypeParams(),
+            measure=g4_input,
+        )
+        metrics.append(PydanticMetric(name=f"cumul_g4_{i}", type=MetricType.CUMULATIVE, type_params=tp4))
+
+    manifest = PydanticSemanticManifest(semantic_models=[sm], metrics=metrics, project_configuration=_project_config())
+
+    initial_simple_metric_count = sum(1 for m in manifest.metrics if m.type == MetricType.SIMPLE)
+    out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
+    post_simple_metric_count = sum(1 for m in out.metrics if m.type == MetricType.SIMPLE)
+
+    # Expect 4 new simple metrics (one per distinct measure config)
+    assert post_simple_metric_count == initial_simple_metric_count + 4
+
+    # Collect created metric input names for each group
+    def _metric_input_name(metric_name: str) -> str:
+        m = next(x for x in out.metrics if x.name == metric_name)
+        assert (
+            m.type_params.cumulative_type_params is not None and m.type_params.cumulative_type_params.metric is not None
+        ), "cumulative_type_params should be set as part of the test setup here."
+        return m.type_params.cumulative_type_params.metric.name
+
+    g1_names = [_metric_input_name("cumul_g1_0"), _metric_input_name("cumul_g1_1")]
+    assert len(set(g1_names)) == 1, "Group 1 metrics were not successfully deduplicated."
+    g4_names = [_metric_input_name("cumul_g4_0"), _metric_input_name("cumul_g4_1")]
+    assert len(set(g4_names)) == 1, "Group 4 metrics were not successfully deduplicated."
+
+
 @pytest.mark.parametrize("side", ["base", "conversion"])
 def test_conversion_no_measure_with_metric_input_is_unchanged(side: str) -> None:
     """If only a metric input is provided on conversion, no changes are made."""
