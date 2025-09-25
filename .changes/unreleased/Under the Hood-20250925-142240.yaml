@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Add transformation for boolean aggregations for simple metrics to match old-style transformation for similar measures.
+time: 2025-09-25T14:22:40.047586-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"

@@ -10,8 +10,10 @@ from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
-from dbt_semantic_interfaces.transformations.boolean_measure import (
+from dbt_semantic_interfaces.transformations.boolean_aggregations import (
     BooleanAggregationRule,
+)
+from dbt_semantic_interfaces.transformations.boolean_measure import (
     BooleanMeasureAggregationRule,
 )
 from dbt_semantic_interfaces.type_enums import AggregationType, EntityType, MetricType
