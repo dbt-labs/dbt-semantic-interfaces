@@ -98,15 +98,17 @@ def test_cumulative_no_measure_with_metric_input_is_unchanged() -> None:
     """If only a metric input is provided on cumulative, no changes are made."""
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
 
-    type_params = PydanticMetricTypeParams(cumulative_type_params=PydanticCumulativeTypeParams())
-    assert (
-        type_params.cumulative_type_params is not None
-    ), "cumulative_type_params should be set as part of the test setup here."
-    type_params.cumulative_type_params.metric = PydanticMetricInput(name="preexisting_simple")
+    cumulative_metric = PydanticMetric(
+        name="cumulative_metric",
+        type=MetricType.CUMULATIVE,
+        type_params=PydanticMetricTypeParams(
+            cumulative_type_params=PydanticCumulativeTypeParams(metric=PydanticMetricInput(name="preexisting_simple"))
+        ),
+    )
 
-    metric = PydanticMetric(name="cum", type=MetricType.CUMULATIVE, type_params=type_params)
-
-    manifest = PydanticSemanticManifest(semantic_models=[sm], metrics=[metric], project_configuration=_project_config())
+    manifest = PydanticSemanticManifest(
+        semantic_models=[sm], metrics=[cumulative_metric], project_configuration=_project_config()
+    )
 
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
     assert out.metrics == manifest.metrics
@@ -116,17 +118,20 @@ def test_cumulative_with_measure_and_metric_input_is_unchanged() -> None:
     """If both measure and metric inputs are provided, no changes are made."""
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
 
-    input_measure = PydanticMetricInputMeasure(name="m1", fill_nulls_with=5, join_to_timespine=True)
-    type_params = PydanticMetricTypeParams(cumulative_type_params=PydanticCumulativeTypeParams())
-    type_params.measure = input_measure
-    assert (
-        type_params.cumulative_type_params is not None
-    ), "cumulative_type_params should be set as part of the test setup here."
-    type_params.cumulative_type_params.metric = PydanticMetricInput(name="preexisting_simple")
+    cumulative_metric = PydanticMetric(
+        name="cumulative_metric",
+        type=MetricType.CUMULATIVE,
+        type_params=PydanticMetricTypeParams(
+            measure=PydanticMetricInputMeasure(name="m1", fill_nulls_with=5, join_to_timespine=True),
+            cumulative_type_params=PydanticCumulativeTypeParams(metric=PydanticMetricInput(name="preexisting_simple")),
+        ),
+    )
 
-    metric = PydanticMetric(name="cum", type=MetricType.CUMULATIVE, type_params=type_params)
-
-    manifest = PydanticSemanticManifest(semantic_models=[sm], metrics=[metric], project_configuration=_project_config())
+    manifest = PydanticSemanticManifest(
+        semantic_models=[sm],
+        metrics=[cumulative_metric],
+        project_configuration=_project_config(),
+    )
 
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
     assert out.metrics == manifest.metrics
@@ -136,13 +141,16 @@ def test_cumulative_with_measure_reuses_existing_simple_metric() -> None:
     """With a preexisting matching simple metric, reuse it without creating a new one."""
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
 
-    input_measure = PydanticMetricInputMeasure(name="m1", fill_nulls_with=5, join_to_timespine=True)
-    type_params = PydanticMetricTypeParams(cumulative_type_params=PydanticCumulativeTypeParams())
-    type_params.measure = input_measure
+    cumulative_metric = PydanticMetric(
+        name="cumulative_metric",
+        type=MetricType.CUMULATIVE,
+        type_params=PydanticMetricTypeParams(
+            cumulative_type_params=PydanticCumulativeTypeParams(),
+            measure=PydanticMetricInputMeasure(name="m1", fill_nulls_with=5, join_to_timespine=True),
+        ),
+    )
 
-    metric = PydanticMetric(name="cumulative_metric", type=MetricType.CUMULATIVE, type_params=type_params)
-
-    existing_simple = _matching_simple_metric(
+    existing_simple_metric = _matching_simple_metric(
         name="existing_simple_for_m1",
         sm_name="sm",
         time_dim_name="ds",
@@ -151,7 +159,9 @@ def test_cumulative_with_measure_reuses_existing_simple_metric() -> None:
     )
 
     manifest = PydanticSemanticManifest(
-        semantic_models=[sm], metrics=[metric, existing_simple], project_configuration=_project_config()
+        semantic_models=[sm],
+        metrics=[cumulative_metric, existing_simple_metric],
+        project_configuration=_project_config(),
     )
 
     initial_simple_metric_count = sum(1 for m in manifest.metrics if m.type == MetricType.SIMPLE)
@@ -172,13 +182,18 @@ def test_cumulative_with_measure_creates_one_for_multiple_metrics() -> None:
     """With two cumulative metrics, create a single shared simple metric when none exists."""
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
 
-    input_measure = PydanticMetricInputMeasure(name="m1", fill_nulls_with=5, join_to_timespine=True)
-
     metrics: List[PydanticMetric] = []
     for i in range(2):
-        type_params = PydanticMetricTypeParams(cumulative_type_params=PydanticCumulativeTypeParams())
-        type_params.measure = input_measure
-        metrics.append(PydanticMetric(name=f"cum_{i}", type=MetricType.CUMULATIVE, type_params=type_params))
+        metrics.append(
+            PydanticMetric(
+                name=f"cumulative_metric_{i}",
+                type=MetricType.CUMULATIVE,
+                type_params=PydanticMetricTypeParams(
+                    cumulative_type_params=PydanticCumulativeTypeParams(),
+                    measure=PydanticMetricInputMeasure(name="m1", fill_nulls_with=5, join_to_timespine=True),
+                ),
+            )
+        )
 
     manifest = PydanticSemanticManifest(semantic_models=[sm], metrics=metrics, project_configuration=_project_config())
 
@@ -217,7 +232,7 @@ def test_cumulative_grouped_measure_inputs_create_four_simple_metrics() -> None:
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
 
     # Existing simple metric (for a different configuration) to ensure we add 4 new ones
-    existing_simple = PydanticMetric(
+    existing_simple_metric = PydanticMetric(
         name="existing_unrelated_simple",
         type=MetricType.SIMPLE,
         type_params=PydanticMetricTypeParams(
@@ -235,41 +250,61 @@ def test_cumulative_grouped_measure_inputs_create_four_simple_metrics() -> None:
         ),
     )
 
-    metrics: List[PydanticMetric] = [existing_simple]
+    metrics: List[PydanticMetric] = [existing_simple_metric]
 
     # Group 1: two cumulative metrics with default measure settings
     g1_input = PydanticMetricInputMeasure(name="m1", fill_nulls_with=None, join_to_timespine=False)
     for i in range(2):
-        tp = PydanticMetricTypeParams(
-            cumulative_type_params=PydanticCumulativeTypeParams(),
-            measure=g1_input,
+        metrics.append(
+            PydanticMetric(
+                name=f"cumulative_g1_{i}",
+                type=MetricType.CUMULATIVE,
+                type_params=PydanticMetricTypeParams(
+                    cumulative_type_params=PydanticCumulativeTypeParams(),
+                    measure=g1_input,
+                ),
+            )
         )
-        metrics.append(PydanticMetric(name=f"cumul_g1_{i}", type=MetricType.CUMULATIVE, type_params=tp))
 
     # Group 2: one cumulative metric with fill only
     g2_input = PydanticMetricInputMeasure(name="m1", fill_nulls_with=3, join_to_timespine=False)
-    tp2 = PydanticMetricTypeParams(
-        cumulative_type_params=PydanticCumulativeTypeParams(),
-        measure=g2_input,
+    metrics.append(
+        PydanticMetric(
+            name="cumulative_g2",
+            type=MetricType.CUMULATIVE,
+            type_params=PydanticMetricTypeParams(
+                cumulative_type_params=PydanticCumulativeTypeParams(),
+                measure=g2_input,
+            ),
+        )
     )
-    metrics.append(PydanticMetric(name="cumul_g2", type=MetricType.CUMULATIVE, type_params=tp2))
 
     # Group 3: one cumulative metric with join only
     g3_input = PydanticMetricInputMeasure(name="m1", fill_nulls_with=None, join_to_timespine=True)
-    tp3 = PydanticMetricTypeParams(
-        cumulative_type_params=PydanticCumulativeTypeParams(),
-        measure=g3_input,
+    metrics.append(
+        PydanticMetric(
+            name="cumulative_g3",
+            type=MetricType.CUMULATIVE,
+            type_params=PydanticMetricTypeParams(
+                cumulative_type_params=PydanticCumulativeTypeParams(),
+                measure=g3_input,
+            ),
+        )
     )
-    metrics.append(PydanticMetric(name="cumul_g3", type=MetricType.CUMULATIVE, type_params=tp3))
 
     # Group 4: two cumulative metrics with both fill and join
     g4_input = PydanticMetricInputMeasure(name="m1", fill_nulls_with=9, join_to_timespine=True)
     for i in range(2):
-        tp4 = PydanticMetricTypeParams(
-            cumulative_type_params=PydanticCumulativeTypeParams(),
-            measure=g4_input,
+        metrics.append(
+            PydanticMetric(
+                name=f"cumulative_g4_{i}",
+                type=MetricType.CUMULATIVE,
+                type_params=PydanticMetricTypeParams(
+                    cumulative_type_params=PydanticCumulativeTypeParams(),
+                    measure=g4_input,
+                ),
+            )
         )
-        metrics.append(PydanticMetric(name=f"cumul_g4_{i}", type=MetricType.CUMULATIVE, type_params=tp4))
 
     manifest = PydanticSemanticManifest(semantic_models=[sm], metrics=metrics, project_configuration=_project_config())
 
@@ -288,9 +323,9 @@ def test_cumulative_grouped_measure_inputs_create_four_simple_metrics() -> None:
         ), "cumulative_type_params should be set as part of the test setup here."
         return m.type_params.cumulative_type_params.metric.name
 
-    g1_names = [_metric_input_name("cumul_g1_0"), _metric_input_name("cumul_g1_1")]
+    g1_names = [_metric_input_name("cumulative_g1_0"), _metric_input_name("cumulative_g1_1")]
     assert len(set(g1_names)) == 1, "Group 1 metrics were not successfully deduplicated."
-    g4_names = [_metric_input_name("cumul_g4_0"), _metric_input_name("cumul_g4_1")]
+    g4_names = [_metric_input_name("cumulative_g4_0"), _metric_input_name("cumulative_g4_1")]
     assert len(set(g4_names)) == 1, "Group 4 metrics were not successfully deduplicated."
 
 
@@ -299,21 +334,27 @@ def test_conversion_no_measure_with_metric_input_is_unchanged(side: str) -> None
     """If only a metric input is provided on conversion, no changes are made."""
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
 
-    params = PydanticConversionTypeParams(entity="e1")
-    if side == "base":
-        params.base_metric = PydanticMetricInput(name="preexisting_simple")
-    else:
-        params.conversion_metric = PydanticMetricInput(name="preexisting_simple")
-
-    metric = PydanticMetric(
-        name=f"conv_{side}",
+    conversion_metric = PydanticMetric(
+        name=f"conversion_{side}",
         type=MetricType.CONVERSION,
-        type_params=PydanticMetricTypeParams(conversion_type_params=params),
+        type_params=PydanticMetricTypeParams(
+            conversion_type_params=(
+                PydanticConversionTypeParams(
+                    entity="e1",
+                    base_metric=PydanticMetricInput(name="preexisting_simple"),
+                )
+                if side == "base"
+                else PydanticConversionTypeParams(
+                    entity="e1",
+                    conversion_metric=PydanticMetricInput(name="preexisting_simple"),
+                )
+            ),
+        ),
     )
 
     manifest = PydanticSemanticManifest(
         semantic_models=[sm],
-        metrics=[metric],
+        metrics=[conversion_metric],
         project_configuration=_project_config(),
     )
 
@@ -326,24 +367,29 @@ def test_conversion_with_measure_and_metric_input_is_unchanged(side: str) -> Non
     """If both measure and metric inputs are provided, no changes are made."""
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
 
-    input_measure = PydanticMetricInputMeasure(name="m1", fill_nulls_with=7, join_to_timespine=True)
-    params = PydanticConversionTypeParams(entity="e1")
-    if side == "base":
-        params.base_measure = input_measure
-        params.base_metric = PydanticMetricInput(name="preexisting_simple")
-    else:
-        params.conversion_measure = input_measure
-        params.conversion_metric = PydanticMetricInput(name="preexisting_simple")
-
-    metric = PydanticMetric(
-        name=f"conv_{side}",
+    conversion_metric = PydanticMetric(
+        name=f"conversion_{side}",
         type=MetricType.CONVERSION,
-        type_params=PydanticMetricTypeParams(conversion_type_params=params),
+        type_params=PydanticMetricTypeParams(
+            conversion_type_params=(
+                PydanticConversionTypeParams(
+                    entity="e1",
+                    base_measure=PydanticMetricInputMeasure(name="m1", fill_nulls_with=7, join_to_timespine=True),
+                    base_metric=PydanticMetricInput(name="preexisting_simple"),
+                )
+                if side == "base"
+                else PydanticConversionTypeParams(
+                    entity="e1",
+                    conversion_measure=PydanticMetricInputMeasure(name="m1", fill_nulls_with=7, join_to_timespine=True),
+                    conversion_metric=PydanticMetricInput(name="preexisting_simple"),
+                )
+            ),
+        ),
     )
 
     manifest = PydanticSemanticManifest(
         semantic_models=[sm],
-        metrics=[metric],
+        metrics=[conversion_metric],
         project_configuration=_project_config(),
     )
 
@@ -355,21 +401,26 @@ def test_conversion_with_measure_and_metric_input_is_unchanged(side: str) -> Non
 def test_conversion_with_measure_reuses_existing_simple_metric(side: str) -> None:
     """With a preexisting matching simple metric, reuse it without creating a new one."""
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
-    input_measure = PydanticMetricInputMeasure(name="m1", fill_nulls_with=7, join_to_timespine=True)
 
-    params = PydanticConversionTypeParams(entity="e1")
-    if side == "base":
-        params.base_measure = input_measure
-    else:
-        params.conversion_measure = input_measure
-
-    metric = PydanticMetric(
-        name=f"conv_{side}",
+    conversion_metric = PydanticMetric(
+        name=f"conversion_{side}",
         type=MetricType.CONVERSION,
-        type_params=PydanticMetricTypeParams(conversion_type_params=params),
+        type_params=PydanticMetricTypeParams(
+            conversion_type_params=(
+                PydanticConversionTypeParams(
+                    entity="e1",
+                    base_measure=PydanticMetricInputMeasure(name="m1", fill_nulls_with=7, join_to_timespine=True),
+                )
+                if side == "base"
+                else PydanticConversionTypeParams(
+                    entity="e1",
+                    conversion_measure=PydanticMetricInputMeasure(name="m1", fill_nulls_with=7, join_to_timespine=True),
+                )
+            ),
+        ),
     )
 
-    existing_simple = _matching_simple_metric(
+    existing_simple_metric = _matching_simple_metric(
         name="existing_simple_for_m1",
         sm_name="sm",
         time_dim_name="ds",
@@ -379,7 +430,7 @@ def test_conversion_with_measure_reuses_existing_simple_metric(side: str) -> Non
 
     manifest = PydanticSemanticManifest(
         semantic_models=[sm],
-        metrics=[metric, existing_simple],
+        metrics=[conversion_metric, existing_simple_metric],
         project_configuration=_project_config(),
     )
 
@@ -404,20 +455,30 @@ def test_conversion_with_measure_reuses_existing_simple_metric(side: str) -> Non
 def test_conversion_with_measure_creates_one_for_multiple_metrics(side: str) -> None:
     """With two conversion metrics, create a single shared simple metric when none exists."""
     sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
-    input_measure = PydanticMetricInputMeasure(name="m1", fill_nulls_with=7, join_to_timespine=True)
 
     metrics: List[PydanticMetric] = []
     for i in range(2):
-        params = PydanticConversionTypeParams(entity="e1")
-        if side == "base":
-            params.base_measure = input_measure
-        else:
-            params.conversion_measure = input_measure
         metrics.append(
             PydanticMetric(
-                name=f"conv_{side}_{i}",
+                name=f"conversion_{side}_{i}",
                 type=MetricType.CONVERSION,
-                type_params=PydanticMetricTypeParams(conversion_type_params=params),
+                type_params=PydanticMetricTypeParams(
+                    conversion_type_params=(
+                        PydanticConversionTypeParams(
+                            entity="e1",
+                            base_measure=PydanticMetricInputMeasure(
+                                name="m1", fill_nulls_with=7, join_to_timespine=True
+                            ),
+                        )
+                        if side == "base"
+                        else PydanticConversionTypeParams(
+                            entity="e1",
+                            conversion_measure=PydanticMetricInputMeasure(
+                                name="m1", fill_nulls_with=7, join_to_timespine=True
+                            ),
+                        )
+                    ),
+                ),
             )
         )
 
