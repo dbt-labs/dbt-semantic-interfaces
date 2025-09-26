@@ -1,13 +1,10 @@
 import logging
-from typing import Optional, Tuple
+from typing import Dict, Tuple
 
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
-from dbt_semantic_interfaces.implementations.metric import (
-    PydanticMetric,
-    PydanticMetricInputMeasure,
-)
+from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
@@ -29,18 +26,28 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
         return self
 
     @staticmethod
-    def _get_semantic_model_and_measure_for_input_measure(
-        input_measure: PydanticMetricInputMeasure,
+    def _build_measure_to_model_map(
         semantic_manifest: PydanticSemanticManifest,
-    ) -> Optional[Tuple[PydanticSemanticModel, PydanticMeasure]]:
-        for model in semantic_manifest.semantic_models:
-            for model_measure in model.measures:
-                if model_measure.name == input_measure.name:
-                    return model, model_measure
-        return None
+    ) -> Dict[str, Tuple[PydanticSemanticModel, PydanticMeasure]]:
+        """Builds a mapping from measure name to the semantic model name that contains it.
+
+        Args:
+            semantic_manifest (PydanticSemanticManifest): The manifest containing semantic models.
+
+        Returns:
+            dict: A dictionary mapping measure names to their containing semantic model names.
+        """
+        measure_to_model = {}
+        for semantic_model in semantic_manifest.semantic_models:
+            for measure in semantic_model.measures:
+                measure_to_model[measure.name] = (semantic_model, measure)
+        return measure_to_model
 
     @staticmethod
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
+        measure_info_map = FlattenSimpleMetricsWithMeasureInputsRule._build_measure_to_model_map(
+            semantic_manifest=semantic_manifest,
+        )
         for metric in semantic_manifest.metrics:
             if metric.type == MetricType.SIMPLE:
                 # If this is a simple metric with a measure input that does NOT already have some
@@ -49,12 +56,7 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                 if input_measure is None or metric.type_params.metric_aggregation_params is not None:
                     continue
 
-                model_and_measure = (
-                    FlattenSimpleMetricsWithMeasureInputsRule._get_semantic_model_and_measure_for_input_measure(
-                        input_measure=input_measure,
-                        semantic_manifest=semantic_manifest,
-                    )
-                )
+                model_and_measure = measure_info_map.get(input_measure.name)
                 if model_and_measure is None:
                     # Should be validated; see test_metric_missing_measure for tests that show that this
                     # is the case.
@@ -65,7 +67,7 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                     continue
                 semantic_model, measure = model_and_measure
 
-                metric.type_params.metric_aggregation_params = PydanticMetric.get_metric_aggregation_params(
+                metric.type_params.metric_aggregation_params = PydanticMetric.build_metric_aggregation_params(
                     measure=measure,
                     semantic_model_name=semantic_model.name,
                 )
@@ -75,6 +77,6 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                 # and join_to_timespine are not allowed if a measure input is present, so this overwrite
                 # is safe.
                 metric.type_params.fill_nulls_with = input_measure.fill_nulls_with
-                metric.type_params.join_to_timespine = True
+                metric.type_params.join_to_timespine = input_measure.join_to_timespine
 
         return semantic_manifest
