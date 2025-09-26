@@ -5,6 +5,7 @@ from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
+    PydanticCumulativeTypeParams,
     PydanticMetric,
     PydanticMetricInput,
     PydanticMetricInputMeasure,
@@ -92,14 +93,11 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
         if metric.type_params.measure is None:
             return
         if metric.type_params.cumulative_type_params is None:
-            logger.warning(
-                (
-                    f"Cumulative metric {metric.name} has no cumulative type params; "
-                    "skipping replacement on cumulative metric. "
-                    "(This should also be caught by validations.)"
-                )
+            # this protects from legacy cumulative type param declarations.  They
+            # SHOULD have been transformed already, but beter safe than sorry.
+            metric.type_params.cumulative_type_params = PydanticCumulativeTypeParams(
+                metric=None,
             )
-            return
         new_metric_name = (
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_get_or_create_metric_and_retrieve_name(
                 mapper=mapper,
