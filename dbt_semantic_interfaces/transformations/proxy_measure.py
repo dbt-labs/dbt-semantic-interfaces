@@ -61,7 +61,7 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                                 # Measure is left here for backward compatibility.  It will not be
                                 # used by metricflow.
                                 measure=PydanticMetricInputMeasure(name=measure.name),
-                                metric_aggregation_params=PydanticMetric.get_metric_aggregation_params(
+                                metric_aggregation_params=PydanticMetric.build_metric_aggregation_params(
                                     measure=measure,
                                     semantic_model_name=semantic_model.name,
                                 ),

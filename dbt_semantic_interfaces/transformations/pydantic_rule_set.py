@@ -20,6 +20,9 @@ from dbt_semantic_interfaces.transformations.convert_median import (
 from dbt_semantic_interfaces.transformations.cumulative_type_params import (
     SetCumulativeTypeParamsRule,
 )
+from dbt_semantic_interfaces.transformations.flatten_simple_metrics_with_measure_inputs import (
+    FlattenSimpleMetricsWithMeasureInputsRule,
+)
 from dbt_semantic_interfaces.transformations.names import LowerCaseNamesRule
 from dbt_semantic_interfaces.transformations.proxy_measure import CreateProxyMeasureRule
 from dbt_semantic_interfaces.transformations.remove_plural_from_window_granularity import (
@@ -58,6 +61,8 @@ class PydanticSemanticManifestTransformRuleSet(
             AddInputMetricMeasuresRule(),
             SetCumulativeTypeParamsRule(),
             RemovePluralFromWindowGranularityRule(),
+            # Upgrade from old-style measure-including models to new-style metric-only models
+            FlattenSimpleMetricsWithMeasureInputsRule(),
         )
 
     @property

@@ -1052,18 +1052,43 @@ class MetricAggregationParamsInForSimpleMetricsRule(
             if metric.type == MetricType.SIMPLE:
                 has_agg_params = metric.type_params.metric_aggregation_params is not None
                 has_input_measure = metric.type_params.measure is not None
-                if has_agg_params and has_input_measure:
-                    issues.append(
-                        ValidationWarning(
-                            context=MetricContext(
-                                file_context=FileContext.from_metadata(metadata=metric.metadata),
-                                metric=MetricModelReference(metric_name=metric.name),
-                            ),
-                            message=f"Metric '{metric.name}' should not have both "
-                            "metric_aggregation_params and a measure. The measure will be ignored; "
-                            "please remove it to avoid confusion.",
+                if has_input_measure:
+                    if has_agg_params:
+                        issues.append(
+                            ValidationWarning(
+                                context=MetricContext(
+                                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                    metric=MetricModelReference(metric_name=metric.name),
+                                ),
+                                message=f"Metric '{metric.name}' should not have both "
+                                "metric_aggregation_params and a measure. The measure will be ignored; "
+                                "please remove it to avoid confusion.",
+                            )
                         )
-                    )
+                    if metric.type_params.fill_nulls_with is not None:
+                        issues.append(
+                            ValidationWarning(
+                                context=MetricContext(
+                                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                    metric=MetricModelReference(metric_name=metric.name),
+                                ),
+                                message=f"Simple Metric '{metric.name}' should not have a measure input as well as a "
+                                "value for fill_nulls_with.  The metric's fill_nulls_with "
+                                "will be ignored until the measure is removed.",
+                            )
+                        )
+                    if metric.type_params.join_to_timespine:
+                        issues.append(
+                            ValidationWarning(
+                                context=MetricContext(
+                                    file_context=FileContext.from_metadata(metadata=metric.metadata),
+                                    metric=MetricModelReference(metric_name=metric.name),
+                                ),
+                                message=f"Simple Metric '{metric.name}' should not have a measure input as well as a "
+                                "value for join_to_timespine.  The metric's join_to_timespine "
+                                "will be ignored until the measure is removed.",
+                            )
+                        )
                 elif not has_agg_params and not has_input_measure:
                     issues.append(
                         ValidationError(

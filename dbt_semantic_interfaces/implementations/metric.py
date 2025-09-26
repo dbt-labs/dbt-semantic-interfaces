@@ -339,7 +339,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         return conversion_type_params
 
     @staticmethod
-    def get_metric_aggregation_params(
+    def build_metric_aggregation_params(
         measure: PydanticMeasure,
         semantic_model_name: str,
     ) -> PydanticMetricAggregationParams:
