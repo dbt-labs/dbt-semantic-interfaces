@@ -28,6 +28,9 @@ from dbt_semantic_interfaces.transformations.proxy_measure import CreateProxyMea
 from dbt_semantic_interfaces.transformations.remove_plural_from_window_granularity import (
     RemovePluralFromWindowGranularityRule,
 )
+from dbt_semantic_interfaces.transformations.replace_input_measures_with_simple_metrics_transformation import (
+    ReplaceInputMeasuresWithSimpleMetricsTransformationRule,
+)
 from dbt_semantic_interfaces.transformations.rule_set import (
     SemanticManifestTransformRuleSet,
 )
@@ -61,8 +64,9 @@ class PydanticSemanticManifestTransformRuleSet(
             AddInputMetricMeasuresRule(),
             SetCumulativeTypeParamsRule(),
             RemovePluralFromWindowGranularityRule(),
-            # Upgrade from old-style measure-including models to new-style metric-only models
+            # The following steps upgrade from old-style measure-including models to new-style metric-only models
             FlattenSimpleMetricsWithMeasureInputsRule(),
+            ReplaceInputMeasuresWithSimpleMetricsTransformationRule(),
         )
 
     @property

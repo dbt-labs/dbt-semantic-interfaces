@@ -3,15 +3,14 @@ import logging
 from typing_extensions import override
 
 from dbt_semantic_interfaces.errors import ModelTransformError
-from dbt_semantic_interfaces.implementations.metric import (
-    PydanticMetric,
-    PydanticMetricInputMeasure,
-    PydanticMetricTypeParams,
-)
+from dbt_semantic_interfaces.implementations.metric import PydanticMetricInputMeasure
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.protocols import ProtocolHint
+from dbt_semantic_interfaces.transformations.measure_to_metric_transformation_pieces.measure_features_to_metric_name import (  # noqa: E501
+    MeasureFeaturesToMetricNameMapper,
+)
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -53,24 +52,16 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                         add_metric = False
 
                 if add_metric is True:
-                    semantic_manifest.metrics.append(
-                        PydanticMetric(
-                            name=measure.name,
-                            type=MetricType.SIMPLE,
-                            type_params=PydanticMetricTypeParams(
-                                # Measure is left here for backward compatibility.  It will not be
-                                # used by metricflow.
-                                measure=PydanticMetricInputMeasure(name=measure.name),
-                                metric_aggregation_params=PydanticMetric.build_metric_aggregation_params(
-                                    measure=measure,
-                                    semantic_model_name=semantic_model.name,
-                                ),
-                                expr=measure.expr,
-                            ),
-                            description=measure.description,
-                            label=measure.label,
-                            config=measure.config,
-                        )
+                    metric = MeasureFeaturesToMetricNameMapper.build_metric_from_measure_configuration(
+                        measure=measure,
+                        semantic_model_name=semantic_model.name,
+                        fill_nulls_with=None,
+                        join_to_timespine=False,
+                        # we override the default here; this metric was explicitly created by the user.
+                        is_private=False,
                     )
+                    metric.name = measure.name
+                    metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)
+                    semantic_manifest.metrics.append(metric)
 
         return semantic_manifest

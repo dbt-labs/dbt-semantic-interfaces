@@ -54,10 +54,12 @@ def test_cumulative_metric_with_custom_grain_to_date() -> None:  # noqa: D
     )
     metric_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_semantic_manifest(
-        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, base_semantic_manifest_file(), metric_file]
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, metric_file]
     )
     assert not model.issues.has_blocking_issues
     semantic_manifest = model.semantic_manifest
+    # 2 explicit ones and one that is created for the measure input for the
+    # cumulative metric's params
     assert len(semantic_manifest.metrics) == 3
 
     metric = next(
@@ -115,10 +117,12 @@ def test_cumulative_metric_with_custom_window() -> None:  # noqa: D
     )
     metric_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_semantic_manifest(
-        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, base_semantic_manifest_file(), metric_file]
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, metric_file]
     )
     assert not model.issues.has_blocking_issues
     semantic_manifest = model.semantic_manifest
+    # 2 explicit ones and one that is created for the measure input for the
+    # cumulative metric's params
     assert len(semantic_manifest.metrics) == 3
 
     metric = next((m for m in semantic_manifest.metrics if m.name == "test_cumulative_metric_with_custom_window"), None)
@@ -177,10 +181,12 @@ def test_conversion_metric_with_custom_grain_window() -> None:  # noqa: D
     )
     metric_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
     model = parse_yaml_files_to_validation_ready_semantic_manifest(
-        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, base_semantic_manifest_file(), metric_file]
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, metric_file]
     )
     assert not model.issues.has_blocking_issues
     semantic_manifest = model.semantic_manifest
+    # 2 explicit ones and one that is created for the measure input for the
+    # cumulative metric's params
     assert len(semantic_manifest.metrics) == 3
 
     metric = next(

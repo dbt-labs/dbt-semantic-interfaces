@@ -1,4 +1,4 @@
-from typing import Dict, Optional, Tuple
+from typing import Dict, Optional, Set, Tuple
 
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
@@ -121,22 +121,19 @@ class MeasureFeaturesToMetricNameMapper:
         fill_nulls_with: Optional[int],
         join_to_timespine: bool,
         manifest: PydanticSemanticManifest,
+        existing_metric_names: Set[str],
     ) -> str:
         """Generate a new metric name for the measure configuration."""
-        # we could cache the names, too, but I'm not sure it's worth the trouble
-        # of keeping the names-list up to date.
-        existing_names = set([metric.name for metric in manifest.metrics])
-
         name_parts = [measure_name]
         if fill_nulls_with is not None:
             name_parts.append(f"fill_nulls_with_{fill_nulls_with}")
         if join_to_timespine:
-            name_parts.append("join_to_timespine_true")
+            name_parts.append("join_to_timespine")
 
         base_name = "_".join(name_parts)
         new_name = base_name
         count = 1
-        while new_name in existing_names:
+        while new_name in existing_metric_names:
             # one hopes people are not naming their metrics like this, but we'll just assume
             # someone has and avoid collisions.
             new_name = f"{base_name}_{count}"
@@ -151,11 +148,19 @@ class MeasureFeaturesToMetricNameMapper:
         measure: PydanticMeasure,
         fill_nulls_with: Optional[int],
         join_to_timespine: bool,
+        existing_metric_names: Optional[Set[str]] = None,
     ) -> str:
         """Find the existing metric for a measure configuration, or create it if it doesn't exist.
 
+        existing_metric_names should match the names of all metrics in the manifest;
+            it's provided so that in cases where we're creating a lot of metrics in one go, we can
+            avoid looping through the manifest's metrics extra times.  If provided, new metric
+            names will be appended to this set as we go.
+
         returns the name of the metric
         """
+        existing_metric_names = existing_metric_names or set([metric.name for metric in manifest.metrics])
+
         # Check: do we already have this in the dict?  Let's skip searching for it then!
         stored_metric_name = self._get_stored_metric_name(
             measure_name=measure.name,
@@ -184,10 +189,12 @@ class MeasureFeaturesToMetricNameMapper:
                 fill_nulls_with=fill_nulls_with,
                 join_to_timespine=join_to_timespine,
                 manifest=manifest,
+                existing_metric_names=existing_metric_names,
             )
             metric = built_metric
             metric.name = metric_name
             manifest.metrics.append(metric)
+            existing_metric_names.add(metric_name)
 
         self._store_metric_name(
             measure_name=measure.name,

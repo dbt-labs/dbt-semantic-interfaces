@@ -1,14 +1,11 @@
 import logging
-from typing import Dict, Tuple
 
 from typing_extensions import override
 
-from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
-from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.protocols import ProtocolHint
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
@@ -26,28 +23,8 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
         return self
 
     @staticmethod
-    def _build_measure_to_model_map(
-        semantic_manifest: PydanticSemanticManifest,
-    ) -> Dict[str, Tuple[PydanticSemanticModel, PydanticMeasure]]:
-        """Builds a mapping from measure name to the semantic model name that contains it.
-
-        Args:
-            semantic_manifest (PydanticSemanticManifest): The manifest containing semantic models.
-
-        Returns:
-            dict: A dictionary mapping measure names to their containing semantic model names.
-        """
-        measure_to_model = {}
-        for semantic_model in semantic_manifest.semantic_models:
-            for measure in semantic_model.measures:
-                measure_to_model[measure.name] = (semantic_model, measure)
-        return measure_to_model
-
-    @staticmethod
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
-        measure_info_map = FlattenSimpleMetricsWithMeasureInputsRule._build_measure_to_model_map(
-            semantic_manifest=semantic_manifest,
-        )
+        measure_info_map = semantic_manifest.build_measure_name_to_model_and_measure_map()
         for metric in semantic_manifest.metrics:
             if metric.type == MetricType.SIMPLE:
                 # If this is a simple metric with a measure input that does NOT already have some
