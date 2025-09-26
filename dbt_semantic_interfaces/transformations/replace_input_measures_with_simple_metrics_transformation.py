@@ -94,7 +94,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
             return
         if metric.type_params.cumulative_type_params is None:
             # this protects from legacy cumulative type param declarations.  They
-            # SHOULD have been transformed already, but beter safe than sorry.
+            # SHOULD have been transformed already, but better safe than sorry.
             metric.type_params.cumulative_type_params = PydanticCumulativeTypeParams(
                 metric=None,
             )
