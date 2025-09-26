@@ -13,7 +13,10 @@ from tests.example_project_configuration import EXAMPLE_PROJECT_CONFIGURATION
 
 
 def test_boolean_measure_aggregation_rule_transforms_only_sum_boolean_measures() -> None:
-    """Validate SUM_BOOLEAN measures get wrapped expr and SUM agg; others unchanged."""
+    """Validate SUM_BOOLEAN measures correctly mutate their expr and agg types.
+
+    (Also validate that other measures are unchanged.)
+    """
     # Three measures:
     # - other_measure: not SUM_BOOLEAN -> unchanged
     # - measure_with_expr: SUM_BOOLEAN with existing expr -> wrap expr, change agg to SUM
