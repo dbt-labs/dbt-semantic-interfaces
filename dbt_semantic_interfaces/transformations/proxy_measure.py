@@ -62,7 +62,6 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                     )
                     metric.name = measure.name
                     metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)
-                    # just need to edit this and then add tests!
                     semantic_manifest.metrics.append(metric)
 
         return semantic_manifest
