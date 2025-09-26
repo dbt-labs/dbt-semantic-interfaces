@@ -68,7 +68,7 @@ def _build_semantic_model_with_measure(
     )
 
 
-def _matching_simple_metric(
+def _build_simple_metric(
     name: str,
     sm_name: str,
     time_dim_name: str,
@@ -109,9 +109,9 @@ def test_cumulative_no_measure_with_metric_input_is_unchanged() -> None:
     manifest = PydanticSemanticManifest(
         semantic_models=[sm], metrics=[cumulative_metric], project_configuration=_project_config()
     )
-
+    original_metrics = manifest.copy(deep=True).metrics
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
-    assert out.metrics == manifest.metrics
+    assert out.metrics == original_metrics
 
 
 def test_cumulative_with_measure_and_metric_input_is_unchanged() -> None:
@@ -133,8 +133,9 @@ def test_cumulative_with_measure_and_metric_input_is_unchanged() -> None:
         project_configuration=_project_config(),
     )
 
+    original_metrics = manifest.copy(deep=True).metrics
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
-    assert out.metrics == manifest.metrics
+    assert out.metrics == original_metrics
 
 
 def test_cumulative_with_measure_reuses_existing_simple_metric() -> None:
@@ -150,7 +151,7 @@ def test_cumulative_with_measure_reuses_existing_simple_metric() -> None:
         ),
     )
 
-    existing_simple_metric = _matching_simple_metric(
+    existing_simple_metric = _build_simple_metric(
         name="existing_simple_for_m1",
         sm_name="sm",
         time_dim_name="ds",
@@ -164,9 +165,9 @@ def test_cumulative_with_measure_reuses_existing_simple_metric() -> None:
         project_configuration=_project_config(),
     )
 
-    initial_simple_metric_count = sum(1 for m in manifest.metrics if m.type == MetricType.SIMPLE)
+    initial_simple_metric_count = len([m for m in manifest.metrics if m.type == MetricType.SIMPLE])
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
-    post_simple_metric_count = sum(1 for m in out.metrics if m.type == MetricType.SIMPLE)
+    post_simple_metric_count = len([m for m in out.metrics if m.type == MetricType.SIMPLE])
 
     assert post_simple_metric_count == initial_simple_metric_count
 
@@ -197,11 +198,13 @@ def test_cumulative_with_measure_creates_one_for_multiple_metrics() -> None:
 
     manifest = PydanticSemanticManifest(semantic_models=[sm], metrics=metrics, project_configuration=_project_config())
 
-    initial_simple_metric_count = sum(1 for m in manifest.metrics if m.type == MetricType.SIMPLE)
+    initial_simple_metric_count = len([m for m in manifest.metrics if m.type == MetricType.SIMPLE])
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
-    post_simple_metric_count = sum(1 for m in out.metrics if m.type == MetricType.SIMPLE)
+    post_simple_metric_count = len([m for m in out.metrics if m.type == MetricType.SIMPLE])
 
     assert post_simple_metric_count == initial_simple_metric_count + 1
+    private_metric_count = len([m for m in out.metrics if m.type == MetricType.SIMPLE and m.type_params.is_private])
+    assert private_metric_count == 1
 
     names = []
     for m in out.metrics:
@@ -215,7 +218,7 @@ def test_cumulative_with_measure_creates_one_for_multiple_metrics() -> None:
     assert len(set(names)) == 1
 
 
-def test_cumulative_grouped_measure_inputs_create_four_simple_metrics() -> None:
+def test_repeated_cumulative_measure_inputs_do_not_create_dulplicates_metrics() -> None:
     """Start with one simple metric; grouped cumulative measure inputs create four new simple metrics.
 
     Groups:
@@ -308,25 +311,97 @@ def test_cumulative_grouped_measure_inputs_create_four_simple_metrics() -> None:
 
     manifest = PydanticSemanticManifest(semantic_models=[sm], metrics=metrics, project_configuration=_project_config())
 
-    initial_simple_metric_count = sum(1 for m in manifest.metrics if m.type == MetricType.SIMPLE)
+    initial_simple_metric_count = len([m for m in manifest.metrics if m.type == MetricType.SIMPLE])
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
-    post_simple_metric_count = sum(1 for m in out.metrics if m.type == MetricType.SIMPLE)
+    post_simple_metric_count = len([m for m in out.metrics if m.type == MetricType.SIMPLE])
 
     # Expect 4 new simple metrics (one per distinct measure config)
     assert post_simple_metric_count == initial_simple_metric_count + 4
 
     # Collect created metric input names for each group
-    def _metric_input_name(metric_name: str) -> str:
+    def _get_metric_input_name_from_output_name(metric_name: str) -> str:
         m = next(x for x in out.metrics if x.name == metric_name)
         assert (
             m.type_params.cumulative_type_params is not None and m.type_params.cumulative_type_params.metric is not None
         ), "cumulative_type_params should be set as part of the test setup here."
         return m.type_params.cumulative_type_params.metric.name
 
-    g1_names = [_metric_input_name("cumulative_g1_0"), _metric_input_name("cumulative_g1_1")]
+    g1_names = [
+        _get_metric_input_name_from_output_name("cumulative_g1_0"),
+        _get_metric_input_name_from_output_name("cumulative_g1_1"),
+    ]
     assert len(set(g1_names)) == 1, "Group 1 metrics were not successfully deduplicated."
-    g4_names = [_metric_input_name("cumulative_g4_0"), _metric_input_name("cumulative_g4_1")]
+    assert g1_names[0] == "m1"
+    g2_names = [_get_metric_input_name_from_output_name("cumulative_g2")]
+    assert len(set(g2_names)) == 1, "Group 2 metrics were not successfully deduplicated."
+    assert g2_names[0] == "m1_fill_nulls_with_3"
+    g3_names = [_get_metric_input_name_from_output_name("cumulative_g3")]
+    assert len(set(g3_names)) == 1, "Group 3 metrics were not successfully deduplicated."
+    assert g3_names[0] == "m1_join_to_timespine"
+    g4_names = [
+        _get_metric_input_name_from_output_name("cumulative_g4_0"),
+        _get_metric_input_name_from_output_name("cumulative_g4_1"),
+    ]
     assert len(set(g4_names)) == 1, "Group 4 metrics were not successfully deduplicated."
+    assert g4_names[0] == "m1_fill_nulls_with_9_join_to_timespine"
+
+
+def test_cumulative_metric_name_collision_creates_unique_metric() -> None:
+    """Test that a new simple metric is created with a unique name when a name collision occurs but features differ."""
+    sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
+
+    # Pre-existing simple metric with name "m1" and default features (no fill_nulls_with, no join_to_timespine)
+    preexisting_simple_metric = PydanticMetric(
+        name="m1",
+        type=MetricType.SIMPLE,
+        type_params=PydanticMetricTypeParams(
+            metric_aggregation_params=PydanticMetricAggregationParams(
+                semantic_model="sm",
+                agg=AggregationType.COUNT,
+                agg_time_dimension="ds",
+            ),
+            expr="1",
+            join_to_timespine=False,
+            fill_nulls_with=None,
+        ),
+    )
+
+    # Cumulative metric that references a measure with the same name, but with fill_nulls_with set
+    cumulative_metric = PydanticMetric(
+        name="cumulative_with_fill",
+        type=MetricType.CUMULATIVE,
+        type_params=PydanticMetricTypeParams(
+            cumulative_type_params=PydanticCumulativeTypeParams(),
+            measure=PydanticMetricInputMeasure(name="m1"),
+        ),
+    )
+
+    manifest = PydanticSemanticManifest(
+        semantic_models=[sm],
+        metrics=[preexisting_simple_metric, cumulative_metric],
+        project_configuration=_project_config(),
+    )
+
+    out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
+
+    # There should be two simple metrics: the original and a new one with a unique name
+    simple_metrics = [m for m in out.metrics if m.type == MetricType.SIMPLE]
+    simple_metric_names = {m.name for m in simple_metrics}
+    assert "m1" in simple_metric_names
+    # The new metric should have an incremented unique name
+    expected_new_metric_name = "m1_1"
+    assert expected_new_metric_name in simple_metric_names
+    assert next(
+        m for m in simple_metrics if m.name == expected_new_metric_name
+    ).type_params.is_private, "Newly created metrics should be private."
+
+    # The cumulative metric should reference the new metric by name
+    cum_metric = next(m for m in out.metrics if m.name == "cumulative_with_fill")
+    assert (
+        cum_metric.type_params.cumulative_type_params is not None
+        and cum_metric.type_params.cumulative_type_params.metric is not None
+    )
+    assert cum_metric.type_params.cumulative_type_params.metric.name == expected_new_metric_name
 
 
 @pytest.mark.parametrize("side", ["base", "conversion"])
@@ -358,8 +433,9 @@ def test_conversion_no_measure_with_metric_input_is_unchanged(side: str) -> None
         project_configuration=_project_config(),
     )
 
+    original_metrics = manifest.copy(deep=True).metrics
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
-    assert out.metrics == manifest.metrics
+    assert out.metrics == original_metrics
 
 
 @pytest.mark.parametrize("side", ["base", "conversion"])
@@ -393,8 +469,9 @@ def test_conversion_with_measure_and_metric_input_is_unchanged(side: str) -> Non
         project_configuration=_project_config(),
     )
 
+    original_metrics = manifest.copy(deep=True).metrics
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
-    assert out.metrics == manifest.metrics
+    assert out.metrics == original_metrics
 
 
 @pytest.mark.parametrize("side", ["base", "conversion"])
@@ -420,7 +497,7 @@ def test_conversion_with_measure_reuses_existing_simple_metric(side: str) -> Non
         ),
     )
 
-    existing_simple_metric = _matching_simple_metric(
+    existing_simple_metric = _build_simple_metric(
         name="existing_simple_for_m1",
         sm_name="sm",
         time_dim_name="ds",
@@ -434,11 +511,12 @@ def test_conversion_with_measure_reuses_existing_simple_metric(side: str) -> Non
         project_configuration=_project_config(),
     )
 
-    initial_simple_metric_count = sum(1 for m in manifest.metrics if m.type == MetricType.SIMPLE)
+    initial_simple_metrics = [m.copy(deep=True) for m in manifest.metrics if m.type == MetricType.SIMPLE]
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
-    post_simple_metric_count = sum(1 for m in out.metrics if m.type == MetricType.SIMPLE)
-
-    assert post_simple_metric_count == initial_simple_metric_count
+    # post_simple_metric_count = len([m for m in out.metrics if m.type == MetricType.SIMPLE])
+    # assert post_simple_metric_count == initial_simple_metric_count
+    out_simple_metrics = [m.copy(deep=True) for m in out.metrics if m.type == MetricType.SIMPLE]
+    assert initial_simple_metrics == out_simple_metrics
 
     out_params = next(m for m in out.metrics if m.type == MetricType.CONVERSION).type_params.conversion_type_params
     assert out_params is not None, "no conversion metric found; this is a fundamental problem."
@@ -488,11 +566,14 @@ def test_conversion_with_measure_creates_one_for_multiple_metrics(side: str) -> 
         project_configuration=_project_config(),
     )
 
-    initial_simple_metric_count = sum(1 for m in manifest.metrics if m.type == MetricType.SIMPLE)
+    initial_simple_metrics = [m for m in manifest.metrics if m.type == MetricType.SIMPLE]
     out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
-    post_simple_metric_count = sum(1 for m in out.metrics if m.type == MetricType.SIMPLE)
+    post_simple_metrics = [m for m in out.metrics if m.type == MetricType.SIMPLE]
 
-    assert post_simple_metric_count == initial_simple_metric_count + 1
+    assert len(post_simple_metrics) == len(initial_simple_metrics) + 1
+    assert next(
+        m for m in post_simple_metrics if m.name not in initial_simple_metrics
+    ).type_params.is_private, "Newly created metrics should be private."
 
     names = []
     for m in out.metrics:
