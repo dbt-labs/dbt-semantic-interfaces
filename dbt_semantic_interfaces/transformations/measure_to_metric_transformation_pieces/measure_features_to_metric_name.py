@@ -128,7 +128,7 @@ class MeasureFeaturesToMetricNameMapper:
         if fill_nulls_with is not None:
             name_parts.append(f"fill_nulls_with_{fill_nulls_with}")
         if join_to_timespine:
-            name_parts.append("join_to_timespine_true")
+            name_parts.append("join_to_timespine")
 
         base_name = "_".join(name_parts)
         new_name = base_name
