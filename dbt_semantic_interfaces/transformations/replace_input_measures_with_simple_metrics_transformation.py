@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Set, Tuple
 
 from typing_extensions import override
 
@@ -63,6 +63,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
         input_measure: Optional[PydanticMetricInputMeasure],
         input_metric: Optional[PydanticMetricInput],
         semantic_manifest: PydanticSemanticManifest,
+        existing_metric_names: Set[str],
     ) -> Optional[str]:
         if input_measure is None or input_metric is not None:
             return None
@@ -88,6 +89,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
             measure=measure,
             fill_nulls_with=input_measure.fill_nulls_with,
             join_to_timespine=input_measure.join_to_timespine,
+            existing_metric_names=existing_metric_names,
         )
 
     @staticmethod
@@ -95,6 +97,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
         metric: PydanticMetric,
         semantic_manifest: PydanticSemanticManifest,
         mapper: MeasureFeaturesToMetricNameMapper,
+        existing_metric_names: Set[str],
     ) -> None:
         if metric.type != MetricType.CUMULATIVE:
             return
@@ -115,6 +118,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
                 input_measure=metric.type_params.measure,
                 input_metric=metric.type_params.cumulative_type_params.metric,
                 semantic_manifest=semantic_manifest,
+                existing_metric_names=existing_metric_names,
             )
         )
         if new_metric_name is not None:
@@ -130,6 +134,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
         metric: PydanticMetric,
         semantic_manifest: PydanticSemanticManifest,
         mapper: MeasureFeaturesToMetricNameMapper,
+        existing_metric_names: Set[str],
     ) -> None:
         if metric.type != MetricType.CONVERSION:
             return
@@ -149,6 +154,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
                 input_measure=conversion_type_params.base_measure,
                 input_metric=conversion_type_params.base_metric,
                 semantic_manifest=semantic_manifest,
+                existing_metric_names=existing_metric_names,
             )
         )
         if new_conversion_metric_base_metric_name is not None:
@@ -169,6 +175,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
                 input_measure=conversion_type_params.conversion_measure,
                 input_metric=conversion_type_params.conversion_metric,
                 semantic_manifest=semantic_manifest,
+                existing_metric_names=existing_metric_names,
             )
         )
         if new_conversion_metric_conversion_metric_name is not None:
@@ -186,13 +193,20 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
     @staticmethod
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
         mapper = MeasureFeaturesToMetricNameMapper()
+        existing_metric_names = set([metric.name for metric in semantic_manifest.metrics])
 
         for metric in semantic_manifest.metrics:
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_handle_cumulative_metric(
-                metric, semantic_manifest, mapper
+                metric,
+                semantic_manifest,
+                mapper,
+                existing_metric_names,
             )
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_handle_conversion_metric(
-                metric, semantic_manifest, mapper
+                metric,
+                semantic_manifest,
+                mapper,
+                existing_metric_names,
             )
 
         return semantic_manifest
