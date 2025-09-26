@@ -1,5 +1,5 @@
 import logging
-from typing import Optional, Set, Tuple
+from typing import Dict, Optional, Set, Tuple
 
 from typing_extensions import override
 
@@ -47,31 +47,18 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
         return self
 
     @staticmethod
-    def _get_semantic_model_and_measure_for_input_measure(
-        input_measure: PydanticMetricInputMeasure,
-        semantic_manifest: PydanticSemanticManifest,
-    ) -> Optional[Tuple[PydanticSemanticModel, PydanticMeasure]]:
-        for model in semantic_manifest.semantic_models:
-            for model_measure in model.measures:
-                if model_measure.name == input_measure.name:
-                    return model, model_measure
-        return None
-
-    @staticmethod
     def _maybe_get_or_create_metric_and_retrieve_name(
         mapper: MeasureFeaturesToMetricNameMapper,
         input_measure: Optional[PydanticMetricInputMeasure],
         input_metric: Optional[PydanticMetricInput],
         semantic_manifest: PydanticSemanticManifest,
         existing_metric_names: Set[str],
+        measure_name_to_model_and_measure_map: Dict[str, Tuple[PydanticSemanticModel, PydanticMeasure]],
     ) -> Optional[str]:
         if input_measure is None or input_metric is not None:
             return None
-        model_and_measure = (
-            ReplaceInputMeasuresWithSimpleMetricsTransformationRule._get_semantic_model_and_measure_for_input_measure(
-                input_measure=input_measure,
-                semantic_manifest=semantic_manifest,
-            )
+        model_and_measure = measure_name_to_model_and_measure_map.get(
+            input_measure.name,
         )
         if model_and_measure is None:
             logger.warning(
@@ -98,6 +85,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
         semantic_manifest: PydanticSemanticManifest,
         mapper: MeasureFeaturesToMetricNameMapper,
         existing_metric_names: Set[str],
+        measure_name_to_model_and_measure_map: Dict[str, Tuple[PydanticSemanticModel, PydanticMeasure]],
     ) -> None:
         if metric.type != MetricType.CUMULATIVE:
             return
@@ -119,6 +107,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
                 input_metric=metric.type_params.cumulative_type_params.metric,
                 semantic_manifest=semantic_manifest,
                 existing_metric_names=existing_metric_names,
+                measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
             )
         )
         if new_metric_name is not None:
@@ -135,6 +124,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
         semantic_manifest: PydanticSemanticManifest,
         mapper: MeasureFeaturesToMetricNameMapper,
         existing_metric_names: Set[str],
+        measure_name_to_model_and_measure_map: Dict[str, Tuple[PydanticSemanticModel, PydanticMeasure]],
     ) -> None:
         if metric.type != MetricType.CONVERSION:
             return
@@ -155,6 +145,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
                 input_metric=conversion_type_params.base_metric,
                 semantic_manifest=semantic_manifest,
                 existing_metric_names=existing_metric_names,
+                measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
             )
         )
         if new_conversion_metric_base_metric_name is not None:
@@ -176,6 +167,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
                 input_metric=conversion_type_params.conversion_metric,
                 semantic_manifest=semantic_manifest,
                 existing_metric_names=existing_metric_names,
+                measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
             )
         )
         if new_conversion_metric_conversion_metric_name is not None:
@@ -194,6 +186,7 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
         mapper = MeasureFeaturesToMetricNameMapper()
         existing_metric_names = set([metric.name for metric in semantic_manifest.metrics])
+        measure_name_to_model_and_measure_map = semantic_manifest.build_measure_name_to_model_and_measure_map()
 
         for metric in semantic_manifest.metrics:
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_handle_cumulative_metric(
@@ -201,12 +194,14 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
                 semantic_manifest,
                 mapper,
                 existing_metric_names,
+                measure_name_to_model_and_measure_map,
             )
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_handle_conversion_metric(
                 metric,
                 semantic_manifest,
                 mapper,
                 existing_metric_names,
+                measure_name_to_model_and_measure_map,
             )
 
         return semantic_manifest

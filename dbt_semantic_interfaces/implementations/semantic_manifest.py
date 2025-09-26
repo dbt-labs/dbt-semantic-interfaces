@@ -1,8 +1,9 @@
-from typing import List
+from typing import Dict, List, Tuple
 
 from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.project_configuration import (
     PydanticProjectConfiguration,
@@ -24,3 +25,13 @@ class PydanticSemanticManifest(HashableBaseModel, ProtocolHint[SemanticManifest]
     metrics: List[PydanticMetric]
     project_configuration: PydanticProjectConfiguration
     saved_queries: List[PydanticSavedQuery] = Field(default_factory=list)
+
+    def build_measure_name_to_model_and_measure_map(
+        self,
+    ) -> Dict[str, Tuple[PydanticSemanticModel, PydanticMeasure]]:  # noqa: E501
+        """Build a mapping from measure name to the semantic model name that contains it."""
+        measure_to_model = {}
+        for semantic_model in self.semantic_models:
+            for measure in semantic_model.measures:
+                measure_to_model[measure.name] = (semantic_model, measure)
+        return measure_to_model
