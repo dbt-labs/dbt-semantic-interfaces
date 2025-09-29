@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Transform simple metrics with COUNT just like we do for measures.
+time: 2025-09-29T11:38:24.056152-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
