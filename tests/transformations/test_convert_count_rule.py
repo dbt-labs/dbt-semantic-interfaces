@@ -69,7 +69,7 @@ def test_metric_convert_count_rule_does_not_change_non_simple_type() -> None:
         type_params=PydanticMetricTypeParams(
             metric_aggregation_params=PydanticMetricAggregationParams(
                 semantic_model="example_model",
-                agg=AggregationType.AVERAGE,
+                agg=AggregationType.COUNT,
             ),
             expr="price",
         ),
