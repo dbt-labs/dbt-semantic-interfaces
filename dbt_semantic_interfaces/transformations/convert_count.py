@@ -1,3 +1,5 @@
+from typing import Literal, NoReturn
+
 from typing_extensions import override
 
 from dbt_semantic_interfaces.errors import ModelTransformError
@@ -30,14 +32,12 @@ class ConvertCountToSumRule(ProtocolHint[SemanticManifestTransformRule[PydanticS
             for measure in semantic_model.measures:
                 if measure.agg == AggregationType.COUNT:
                     if measure.expr is None:
-                        raise ModelTransformError(
-                            f"Measure '{measure.name}' uses a COUNT aggregation, which requires an expr to be "
-                            f"provided. Provide 'expr: 1' if a count of all rows is desired."
+                        ConvertCountMetricToSumRule.throw_missing_expr_error(
+                            object_name=measure.name,
+                            object_type="Metric",
                         )
-                    if measure.expr != ONE:
-                        # Just leave it as SUM(1) if we want to count all
-                        measure.expr = f"CASE WHEN {measure.expr} IS NOT NULL THEN 1 ELSE 0 END"
-                    measure.agg = AggregationType.SUM
+                    measure.expr = ConvertCountMetricToSumRule.maybe_transform_expression(measure.expr)
+                    measure.agg = ConvertCountMetricToSumRule.TRANSFORMED_AGG_TYPE
         return semantic_manifest
 
 
@@ -46,6 +46,8 @@ class ConvertCountMetricToSumRule(ProtocolHint[SemanticManifestTransformRule[Pyd
 
     This only applies to SIMPLE metrics.
     """
+
+    TRANSFORMED_AGG_TYPE = AggregationType.SUM
 
     @override
     def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
@@ -60,11 +62,30 @@ class ConvertCountMetricToSumRule(ProtocolHint[SemanticManifestTransformRule[Pyd
                 and metric.type_params.metric_aggregation_params.agg == AggregationType.COUNT
             ):
                 if metric.type_params.expr is None:
-                    raise ModelTransformError(
-                        f"Metric '{metric.name}' uses a COUNT aggregation, which requires an expr to be "
-                        f"provided. Provide 'expr: 1' if a count of all rows is desired."
+                    ConvertCountMetricToSumRule.throw_missing_expr_error(
+                        object_name=metric.name,
+                        object_type="Metric",
                     )
-                if metric.type_params.expr != ONE:
-                    metric.type_params.expr = f"CASE WHEN {metric.type_params.expr} IS NOT NULL THEN 1 ELSE 0 END"
-                metric.type_params.metric_aggregation_params.agg = AggregationType.SUM
+                metric.type_params.expr = ConvertCountMetricToSumRule.maybe_transform_expression(
+                    metric.type_params.expr
+                )
+                metric.type_params.metric_aggregation_params.agg = ConvertCountMetricToSumRule.TRANSFORMED_AGG_TYPE
         return semantic_manifest
+
+    @staticmethod
+    def maybe_transform_expression(expr: str) -> str:
+        """Transforms the expression if it is not ONE, otherwise returns the expression unchanged."""
+        if expr == ONE:
+            # Just leave it as SUM(1) if we want to count all
+            return expr
+        return f"CASE WHEN {expr} IS NOT NULL THEN 1 ELSE 0 END"
+
+    @staticmethod
+    def throw_missing_expr_error(  # noqa: D
+        object_name: str,
+        object_type: Literal["Metric", "Measure"],
+    ) -> NoReturn:
+        raise ModelTransformError(
+            f"{object_type} '{object_name}' uses a COUNT aggregation, which requires an expr to be "
+            f"provided. Provide 'expr: 1' if a count of all rows is desired."
+        )
