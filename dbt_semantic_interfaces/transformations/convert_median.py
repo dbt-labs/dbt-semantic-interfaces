@@ -41,7 +41,7 @@ class ConvertMedianToPercentileRule(ProtocolHint[SemanticManifestTransformRule[P
                             )
                         if measure.agg_params.use_discrete_percentile:
                             raise ModelTransformError(
-                                f"Measure '{measure.name}' uses a MEDIAN aggregation, while use_discrete_percentile"
+                                f"Measure '{measure.name}' uses a MEDIAN aggregation, while use_discrete_percentile "
                                 f"is set to true. Please remove the parameter or set to False."
                             )
                     measure.agg_params.percentile = MEDIAN_PERCENTILE
