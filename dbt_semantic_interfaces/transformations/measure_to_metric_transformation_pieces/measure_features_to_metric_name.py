@@ -3,6 +3,7 @@ from typing import Dict, Optional, Set, Tuple
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
+    PydanticMetricInputMeasure,
     PydanticMetricTypeParams,
 )
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
@@ -193,6 +194,8 @@ class MeasureFeaturesToMetricNameMapper:
             )
             metric = built_metric
             metric.name = metric_name
+            # TODO: remove this line when MF can support no-measure metrics
+            metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)
             manifest.metrics.append(metric)
             existing_metric_names.add(metric_name)
 
