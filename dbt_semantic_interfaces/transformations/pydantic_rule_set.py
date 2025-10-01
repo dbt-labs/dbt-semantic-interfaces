@@ -83,9 +83,9 @@ class PydanticSemanticManifestTransformRuleSet(
             # This populates "input_measures" for metric fields.
             # This does NOT add new metrics or depend on most newly-added metrics, but it must
             # run after CreateProxyMeasureRule() to ensure we have all the metrics we will need.
-            AddInputMetricMeasuresRule(),
             FlattenSimpleMetricsWithMeasureInputsRule(),
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule(),
+            AddInputMetricMeasuresRule(),
         )
 
     @property
