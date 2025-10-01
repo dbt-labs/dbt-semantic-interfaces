@@ -80,7 +80,7 @@ class PydanticSemanticManifestTransformRuleSet(
         return (
             # CreateProxyMeasureRule should always run FIRST in this sequence.
             CreateProxyMeasureRule(),  # FIRST, I SAY!
-            # This populates "input_measures" for metric fields, and must unfortunately run
+            # This populates "input_measures" for metric fields.
             # This does NOT add new metrics or depend on most newly-added metrics, but it must
             # run after CreateProxyMeasureRule() to ensure we have all the metrics we will need.
             AddInputMetricMeasuresRule(),
@@ -110,17 +110,14 @@ class PydanticSemanticManifestTransformRuleSet(
 
     @property
     def secondary_rules(self) -> Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]:  # noqa: D
-        """Secondary rules - Primarily editing, copying, or adapting measures."""
-        return self.legacy_measure_update_rules
-
-    @property
-    def tertiary_rules(self) -> Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]:  # noqa: D
-        """Tertiary rules - Primarily editing, copying, or adapting metrics."""
+        """Secondary rules - Primarily editing, copying, or adapting measures and metrics."""
+        # Order matters here!
         return [
+            *self.legacy_measure_update_rules,
             *self.convert_legacy_measures_to_metrics_rules,
             *self.general_metric_update_rules,
         ]
 
     @property
     def all_rules(self) -> Sequence[Sequence[SemanticManifestTransformRule[PydanticSemanticManifest]]]:  # noqa: D
-        return self.primary_rules, self.secondary_rules, self.tertiary_rules
+        return self.primary_rules, self.secondary_rules
