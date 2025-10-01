@@ -66,12 +66,29 @@ class MeasureFeaturesToMetricNameMapper:
         but let's not prematurely optimize.
         """
         search_metric = metric.copy(deep=True)
+        original_input_measures = search_metric.type_params.input_measures
+        original_measure = search_metric.type_params.measure
         for existing_metric in manifest.metrics:
             # this allows us to a straight equality comparison, which is safer in the future
             # than implementing a custom comparison function.
             search_metric.name = existing_metric.name
+            search_metric.description = existing_metric.description
+            search_metric.label = existing_metric.label
             search_metric.metadata = existing_metric.metadata
             search_metric.type_params.is_private = existing_metric.type_params.is_private
+            search_metric.config = existing_metric.config
+            # this is used for compatibility between new and old style metrics; we need to
+            # match if the search input measures are empty (new-style) or if they match
+            # the old-style input measures.
+            if len(existing_metric.type_params.input_measures) == 0:
+                search_metric.type_params.input_measures = []
+            else:
+                search_metric.type_params.input_measures = original_input_measures
+            if existing_metric.type_params.measure is None:
+                search_metric.type_params.measure = None
+            else:
+                search_metric.type_params.measure = original_measure
+
             if search_metric == existing_metric:
                 return existing_metric
             print("provided metric", search_metric)
@@ -178,6 +195,10 @@ class MeasureFeaturesToMetricNameMapper:
             fill_nulls_with=fill_nulls_with,
             join_to_timespine=join_to_timespine,
         )
+        # supporting legacy cases.  Remove when we can remove input measures.
+        built_metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)
+        built_metric.type_params.input_measures = [PydanticMetricInputMeasure(name=measure.name)]
+
         metric = self._find_metric_clone_in_manifest(
             metric=built_metric,
             manifest=manifest,

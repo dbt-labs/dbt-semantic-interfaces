@@ -48,6 +48,7 @@ def test_cumulative_metric_with_custom_grain_to_date() -> None:  # noqa: D
           type_params:
             measure:
               name: bookings
+              fill_nulls_with: 15
             cumulative_type_params:
               grain_to_date: martian_week
         """
@@ -121,9 +122,9 @@ def test_cumulative_metric_with_custom_window() -> None:  # noqa: D
     )
     assert not model.issues.has_blocking_issues
     semantic_manifest = model.semantic_manifest
-    # 2 explicit ones and one that is created for the measure input for the
-    # cumulative metric's params
-    assert len(semantic_manifest.metrics) == 3
+    # 2 explicit metrics.  The cumulative metric's input metric should be deduplicated
+    # so it will match.
+    assert len(semantic_manifest.metrics) == 2
 
     metric = next((m for m in semantic_manifest.metrics if m.name == "test_cumulative_metric_with_custom_window"), None)
     assert metric is not None, "Can't find metric"
@@ -185,9 +186,9 @@ def test_conversion_metric_with_custom_grain_window() -> None:  # noqa: D
     )
     assert not model.issues.has_blocking_issues
     semantic_manifest = model.semantic_manifest
-    # 2 explicit ones and one that is created for the measure input for the
-    # cumulative metric's params
-    assert len(semantic_manifest.metrics) == 3
+    # 2 explicitly created metrics.  The conversion measure -> metric transformation
+    # should not need to create a new metric since the existing one already matches.
+    assert len(semantic_manifest.metrics) == 2
 
     metric = next(
         (m for m in semantic_manifest.metrics if m.name == "test_conversion_metric_with_custom_grain_window"), None

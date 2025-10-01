@@ -31,9 +31,7 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
     ) -> Set[PydanticMetricInputMeasure]:
         """Returns a unique set of input measures for a given metric."""
         measures: Set = set()
-        matched_metric = next(
-            iter((metric for metric in semantic_manifest.metrics if metric.name == metric_name)), None
-        )
+        matched_metric = next((metric for metric in semantic_manifest.metrics if metric.name == metric_name), None)
         if matched_metric:
             if matched_metric.type is MetricType.SIMPLE or matched_metric.type is MetricType.CUMULATIVE:
                 if matched_metric.type_params.measure is not None:
