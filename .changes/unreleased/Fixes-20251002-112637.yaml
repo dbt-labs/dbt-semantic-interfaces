@@ -1,0 +1,6 @@
+kind: Fixes
+body: Fix transformation metric de-duplication and add measures to new metrics to improve metricflow compatibility.
+time: 2025-10-02T11:26:37.069417-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
