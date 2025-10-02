@@ -38,9 +38,9 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                     continue
 
                 add_metric = True
-                for metric in semantic_manifest.metrics:
-                    if metric.name == measure.name:
-                        if metric.type != MetricType.SIMPLE:
+                for manifest_metric in semantic_manifest.metrics:
+                    if manifest_metric.name == measure.name:
+                        if manifest_metric.type != MetricType.SIMPLE:
                             raise ModelTransformError(
                                 f"Cannot have metric with the same name as a measure ({measure.name}) that is not a "
                                 f"created mechanically from that measure using create_metric=True"
@@ -50,9 +50,10 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                             f"that measure"
                         )
                         add_metric = False
+                        break
 
                 if add_metric is True:
-                    metric = MeasureFeaturesToMetricNameMapper.build_metric_from_measure_configuration(
+                    new_metric = MeasureFeaturesToMetricNameMapper.build_metric_from_measure_configuration(
                         measure=measure,
                         semantic_model_name=semantic_model.name,
                         fill_nulls_with=None,
@@ -60,8 +61,8 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                         # we override the default here; this metric was explicitly created by the user.
                         is_private=False,
                     )
-                    metric.name = measure.name
-                    metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)
-                    semantic_manifest.metrics.append(metric)
+                    new_metric.name = measure.name
+                    new_metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)
+                    semantic_manifest.metrics.append(new_metric)
 
         return semantic_manifest
