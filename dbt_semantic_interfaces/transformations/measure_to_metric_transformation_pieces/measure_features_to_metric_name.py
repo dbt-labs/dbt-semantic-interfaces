@@ -53,7 +53,7 @@ class MeasureFeaturesToMetricNameMapper:
         key = (measure_name, fill_nulls_with, join_to_timespine)
         self._metric_name_dict[key] = metric_name
 
-    def _find_metric_clone_in_manifest(
+    def _find_simple_metric_functional_clone_in_manifest(
         self,
         metric: PydanticMetric,
         manifest: PydanticSemanticManifest,
@@ -62,34 +62,35 @@ class MeasureFeaturesToMetricNameMapper:
 
         returns the metric if it exists, otherwise None
 
-        Note: this can be further optimized by pre-caching metrics based on features,
-        but let's not prematurely optimize.
+        Note: this is appropriate for SIMPLE metrics that would **replace a measure** in
+        the new YAML.  This code would require updates and expansion to handle anything beyond that.
         """
-        search_metric = metric.copy(deep=True)
-        original_input_measures = search_metric.type_params.input_measures
-        original_measure = search_metric.type_params.measure
-        for existing_metric in manifest.metrics:
-            # this allows us to a straight equality comparison, which is safer in the future
-            # than implementing a custom comparison function.
-            search_metric.name = existing_metric.name
-            search_metric.description = existing_metric.description
-            search_metric.label = existing_metric.label
-            search_metric.metadata = existing_metric.metadata
-            search_metric.type_params.is_private = existing_metric.type_params.is_private
-            search_metric.config = existing_metric.config
-            # this is used for compatibility between new and old style metrics; we need to
-            # match if the search input measures are empty (new-style) or if they match
-            # the old-style input measures.
-            if len(existing_metric.type_params.input_measures) == 0:
-                search_metric.type_params.input_measures = []
-            else:
-                search_metric.type_params.input_measures = original_input_measures
-            if existing_metric.type_params.measure is None:
-                search_metric.type_params.measure = None
-            else:
-                search_metric.type_params.measure = original_measure
 
-            if search_metric == existing_metric:
+        def _metrics_equivalent(search_metric: PydanticMetric, manifest_metric: PydanticMetric) -> bool:
+            """Check if the given metric and manifest_metric are equivalent based on selected fields."""
+            fields_match = (
+                search_metric.type == manifest_metric.type
+                and search_metric.type_params.window == manifest_metric.type_params.window
+                and search_metric.type_params.grain_to_date == manifest_metric.type_params.grain_to_date
+                and search_metric.type_params.metric_aggregation_params
+                == manifest_metric.type_params.metric_aggregation_params
+                and search_metric.type_params.join_to_timespine == manifest_metric.type_params.join_to_timespine
+                and search_metric.type_params.fill_nulls_with == manifest_metric.type_params.fill_nulls_with
+                and search_metric.type_params.expr == manifest_metric.type_params.expr
+                and search_metric.filter == manifest_metric.filter
+                and search_metric.time_granularity == manifest_metric.time_granularity
+            )
+            if not fields_match:
+                return False
+            if (
+                manifest_metric.type_params.measure is not None
+                and search_metric.type_params.measure != manifest_metric.type_params.measure
+            ):
+                return False
+            return True
+
+        for existing_metric in manifest.metrics:
+            if _metrics_equivalent(search_metric=metric, manifest_metric=existing_metric):
                 return existing_metric
         return None
 
@@ -194,11 +195,12 @@ class MeasureFeaturesToMetricNameMapper:
             join_to_timespine=join_to_timespine,
             is_private=True,
         )
-        # supporting legacy cases.  Remove when we can remove input measures.
+        # TODO SL-4257: this is supporting legacy cases in MF until work there is complete,
+        # and should be removeable long before the rest of the backward-compatibility work.
         built_metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)
         built_metric.type_params.input_measures = [PydanticMetricInputMeasure(name=measure.name)]
 
-        metric = self._find_metric_clone_in_manifest(
+        metric = self._find_simple_metric_functional_clone_in_manifest(
             metric=built_metric,
             manifest=manifest,
         )
@@ -214,7 +216,6 @@ class MeasureFeaturesToMetricNameMapper:
             )
             metric = built_metric
             metric.name = metric_name
-            # TODO: remove this line when MF can support no-measure metrics
             manifest.metrics.append(metric)
             existing_metric_names.add(metric_name)
 
