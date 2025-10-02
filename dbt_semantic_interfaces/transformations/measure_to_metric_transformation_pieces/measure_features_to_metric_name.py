@@ -215,8 +215,6 @@ class MeasureFeaturesToMetricNameMapper:
             metric = built_metric
             metric.name = metric_name
             # TODO: remove this line when MF can support no-measure metrics
-            metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)
-            metric.type_params.input_measures.append(metric.type_params.measure)
             manifest.metrics.append(metric)
             existing_metric_names.add(metric_name)
 

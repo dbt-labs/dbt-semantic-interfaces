@@ -42,11 +42,11 @@ def _project_config() -> PydanticProjectConfiguration:
     return PydanticProjectConfiguration()
 
 
-def _build_semantic_model_with_creatable_measure(
-    sm_name: str,
-    time_dim_name: str = "ds",
-) -> PydanticSemanticModel:
-    return PydanticSemanticModel(
+def test_e2e_measure_create_metric_then_cumulative_uses_metric_input() -> None:
+    """End-to-end: measure create_metric=True, cumulative references created metric by name."""
+    sm_name = "sm"
+    time_dim_name = "ds"
+    sm = PydanticSemanticModel(
         name=sm_name,
         defaults=PydanticSemanticModelDefaults(agg_time_dimension=time_dim_name),
         node_relation=PydanticNodeRelation(alias=sm_name, schema_name="schema"),
@@ -108,11 +108,6 @@ def _build_semantic_model_with_creatable_measure(
             )
         ],
     )
-
-
-def test_e2e_measure_create_metric_then_cumulative_uses_metric_input() -> None:
-    """End-to-end: measure create_metric=True, cumulative references created metric by name."""
-    sm = _build_semantic_model_with_creatable_measure("sm", time_dim_name="ds")
 
     metrics = [
         PydanticMetric(
