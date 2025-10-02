@@ -91,8 +91,6 @@ class MeasureFeaturesToMetricNameMapper:
 
             if search_metric == existing_metric:
                 return existing_metric
-            print("provided metric", search_metric)
-            print("existing metric", existing_metric)
         return None
 
     @staticmethod
@@ -101,7 +99,7 @@ class MeasureFeaturesToMetricNameMapper:
         semantic_model_name: str,
         fill_nulls_with: Optional[int],
         join_to_timespine: Optional[bool],
-        is_private: bool = True,
+        is_private: bool,
     ) -> PydanticMetric:
         """Build a metric from the measure configuration.
 
@@ -194,6 +192,7 @@ class MeasureFeaturesToMetricNameMapper:
             semantic_model_name=model_name,
             fill_nulls_with=fill_nulls_with,
             join_to_timespine=join_to_timespine,
+            is_private=True,
         )
         # supporting legacy cases.  Remove when we can remove input measures.
         built_metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)

@@ -350,6 +350,7 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
         return PydanticMetricAggregationParams(
             semantic_model=semantic_model_name,
             agg=measure.agg,
+            # TODO: clone this
             agg_params=measure.agg_params,
             agg_time_dimension=measure.agg_time_dimension,
             non_additive_dimension=measure.non_additive_dimension,
