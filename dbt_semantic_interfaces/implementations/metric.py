@@ -347,10 +347,14 @@ class PydanticMetric(HashableBaseModel, ModelWithMetadataParsing, ProtocolHint[M
 
         It lives here instead of measures to avoid circular import issues.
         """
+        agg_params = measure.agg_params.copy(deep=True) if measure.agg_params is not None else None
+        non_additive_dimension = (
+            measure.non_additive_dimension.copy(deep=True) if measure.non_additive_dimension is not None else None
+        )
         return PydanticMetricAggregationParams(
             semantic_model=semantic_model_name,
             agg=measure.agg,
-            agg_params=measure.agg_params,
+            agg_params=agg_params,
             agg_time_dimension=measure.agg_time_dimension,
-            non_additive_dimension=measure.non_additive_dimension,
+            non_additive_dimension=non_additive_dimension,
         )
