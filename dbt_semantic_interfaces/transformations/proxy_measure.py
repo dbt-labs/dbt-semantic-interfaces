@@ -59,6 +59,7 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                         join_to_timespine=False,
                         # we override the default here; this metric was explicitly created by the user.
                         is_private=False,
+                        measure_input_filters=None,
                     )
                     metric.name = measure.name
                     metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)

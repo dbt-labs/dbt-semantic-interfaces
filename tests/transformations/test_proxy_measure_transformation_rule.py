@@ -1,6 +1,8 @@
 import textwrap
 from typing import List, Optional
 
+import pytest
+
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
@@ -139,3 +141,139 @@ def test_measure_with_create_metric_generates_metric_with_equivalent_agg_params(
     assert metric.type_params.measure == PydanticMetricInputMeasure(
         name=measure_name
     ), "Metric was constructed with the wrong measure."
+
+
+@pytest.mark.parametrize(
+    "measure_expr,expected_expr",
+    [
+        ("this_expr", "this_expr"),
+        (None, "my_sum_measure"),
+    ],
+)
+def test_proxy_measure_expr_population(measure_expr: Optional[str], expected_expr: str) -> None:
+    """Proxy measure should set expr from measure.expr or fall back to the measure name."""
+    primary_entity_name = "example_entity"
+    measure_name = "my_sum_measure"
+    measure_agg = "sum"
+    measure_agg_time_dimension = "ds"
+    semantic_model_name = "proxy_measure_expr_test_model"
+
+    expr_line = f"\n              expr: {measure_expr}" if measure_expr is not None else ""
+
+    yaml_contents = textwrap.dedent(
+        f"""\
+        semantic_model:
+          name: {semantic_model_name}
+          node_relation:
+            schema_name: some_schema
+            alias: source_table
+          entities:
+            - name: {primary_entity_name}
+              type: primary
+              role: test_role
+              expr: example_id
+          measures:
+            - name: {measure_name}
+              agg: {measure_agg}{expr_line}
+              agg_time_dimension: {measure_agg_time_dimension}
+              create_metric: true
+          dimensions:
+            - name: {measure_agg_time_dimension}
+              type: time
+              type_params:
+                time_granularity: day
+        """
+    )
+    yaml_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
+    model_build_result: SemanticManifestBuildResult = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, yaml_file],
+        apply_transformations=True,
+        raise_issues_as_exceptions=True,
+    )
+
+    manifest: PydanticSemanticManifest = model_build_result.semantic_manifest
+    metrics: List[PydanticMetric] = manifest.metrics
+    assert len(metrics) == 1, "Expected exactly one metric after transformation"
+    metric = metrics[0]
+
+    # expr should match expected
+    assert metric.type_params.expr == expected_expr
+    # Always should be true for proxy-created metrics
+    assert metric.type_params.join_to_timespine is False
+    assert metric.type_params.fill_nulls_with is None
+    assert metric.filter is None
+    # measure pointer should be present
+    assert metric.type_params.measure == PydanticMetricInputMeasure(name=measure_name)
+
+
+def test_proxy_measure_defaults_and_agg_params() -> None:
+    """Proxy-created metric should have correct agg params, defaults, and is_private False."""
+    primary_entity_name = "example_entity"
+    measure_name = "my_percentile_measure"
+    measure_agg = "percentile"
+    measure_agg_time_dimension = "event_time"
+    semantic_model_name = "proxy_measure_defaults_test_model"
+
+    yaml_contents = textwrap.dedent(
+        f"""\
+        semantic_model:
+          name: {semantic_model_name}
+          node_relation:
+            schema_name: some_schema
+            alias: source_table
+          entities:
+            - name: {primary_entity_name}
+              type: primary
+              role: test_role
+              expr: example_id
+          measures:
+            - name: {measure_name}
+              agg: {measure_agg}
+              agg_params:
+                percentile: 0.5
+              agg_time_dimension: {measure_agg_time_dimension}
+              expr: amount
+              create_metric: true
+          dimensions:
+            - name: {measure_agg_time_dimension}
+              type: time
+              type_params:
+                time_granularity: day
+        """
+    )
+    yaml_file = YamlConfigFile(filepath="inline_for_test", contents=yaml_contents)
+    model_build_result: SemanticManifestBuildResult = parse_yaml_files_to_validation_ready_semantic_manifest(
+        [EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE, yaml_file],
+        apply_transformations=True,
+        raise_issues_as_exceptions=True,
+    )
+
+    manifest: PydanticSemanticManifest = model_build_result.semantic_manifest
+    metrics: List[PydanticMetric] = manifest.metrics
+    assert len(metrics) == 1, "Expected exactly one metric after transformation"
+    metric = metrics[0]
+
+    # Aggregation params copied from measure
+    metric_agg_params: Optional[PydanticMetricAggregationParams] = metric.type_params.metric_aggregation_params
+    assert metric_agg_params is not None
+    assert metric_agg_params.semantic_model == semantic_model_name
+    assert metric_agg_params.agg.value == measure_agg
+    assert metric_agg_params.agg_time_dimension == measure_agg_time_dimension
+
+    # expr copied from measure
+    assert metric.type_params.expr == "amount"
+
+    # Defaults for proxy-created metrics
+    assert (
+        metric.type_params.join_to_timespine is False
+    ), "Created metrics should always have a join_to_timespine set to False"
+    assert metric.type_params.fill_nulls_with is None, "Created metrics should never have a value for fill_nulls_with"
+    assert metric.filter is None, "Proxy-created metrics should never have a filter"
+    assert metric.type_params.is_private is False
+    # measure pointer should be present
+    assert metric.type_params.measure == PydanticMetricInputMeasure(
+        name=measure_name
+    ), "Created metrics should always have a measure input"
+    assert metric.type_params.input_measures == [
+        PydanticMetricInputMeasure(name=measure_name)
+    ], "Created metrics should have measure_inputs populated"

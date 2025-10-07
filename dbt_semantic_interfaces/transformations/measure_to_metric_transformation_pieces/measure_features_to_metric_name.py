@@ -1,6 +1,9 @@
 from typing import Dict, Optional, Set, Tuple
 
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
+    PydanticWhereFilterIntersection,
+)
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
     PydanticMetricInputMeasure,
@@ -95,12 +98,68 @@ class MeasureFeaturesToMetricNameMapper:
         return None
 
     @staticmethod
+    def update_required_measure_features_in_simple_model(
+        *,
+        measure: PydanticMeasure,
+        semantic_model_name: str,
+        metric: PydanticMetric,
+        # Measure input fields
+        fill_nulls_with: Optional[int],
+        join_to_timespine: Optional[bool],
+        measure_input_filters: Optional[PydanticWhereFilterIntersection],
+    ) -> None:
+        """Set the measure features on the metric, as appropriate.
+
+        Use this when merging an existing measure's
+        arguments into a metrics.
+
+        This will update the metric in place rather than returning a new one.
+        """
+        assert metric.type == MetricType.SIMPLE, "Attempted to set measure features on a non-simple metric"
+        if metric.type_params.metric_aggregation_params is not None:
+            # these values have already been set.
+            return
+
+        # We only set these if they are passed in explicitly so we can avoid overriding defaults.
+        if fill_nulls_with is not None:
+            metric.type_params.fill_nulls_with = fill_nulls_with
+        if join_to_timespine:
+            metric.type_params.join_to_timespine = join_to_timespine
+
+        metric.type_params.metric_aggregation_params = PydanticMetric.build_metric_aggregation_params(
+            measure=measure,
+            semantic_model_name=semantic_model_name,
+        )
+        # Measures without an expr fall back to using the measure name as the column name,
+        # so we need to enable mimicking that behavior here.
+        if metric.type_params.expr is None:
+            metric.type_params.expr = measure.expr or measure.name
+
+        filters = metric.filter.where_filters if metric.filter else []
+        if measure_input_filters is not None:
+            filters.extend(measure_input_filters.where_filters)
+        if len(filters) > 0:
+            metric.filter = PydanticWhereFilterIntersection(where_filters=filters)
+
+        # TODO SL-4257: this is supporting legacy cases in MF until work there is complete,
+        # and should be removeable some time before the rest of the backward-compatibility work.
+        artificial_measure_input = PydanticMetricInputMeasure(
+            name=measure.name,
+            filter=measure_input_filters,
+            join_to_timespine=False,
+            fill_nulls_with=None,
+        )
+        metric.type_params.measure = artificial_measure_input
+        metric.type_params.input_measures = [artificial_measure_input]
+
+    @staticmethod
     def build_metric_from_measure_configuration(
         measure: PydanticMeasure,
         semantic_model_name: str,
         fill_nulls_with: Optional[int],
         join_to_timespine: Optional[bool],
         is_private: bool,
+        measure_input_filters: Optional[PydanticWhereFilterIntersection],
     ) -> PydanticMetric:
         """Build a metric from the measure configuration.
 
@@ -109,20 +168,10 @@ class MeasureFeaturesToMetricNameMapper:
         get_or_create_metric_for_measure instead of this method).
         """
         type_params = PydanticMetricTypeParams(
-            metric_aggregation_params=PydanticMetric.build_metric_aggregation_params(
-                measure=measure,
-                semantic_model_name=semantic_model_name,
-            ),
-            expr=measure.expr,
             is_private=is_private,
         )
-        # This allows us to avoid re-implementing the defaults in a second place.
-        if fill_nulls_with is not None:
-            type_params.fill_nulls_with = fill_nulls_with
-        if join_to_timespine is not None:
-            type_params.join_to_timespine = join_to_timespine
 
-        return PydanticMetric(
+        new_metric = PydanticMetric(
             name=measure.name,
             type=MetricType.SIMPLE,
             type_params=type_params,
@@ -131,6 +180,17 @@ class MeasureFeaturesToMetricNameMapper:
             config=measure.config,
             metadata=measure.metadata,
         )
+
+        MeasureFeaturesToMetricNameMapper.update_required_measure_features_in_simple_model(
+            measure=measure,
+            semantic_model_name=semantic_model_name,
+            metric=new_metric,
+            fill_nulls_with=fill_nulls_with,
+            join_to_timespine=join_to_timespine,
+            measure_input_filters=measure_input_filters,
+        )
+
+        return new_metric
 
     def _generate_new_metric_name(
         self,
@@ -160,9 +220,11 @@ class MeasureFeaturesToMetricNameMapper:
 
     def get_or_create_metric_for_measure(
         self,
+        *,
         manifest: PydanticSemanticManifest,
         model_name: str,
         measure: PydanticMeasure,
+        measure_input_filters: Optional[PydanticWhereFilterIntersection],
         fill_nulls_with: Optional[int],
         join_to_timespine: bool,
         existing_metric_names: Optional[Set[str]] = None,
@@ -194,12 +256,8 @@ class MeasureFeaturesToMetricNameMapper:
             fill_nulls_with=fill_nulls_with,
             join_to_timespine=join_to_timespine,
             is_private=True,
+            measure_input_filters=measure_input_filters,
         )
-        # TODO SL-4257: this is supporting legacy cases in MF until work there is complete,
-        # and should be removeable long before the rest of the backward-compatibility work.
-        built_metric.type_params.measure = PydanticMetricInputMeasure(name=measure.name)
-        built_metric.type_params.input_measures = [PydanticMetricInputMeasure(name=measure.name)]
-
         metric = self._find_simple_metric_functional_clone_in_manifest(
             metric=built_metric,
             manifest=manifest,
