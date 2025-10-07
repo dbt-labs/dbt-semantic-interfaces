@@ -27,6 +27,9 @@ from dbt_semantic_interfaces.transformations.convert_median import (
 from dbt_semantic_interfaces.transformations.cumulative_type_params import (
     SetCumulativeTypeParamsRule,
 )
+from dbt_semantic_interfaces.transformations.fix_simple_metric_rule import (
+    FixSimpleMetricRule,
+)
 from dbt_semantic_interfaces.transformations.flatten_simple_metrics_with_measure_inputs import (
     FlattenSimpleMetricsWithMeasureInputsRule,
 )
@@ -86,6 +89,9 @@ class PydanticSemanticManifestTransformRuleSet(
             AddInputMetricMeasuresRule(),
             FlattenSimpleMetricsWithMeasureInputsRule(),
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule(),
+            # This should run last because it cleans up some potential issues with all
+            # measure -> simple metric transformations.
+            FixSimpleMetricRule(),
         )
 
     @property

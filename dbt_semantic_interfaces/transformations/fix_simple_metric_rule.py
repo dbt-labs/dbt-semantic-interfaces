@@ -3,6 +3,7 @@ from __future__ import annotations
 import copy
 import logging
 from collections.abc import Mapping
+from typing import override
 
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
@@ -16,17 +17,25 @@ from dbt_semantic_interfaces.implementations.metric import (
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.protocols.protocol_hint import ProtocolHint
+from dbt_semantic_interfaces.transformations.transform_rule import (
+    SemanticManifestTransformRule,
+)
 from dbt_semantic_interfaces.type_enums import MetricType
 
 logger = logging.getLogger(__name__)
 
 
-class FixSimpleMetricRule:
+class FixSimpleMetricRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
     """Fixes some potential issues with the measure -> simple metric transform.
 
     * `expr` needs to be populated as the name of the measure can be different from the name of the simple metric.
     * Filters for the measure are combined with the metric filters.
     """
+
+    @override
+    def _implements_protocol(self) -> SemanticManifestTransformRule[PydanticSemanticManifest]:  # noqa: D
+        return self
 
     @staticmethod
     def _fix_simple_metric_expr(
@@ -36,13 +45,13 @@ class FixSimpleMetricRule:
     ) -> None:
         metric_expr = metric.type_params.expr
         measure_name = input_measure.name
-        measure = measure_name_to_measure[measure_name]
-        measure_expr = measure.expr or measure_name
+        measure = measure_name_to_measure.get(measure_name)
+        measure_expr = (measure.expr if measure else None) or measure_name
         if metric_expr is None:
             metric.type_params.expr = measure_expr
 
     @staticmethod
-    def transform_manifest(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:
+    def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:
         """See class docstring."""
         measure_name_to_measure: Mapping[str, PydanticMeasure] = {
             measure.name: measure
