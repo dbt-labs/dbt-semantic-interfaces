@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Fix the measures fields for some of the newly-added-by-transformations simple metrics.
+time: 2025-10-07T09:14:28.515527-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
