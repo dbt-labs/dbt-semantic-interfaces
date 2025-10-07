@@ -3,7 +3,8 @@ from __future__ import annotations
 import copy
 import logging
 from collections.abc import Mapping
-from typing import override
+
+from typing_extensions import override
 
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.filters.where_filter import (
