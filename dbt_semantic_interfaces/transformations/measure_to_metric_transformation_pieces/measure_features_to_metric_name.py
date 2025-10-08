@@ -115,7 +115,7 @@ class MeasureFeaturesToMetricNameMapper:
 
         This will update the metric in place rather than returning a new one.
         """
-        assert metric.type == MetricType.SIMPLE, "Attempted to set measure features on a non-simple metric"
+        assert metric.type is MetricType.SIMPLE, f"Attempted to set measure features on a non-simple metric: {metric}"
         if metric.type_params.metric_aggregation_params is not None:
             # these values have already been set.
             return
