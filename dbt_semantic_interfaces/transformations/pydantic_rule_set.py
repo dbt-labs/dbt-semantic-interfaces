@@ -77,15 +77,16 @@ class PydanticSemanticManifestTransformRuleSet(
         Should run after all measures are processed and fixed, but before polishing
         all metrics (because the metrics need to be created here to be polished later).
         """
+        # raise Exception("HALP PLEASE SEE ME")
         return (
             # CreateProxyMeasureRule should always run FIRST in this sequence.
             CreateProxyMeasureRule(),  # FIRST, I SAY!
             # This populates "input_measures" for metric fields.
             # This does NOT add new metrics or depend on most newly-added metrics, but it must
             # run after CreateProxyMeasureRule() to ensure we have all the metrics we will need.
-            AddInputMetricMeasuresRule(),
             FlattenSimpleMetricsWithMeasureInputsRule(),
             ReplaceInputMeasuresWithSimpleMetricsTransformationRule(),
+            AddInputMetricMeasuresRule(),
         )
 
     @property

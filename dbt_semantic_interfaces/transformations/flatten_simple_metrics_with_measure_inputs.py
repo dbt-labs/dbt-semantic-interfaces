@@ -29,16 +29,24 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
         measure_info_map = semantic_manifest.build_measure_name_to_model_and_measure_map()
         for metric in semantic_manifest.metrics:
             if metric.type == MetricType.SIMPLE:
+                is_instant_booking_value = False
+                if metric.name == "instant_booking_value":
+                    print(f"flattening '{metric.name}' begins!!")
+                    is_instant_booking_value = True
+                    # raise Exception(f"flattening '{metric.name}' begins!!")
                 # If this is a simple metric with a measure input that does NOT already have some
                 # sort of metric input information overriding that measure input
                 input_measure = metric.type_params.measure
                 if input_measure is None:
+                    print(f"We quit early: input_measure is None for '{metric.name}'")
                     continue
 
                 #  or metric.type_params.metric_aggregation_params is not None:
 
                 model_and_measure = measure_info_map.get(input_measure.name)
                 if model_and_measure is None:
+                    if is_instant_booking_value:
+                        print(f"We quit early: no measure found for measure '{input_measure.name}'")
                     # Should be validated; see test_metric_missing_measure for tests that show that this
                     # is the case.
                     logger.warning(
@@ -48,6 +56,9 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                     continue
                 semantic_model, measure = model_and_measure
 
+                if is_instant_booking_value:
+                    print(f"For flattening: {metric}")
+
                 MeasureFeaturesToMetricNameMapper.update_required_measure_features_in_simple_model(
                     measure=measure,
                     semantic_model_name=semantic_model.name,
@@ -56,5 +67,7 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                     join_to_timespine=input_measure.join_to_timespine,
                     measure_input_filters=input_measure.filter,
                 )
+                if is_instant_booking_value:
+                    print(f"After flattening: {metric}")
 
         return semantic_manifest
