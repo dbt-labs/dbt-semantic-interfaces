@@ -1,0 +1,6 @@
+kind: Fixes
+body: Fixes naming of created metrics with negative fill_nulls_with value to be legal.
+time: 2025-10-07T21:23:26.419795-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"

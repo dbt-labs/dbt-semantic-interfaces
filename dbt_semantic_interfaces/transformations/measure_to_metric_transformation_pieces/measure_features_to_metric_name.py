@@ -203,7 +203,8 @@ class MeasureFeaturesToMetricNameMapper:
         """Generate a new metric name for the measure configuration."""
         name_parts = [measure_name]
         if fill_nulls_with is not None:
-            name_parts.append(f"fill_nulls_with_{fill_nulls_with}")
+            fill_nulls_name_part = str(fill_nulls_with) if fill_nulls_with >= 0 else f"neg_{abs(fill_nulls_with)}"
+            name_parts.append(f"fill_nulls_with_{fill_nulls_name_part}")
         if join_to_timespine:
             name_parts.append("join_to_timespine")
 
