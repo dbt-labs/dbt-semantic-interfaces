@@ -135,9 +135,9 @@ class MeasureFeaturesToMetricNameMapper:
         if metric.type_params.expr is None:
             metric.type_params.expr = measure.expr or measure.name
 
-        filters = metric.filter.where_filters if metric.filter else []
-        if measure_input_filters is not None:
-            filters.extend(measure_input_filters.where_filters)
+        filters = measure_input_filters.where_filters if measure_input_filters else []
+        if metric.filter is not None:
+            filters.extend(metric.filter.where_filters)
         if len(filters) > 0:
             metric.filter = PydanticWhereFilterIntersection(where_filters=filters)
 
