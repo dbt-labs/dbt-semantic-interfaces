@@ -355,7 +355,7 @@ def test_repeated_cumulative_measure_inputs_do_not_create_dulplicates_metrics() 
     [
         (True, None, "m1_join_to_timespine"),
         (False, 12, "m1_fill_nulls_with_12"),
-        (True, -10, "m1_fill_nulls_with_neg10_join_to_timespine"),
+        (True, -10, "m1_fill_nulls_with_neg_10_join_to_timespine"),
         (False, None, "m1"),
     ],
 )
