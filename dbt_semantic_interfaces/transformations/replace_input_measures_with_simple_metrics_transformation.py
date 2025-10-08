@@ -78,6 +78,37 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
             fill_nulls_with=input_measure.fill_nulls_with,
             join_to_timespine=input_measure.join_to_timespine,
             existing_metric_names=existing_metric_names,
+            # The filters for the old measure input should not be applied to the new metric.  They
+            # should be applied to the complex metric's metric input instead.
+            measure_input_filters=None,
+        )
+
+    @staticmethod
+    def _build_metric_input(
+        mapper: MeasureFeaturesToMetricNameMapper,
+        input_measure: Optional[PydanticMetricInputMeasure],
+        input_metric: Optional[PydanticMetricInput],
+        semantic_manifest: PydanticSemanticManifest,
+        existing_metric_names: Set[str],
+        measure_name_to_model_and_measure_map: Dict[str, Tuple[PydanticSemanticModel, PydanticMeasure]],
+    ) -> Optional[PydanticMetricInput]:
+        metric_name = (
+            ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_get_or_create_metric_and_retrieve_name(
+                mapper=mapper,
+                input_measure=input_measure,
+                input_metric=input_metric,
+                semantic_manifest=semantic_manifest,
+                existing_metric_names=existing_metric_names,
+                measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
+            )
+        )
+        if metric_name is None or input_measure is None:
+            return None
+
+        return PydanticMetricInput(
+            name=metric_name,
+            filter=input_measure.filter,
+            alias=input_measure.alias,
         )
 
     @staticmethod
@@ -98,23 +129,17 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
             metric.type_params.cumulative_type_params = PydanticCumulativeTypeParams(
                 metric=None,
             )
-        new_metric_name = (
-            ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_get_or_create_metric_and_retrieve_name(
-                mapper=mapper,
-                input_measure=metric.type_params.measure,
-                input_metric=metric.type_params.cumulative_type_params.metric,
-                semantic_manifest=semantic_manifest,
-                existing_metric_names=existing_metric_names,
-                measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
-            )
+        new_metric_input = ReplaceInputMeasuresWithSimpleMetricsTransformationRule._build_metric_input(
+            mapper=mapper,
+            input_measure=metric.type_params.measure,
+            input_metric=metric.type_params.cumulative_type_params.metric,
+            semantic_manifest=semantic_manifest,
+            existing_metric_names=existing_metric_names,
+            measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
         )
-        if new_metric_name is not None:
-            metric.type_params.cumulative_type_params.metric = PydanticMetricInput(
-                name=new_metric_name,
-                filter=metric.type_params.measure.filter,
-                alias=metric.type_params.measure.alias,
-            )
-            # Note: we leave the old measure reference in place for backward compatibility.
+        if new_metric_input is not None:
+            metric.type_params.cumulative_type_params.metric = new_metric_input
+        # Note: we leave the old measure reference in place for backward compatibility.
 
     @staticmethod
     def _maybe_handle_conversion_metric(
@@ -136,49 +161,31 @@ class ReplaceInputMeasuresWithSimpleMetricsTransformationRule(
             )
             return
         conversion_type_params = metric.type_params.conversion_type_params
-        new_conversion_metric_base_metric_name = (
-            ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_get_or_create_metric_and_retrieve_name(
-                mapper=mapper,
-                input_measure=conversion_type_params.base_measure,
-                input_metric=conversion_type_params.base_metric,
-                semantic_manifest=semantic_manifest,
-                existing_metric_names=existing_metric_names,
-                measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
-            )
+        new_base_metric = ReplaceInputMeasuresWithSimpleMetricsTransformationRule._build_metric_input(
+            mapper=mapper,
+            input_measure=conversion_type_params.base_measure,
+            input_metric=conversion_type_params.base_metric,
+            semantic_manifest=semantic_manifest,
+            existing_metric_names=existing_metric_names,
+            measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
         )
-        if new_conversion_metric_base_metric_name is not None:
-            metric.type_params.conversion_type_params.base_metric = PydanticMetricInput(
-                name=new_conversion_metric_base_metric_name,
-                filter=conversion_type_params.base_measure.filter
-                if conversion_type_params.base_measure is not None
-                else None,
-                alias=conversion_type_params.base_measure.alias
-                if conversion_type_params.base_measure is not None
-                else None,
-            )
-            # Note: we leave the old measure reference in place for backward compatibility.
+        if new_base_metric is not None:
+            metric.type_params.conversion_type_params.base_metric = new_base_metric
 
-        new_conversion_metric_conversion_metric_name = (
-            ReplaceInputMeasuresWithSimpleMetricsTransformationRule._maybe_get_or_create_metric_and_retrieve_name(
-                mapper=mapper,
-                input_measure=conversion_type_params.conversion_measure,
-                input_metric=conversion_type_params.conversion_metric,
-                semantic_manifest=semantic_manifest,
-                existing_metric_names=existing_metric_names,
-                measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
-            )
+        # Note: we leave the old measure reference in place for backward compatibility.
+
+        new_conversion_metric = ReplaceInputMeasuresWithSimpleMetricsTransformationRule._build_metric_input(
+            mapper=mapper,
+            input_measure=conversion_type_params.conversion_measure,
+            input_metric=conversion_type_params.conversion_metric,
+            semantic_manifest=semantic_manifest,
+            existing_metric_names=existing_metric_names,
+            measure_name_to_model_and_measure_map=measure_name_to_model_and_measure_map,
         )
-        if new_conversion_metric_conversion_metric_name is not None:
-            metric.type_params.conversion_type_params.conversion_metric = PydanticMetricInput(
-                name=new_conversion_metric_conversion_metric_name,
-                filter=conversion_type_params.conversion_measure.filter
-                if conversion_type_params.conversion_measure is not None
-                else None,
-                alias=conversion_type_params.conversion_measure.alias
-                if conversion_type_params.conversion_measure is not None
-                else None,
-            )
-            # Note: we leave the old measure reference in place for backward compatibility.
+        if new_conversion_metric is not None:
+            metric.type_params.conversion_type_params.conversion_metric = new_conversion_metric
+
+        # Note: we leave the old measure reference in place for backward compatibility.
 
     @staticmethod
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D

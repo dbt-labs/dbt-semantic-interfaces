@@ -1,0 +1,6 @@
+kind: Fixes
+body: Correctly construct filters and expr values for metrics created by transformations.
+time: 2025-10-07T16:50:17.610347-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"

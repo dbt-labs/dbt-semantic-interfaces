@@ -58,8 +58,11 @@ class AddInputMetricMeasuresRule(ProtocolHint[SemanticManifestTransformRule[Pyda
     @staticmethod
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:  # noqa: D
         for metric in semantic_manifest.metrics:
+            if len(metric.type_params.input_measures) > 0:
+                # These aren't missing and have already been added by an enterprising parser or earlier
+                # transformation rule.
+                continue
             measures = AddInputMetricMeasuresRule._get_measures_for_metric(semantic_manifest, metric.name)
-            assert len(metric.type_params.input_measures) == 0, f"{metric} should not have measures predefined"
             metric.type_params.input_measures = list(measures)
 
         return semantic_manifest

@@ -2,11 +2,13 @@ import logging
 
 from typing_extensions import override
 
-from dbt_semantic_interfaces.implementations.metric import PydanticMetric
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
 from dbt_semantic_interfaces.protocols import ProtocolHint
+from dbt_semantic_interfaces.transformations.measure_to_metric_transformation_pieces.measure_features_to_metric_name import (  # noqa: E501
+    MeasureFeaturesToMetricNameMapper,
+)
 from dbt_semantic_interfaces.transformations.transform_rule import (
     SemanticManifestTransformRule,
 )
@@ -30,8 +32,10 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                 # If this is a simple metric with a measure input that does NOT already have some
                 # sort of metric input information overriding that measure input
                 input_measure = metric.type_params.measure
-                if input_measure is None or metric.type_params.metric_aggregation_params is not None:
+                if input_measure is None:
                     continue
+
+                #  or metric.type_params.metric_aggregation_params is not None:
 
                 model_and_measure = measure_info_map.get(input_measure.name)
                 if model_and_measure is None:
@@ -44,16 +48,13 @@ class FlattenSimpleMetricsWithMeasureInputsRule(ProtocolHint[SemanticManifestTra
                     continue
                 semantic_model, measure = model_and_measure
 
-                metric.type_params.metric_aggregation_params = PydanticMetric.build_metric_aggregation_params(
+                MeasureFeaturesToMetricNameMapper.update_required_measure_features_in_simple_model(
                     measure=measure,
                     semantic_model_name=semantic_model.name,
+                    metric=metric,
+                    fill_nulls_with=input_measure.fill_nulls_with,
+                    join_to_timespine=input_measure.join_to_timespine,
+                    measure_input_filters=input_measure.filter,
                 )
-                metric.type_params.expr = measure.expr
-
-                # MetricAggregationParamsInForSimpleMetricsRule enforces that fill_nulls_with
-                # and join_to_timespine are not allowed if a measure input is present, so this overwrite
-                # is safe.
-                metric.type_params.fill_nulls_with = input_measure.fill_nulls_with
-                metric.type_params.join_to_timespine = input_measure.join_to_timespine
 
         return semantic_manifest

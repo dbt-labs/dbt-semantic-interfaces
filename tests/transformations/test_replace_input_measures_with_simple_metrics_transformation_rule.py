@@ -8,6 +8,10 @@ from dbt_semantic_interfaces.implementations.elements.dimension import (
 )
 from dbt_semantic_interfaces.implementations.elements.entity import PydanticEntity
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.filters.where_filter import (
+    PydanticWhereFilter,
+    PydanticWhereFilterIntersection,
+)
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticConversionTypeParams,
     PydanticCumulativeTypeParams,
@@ -344,6 +348,191 @@ def test_repeated_cumulative_measure_inputs_do_not_create_dulplicates_metrics() 
     ]
     assert len(set(g4_names)) == 1, "Group 4 metrics were not successfully deduplicated."
     assert g4_names[0] == "m1_fill_nulls_with_9_join_to_timespine"
+
+
+@pytest.mark.parametrize(
+    "join_to_timespine,fill_nulls_with,expected_metric_name",
+    [
+        (True, None, "m1_join_to_timespine"),
+        (False, 12, "m1_fill_nulls_with_12"),
+        (True, 45, "m1_fill_nulls_with_45_join_to_timespine"),
+        (False, None, "m1"),
+    ],
+)
+def test_cumulative_measure_input_features_reflected_in_created_simple_metric(
+    join_to_timespine: bool, fill_nulls_with: Optional[int], expected_metric_name: str
+) -> None:
+    """Created simple metric reflects measure input features (join_to_timespine, fill_nulls_with)."""
+    sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
+
+    cumulative_metric = PydanticMetric(
+        name="cumulative_metric",
+        type=MetricType.CUMULATIVE,
+        type_params=PydanticMetricTypeParams(
+            cumulative_type_params=PydanticCumulativeTypeParams(),
+            measure=PydanticMetricInputMeasure(
+                name="m1",
+                fill_nulls_with=fill_nulls_with,
+                join_to_timespine=join_to_timespine,
+            ),
+        ),
+    )
+
+    manifest = PydanticSemanticManifest(
+        semantic_models=[sm], metrics=[cumulative_metric], project_configuration=_project_config()
+    )
+    out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
+
+    # Find created simple metric by expected name
+    created = next(m for m in out.metrics if m.type == MetricType.SIMPLE and m.name == expected_metric_name)
+
+    # Non-filter measure input fields applied appropriately
+    if fill_nulls_with is not None:
+        assert created.type_params.fill_nulls_with == fill_nulls_with
+    else:
+        assert created.type_params.fill_nulls_with is None
+    if join_to_timespine:
+        assert created.type_params.join_to_timespine is True
+    else:
+        assert created.type_params.join_to_timespine is False
+
+    # Aggregation params and expr copied from measure
+    assert created.type_params.metric_aggregation_params is not None
+    assert created.type_params.metric_aggregation_params.semantic_model == "sm"
+    assert created.type_params.metric_aggregation_params.agg == AggregationType.SUM
+    assert created.type_params.metric_aggregation_params.agg_time_dimension == "ds"
+    assert created.type_params.expr == "value"
+
+    # Cumulative metric should point to the created metric
+    out_cumulative = next(m for m in out.metrics if m.name == "cumulative_metric")
+    assert out_cumulative.type_params.cumulative_type_params is not None
+    assert out_cumulative.type_params.cumulative_type_params.metric is not None
+    assert out_cumulative.type_params.cumulative_type_params.metric.name == expected_metric_name
+
+
+@pytest.mark.parametrize(
+    "has_measure_filter,has_metric_filter",
+    [
+        (True, False),
+        (False, True),
+        (True, True),
+        (False, False),
+    ],
+)
+def test_cumulative_input_filters_merge_onto_metric_input_and_created_simple_metric(
+    has_measure_filter: bool,
+    has_metric_filter: bool,
+) -> None:
+    """Filters from cumulative and measure input should be merged onto created metric and preserved in input."""
+    sm = _build_semantic_model_with_measure("sm", "m1", time_dim_name="ds")
+
+    measure_filter = (
+        PydanticWhereFilterIntersection(where_filters=[PydanticWhereFilter(where_sql_template="amount > 0")])
+        if has_measure_filter
+        else None
+    )
+    metric_filter = (
+        PydanticWhereFilterIntersection(where_filters=[PydanticWhereFilter(where_sql_template="e = 'x'")])
+        if has_metric_filter
+        else None
+    )
+
+    cumulative_metric = PydanticMetric(
+        name="cumulative_metric",
+        type=MetricType.CUMULATIVE,
+        filter=metric_filter,
+        type_params=PydanticMetricTypeParams(
+            cumulative_type_params=PydanticCumulativeTypeParams(),
+            measure=PydanticMetricInputMeasure(name="m1", filter=measure_filter),
+        ),
+    )
+
+    manifest = PydanticSemanticManifest(
+        semantic_models=[sm], metrics=[cumulative_metric], project_configuration=_project_config()
+    )
+    out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
+
+    out_cumulative = next(m for m in out.metrics if m.name == "cumulative_metric")
+    assert out_cumulative.type_params.cumulative_type_params is not None
+    assert out_cumulative.type_params.cumulative_type_params.metric is not None
+    metric_input = out_cumulative.type_params.cumulative_type_params.metric
+
+    # Created simple metric
+    created = next(m for m in out.metrics if m.type == MetricType.SIMPLE and m.name == "m1")
+
+    # The created metric should have no filters on it.
+    assert created.filter is None
+
+    # The cumulative metric's input metric should have the filter that used to be on the measure input.
+    if has_measure_filter:
+        metric_input = out_cumulative.type_params.cumulative_type_params.metric
+        error_message = "Expected to retain filter from measure input on the new metric input field."
+        assert metric_input.filter is not None, error_message
+        assert (
+            measure_filter is not None
+        ), "Something went wrong with the test setup; this object should never be None here."
+        assert metric_input.filter.where_filters == measure_filter.where_filters, error_message
+    else:
+        assert (
+            metric_input.filter is None
+        ), "Filters should not be added to the metric input if the existing measure input field had none."
+
+    assert (
+        out_cumulative.filter == metric_filter
+    ), "The cumulative metric's filter should be unchanged as it is irrelevant to the transformation."
+
+    # The metric input on cumulative points to created metric name
+    assert metric_input.name == "m1"
+
+
+@pytest.mark.parametrize(
+    "measure_expr,expected_expr",
+    [
+        ("value", "value"),
+        (None, "m1"),
+    ],
+)
+def test_cumulative_expr_in_created_simple_metric(measure_expr: Optional[str], expected_expr: str) -> None:
+    """Expr on created simple metric comes from measure.expr or falls back to measure name."""
+    # Build model overriding measure expr if provided
+    sm = PydanticSemanticModel(
+        name="sm",
+        node_relation=PydanticNodeRelation(alias="sm", schema_name="schema"),
+        entities=[PydanticEntity(name="e1", type=EntityType.PRIMARY)],
+        dimensions=[
+            PydanticDimension(
+                name="ds",
+                type=DimensionType.TIME,
+                type_params=PydanticDimensionTypeParams(time_granularity=TimeGranularity.DAY),
+            )
+        ],
+        measures=[
+            PydanticMeasure(
+                name="m1",
+                agg=AggregationType.SUM,
+                agg_time_dimension="ds",
+                expr=measure_expr,
+            )
+        ],
+    )
+
+    cumulative_metric = PydanticMetric(
+        name="cumulative_metric",
+        type=MetricType.CUMULATIVE,
+        type_params=PydanticMetricTypeParams(
+            cumulative_type_params=PydanticCumulativeTypeParams(),
+            measure=PydanticMetricInputMeasure(name="m1"),
+        ),
+    )
+
+    manifest = PydanticSemanticManifest(
+        semantic_models=[sm], metrics=[cumulative_metric], project_configuration=_project_config()
+    )
+    out = ReplaceInputMeasuresWithSimpleMetricsTransformationRule.transform_model(manifest)
+
+    # Created simple metric
+    created = next(m for m in out.metrics if m.type == MetricType.SIMPLE and m.name == "m1")
+    assert created.type_params.expr == expected_expr
 
 
 def test_cumulative_metric_name_collision_creates_unique_metric() -> None:
