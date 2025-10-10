@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: Add validation that time dimensions have a provided granularity.
+time: 2025-10-10T08:55:47.737515-07:00
+custom:
+    Author: theyostalservice
+    Issue: "387"
