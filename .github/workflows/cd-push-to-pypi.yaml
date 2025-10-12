@@ -14,7 +14,7 @@ jobs:
     environment: PYPI_PUBLISH
     steps:
       - name: Check-out the repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v5
 
       - name: Setup Python ${{ env.PYTHON_VERSION }} Environment
         uses: ./.github/actions/setup-python-env
