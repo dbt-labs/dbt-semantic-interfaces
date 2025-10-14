@@ -9,6 +9,7 @@ from dbt_semantic_interfaces.protocols import (
     SemanticManifestT,
 )
 from dbt_semantic_interfaces.references import MeasureReference, MetricModelReference
+from dbt_semantic_interfaces.type_enums.metric_type import MetricType
 from dbt_semantic_interfaces.validations.shared_measure_and_metric_helpers import (
     SharedMeasureAndMetricHelpers,
 )
@@ -37,6 +38,7 @@ class SemanticModelMeasuresUniqueRule(SemanticManifestValidationRule[SemanticMan
     def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
         issues: List[ValidationIssue] = []
 
+        metrics_by_name = {metric.name: metric for metric in getattr(semantic_manifest, "metrics", [])}
         measure_references_to_semantic_models: Dict[MeasureReference, List] = defaultdict(list)
         for semantic_model in semantic_manifest.semantic_models:
             for measure in semantic_model.measures:
@@ -55,6 +57,50 @@ class SemanticModelMeasuresUniqueRule(SemanticManifestValidationRule[SemanticMan
                         )
                     )
                 measure_references_to_semantic_models[measure.reference].append(semantic_model.name)
+
+                # As we iterate over all measures, check for name clash with metrics
+                metric = metrics_by_name.get(measure.name)
+                if metric is not None:
+                    file_context = FileContext.from_metadata(metadata=semantic_model.metadata)
+                    element_context = SemanticModelElementContext(
+                        file_context=file_context,
+                        semantic_model_element=SemanticModelElementReference(
+                            semantic_model_name=semantic_model.name,
+                            element_name=measure.name,
+                        ),
+                        element_type=SemanticModelElementType.MEASURE,
+                    )
+                    metric_type = getattr(metric, "type", None)
+                    if metric_type == MetricType.SIMPLE:
+                        issues.append(
+                            ValidationWarning(
+                                context=element_context,
+                                message=(
+                                    f"A measure with name '{measure.name}' exists in semantic model "
+                                    f"'{semantic_model.name}', and a simple metric with the same name exists in "
+                                    "the project. This may result in ambiguous behavior. The existing metric will "
+                                    "take precedence over the proxy metric that would be auto-generated from this "
+                                    "measure."
+                                ),
+                            )
+                        )
+                    else:
+                        issues.append(
+                            ValidationError(
+                                context=element_context,
+                                message=(
+                                    (
+                                        f"Cannot auto-generate a proxy metric for measure "
+                                        f"'{measure.name}' in semantic model '{semantic_model.name}' "
+                                        "because a metric with the same name already exists in the project. "
+                                        "This is elevated to an error instead of a warning because the metric "
+                                        "is not a simple metric "
+                                        f"(found type: '{metric_type}'). Rename the measure or the metric "
+                                        "to resolve the collision."
+                                    )
+                                ),
+                            )
+                        )
 
         return issues
 
