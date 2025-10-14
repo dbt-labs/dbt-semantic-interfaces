@@ -1,24 +1,32 @@
+import logging
 import textwrap
 from typing import List, Optional
 
 import pytest
 
+from dbt_semantic_interfaces.errors import ModelTransformError
 from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
 from dbt_semantic_interfaces.implementations.metric import (
     PydanticMetric,
     PydanticMetricAggregationParams,
     PydanticMetricInputMeasure,
+    PydanticMetricTypeParams,
 )
+from dbt_semantic_interfaces.implementations.node_relation import PydanticNodeRelation
 from dbt_semantic_interfaces.implementations.semantic_manifest import (
     PydanticSemanticManifest,
 )
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
 from dbt_semantic_interfaces.parsing.dir_to_model import (
     SemanticManifestBuildResult,
     parse_yaml_files_to_validation_ready_semantic_manifest,
 )
 from dbt_semantic_interfaces.parsing.objects import YamlConfigFile
+from dbt_semantic_interfaces.transformations.proxy_measure import CreateProxyMeasureRule
+from dbt_semantic_interfaces.type_enums import AggregationType
 from dbt_semantic_interfaces.type_enums.metric_type import MetricType
 from tests.example_project_configuration import (
+    EXAMPLE_PROJECT_CONFIGURATION,
     EXAMPLE_PROJECT_CONFIGURATION_YAML_CONFIG_FILE,
 )
 
@@ -277,3 +285,77 @@ def test_proxy_measure_defaults_and_agg_params() -> None:
     assert metric.type_params.input_measures == [
         PydanticMetricInputMeasure(name=measure_name)
     ], "Created metrics should have measure_inputs populated"
+
+
+def test_proxy_measure_conflicting_non_simple_metric_raises() -> None:
+    """Error if a non-simple metric shares the same name as a create_metric measure."""
+    shared_name = "overlap_conflict"
+
+    # Build manifest directly with Pydantic objects
+    # (We can't do the parsing step because that will run validations, and validations
+    # don't like this either.)
+    semantic_model = PydanticSemanticModel(
+        name="conflict_model",
+        node_relation=PydanticNodeRelation(alias="source_table", schema_name="some_schema"),
+        measures=[
+            PydanticMeasure(name=shared_name, agg=AggregationType.SUM, create_metric=True),
+        ],
+    )
+
+    existing_metric = PydanticMetric(
+        name=shared_name,
+        description="non-simple metric with same name",
+        type=MetricType.DERIVED,
+        type_params=PydanticMetricTypeParams(expr=shared_name),
+    )
+
+    manifest = PydanticSemanticManifest(
+        semantic_models=[semantic_model],
+        metrics=[existing_metric],
+        project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+    )
+
+    with pytest.raises(
+        ModelTransformError,
+        match=rf"Cannot have metric with the same name as a measure '{shared_name}' that is not a simple metric",
+    ):
+        CreateProxyMeasureRule.transform_model(manifest)
+
+
+def test_proxy_measure_existing_simple_metric_logs_warning_and_skips_add(caplog: pytest.LogCaptureFixture) -> None:
+    """Warn and do not add a proxy when a simple metric shares the name."""
+    caplog.set_level(logging.WARNING, logger="dbt_semantic_interfaces.transformations.proxy_measure")
+
+    shared_name = "overlap_simple"
+    # Build manifest directly with Pydantic objects (avoid YAML parsing and validations)
+    semantic_model = PydanticSemanticModel(
+        name="simple_conflict_model",
+        node_relation=PydanticNodeRelation(alias="source_table", schema_name="some_schema"),
+        measures=[
+            PydanticMeasure(name=shared_name, agg=AggregationType.SUM, create_metric=True),
+        ],
+    )
+
+    existing_metric = PydanticMetric(
+        name=shared_name,
+        description="simple metric with same name",
+        type=MetricType.SIMPLE,
+        type_params=PydanticMetricTypeParams(
+            measure=PydanticMetricInputMeasure(name=shared_name),
+        ),
+    )
+
+    manifest = PydanticSemanticManifest(
+        semantic_models=[semantic_model],
+        metrics=[existing_metric],
+        project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+    )
+
+    out_manifest = CreateProxyMeasureRule.transform_model(manifest)
+
+    # Should not add a duplicate metric for the measure; keep the single simple metric
+    metrics: List[PydanticMetric] = out_manifest.metrics
+    assert len([m for m in metrics if m.name == shared_name]) == 1
+
+    warning_messages = "\n".join(record.getMessage() for record in caplog.records)
+    assert f"Simple metric already exists with name '{shared_name}'." in warning_messages

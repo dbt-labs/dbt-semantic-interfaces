@@ -42,12 +42,12 @@ class CreateProxyMeasureRule(ProtocolHint[SemanticManifestTransformRule[Pydantic
                     if metric.name == measure.name:
                         if metric.type != MetricType.SIMPLE:
                             raise ModelTransformError(
-                                f"Cannot have metric with the same name as a measure ({measure.name}) that is not a "
-                                f"created mechanically from that measure using create_metric=True"
+                                f"Cannot have metric with the same name as a measure '{measure.name}' that is not a "
+                                f"simple metric"
                             )
                         logger.warning(
-                            f"Metric already exists with name ({measure.name}). *Not* adding measure proxy metric for "
-                            f"that measure"
+                            f"Simple metric already exists with name '{measure.name}'. "
+                            "*Not* adding simple proxy metric for that measure."
                         )
                         add_metric = False
 
