@@ -1,0 +1,108 @@
+from dbt_semantic_interfaces.implementations.elements.measure import PydanticMeasure
+from dbt_semantic_interfaces.implementations.metric import (
+    PydanticMetric,
+    PydanticMetricAggregationParams,
+    PydanticMetricInputMeasure,
+    PydanticMetricTypeParams,
+)
+from dbt_semantic_interfaces.implementations.node_relation import PydanticNodeRelation
+from dbt_semantic_interfaces.implementations.semantic_manifest import (
+    PydanticSemanticManifest,
+)
+from dbt_semantic_interfaces.implementations.semantic_model import PydanticSemanticModel
+from dbt_semantic_interfaces.transformations.fix_proxy_metrics import (
+    FixProxyMetricsRule,
+)
+from dbt_semantic_interfaces.type_enums import AggregationType, MetricType
+from tests.example_project_configuration import EXAMPLE_PROJECT_CONFIGURATION
+
+
+def get_empty_semantic_model(name: str = "example_model") -> PydanticSemanticModel:
+    """Helper to create an empty semantic model."""
+    return PydanticSemanticModel(
+        name=name,
+        node_relation=PydanticNodeRelation(alias=name, schema_name="example_schema"),
+        entities=[],
+        measures=[],
+    )
+
+
+def test_fixes_faulty_proxy_metric_with_measure_expr() -> None:
+    """Test that a proxy metric with expr == metric.name gets fixed when measure has an expr."""
+    measure_name = "my_sum_measure"
+    measure_expr = "revenue_amount"
+    semantic_model_name = "revenue_model"
+
+    # Create a measure with an expr
+    measure = PydanticMeasure(name=measure_name, agg=AggregationType.SUM, expr=measure_expr)
+    semantic_model = get_empty_semantic_model(semantic_model_name)
+    semantic_model.measures = [measure]
+
+    # Create a faulty proxy metric where expr == metric.name
+    metric = PydanticMetric(
+        name=measure_name,
+        type=MetricType.SIMPLE,
+        type_params=PydanticMetricTypeParams(
+            measure=PydanticMetricInputMeasure(name=measure_name),
+            expr=measure_name,  # This is the faulty expr
+            metric_aggregation_params=PydanticMetricAggregationParams(
+                semantic_model=semantic_model_name,
+                agg=AggregationType.SUM,
+            ),
+        ),
+    )
+
+    manifest = PydanticSemanticManifest(
+        semantic_models=[semantic_model],
+        metrics=[metric],
+        project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+    )
+
+    # Transform the manifest
+    result = FixProxyMetricsRule.transform_model(manifest)
+    fixed_metric = result.metrics[0]
+
+    # The expr should now be the measure's expr
+    assert fixed_metric.type_params.expr == measure_expr, "Metric expr should have been fixed to use measure's expr"
+    assert fixed_metric.name == measure_name, "Metric name should not have changed"
+    assert fixed_metric.type == MetricType.SIMPLE, "Metric type should not have changed"
+
+
+def test_does_not_change_non_faulty_proxy_metric() -> None:
+    """Test that a proxy metric with correct expr (expr != metric.name) is not changed."""
+    measure_name = "my_measure"
+    measure_expr = "actual_column"
+    correct_expr = "actual_column"
+    semantic_model_name = "test_model"
+
+    # Create a measure with an expr
+    measure = PydanticMeasure(name=measure_name, agg=AggregationType.SUM, expr=measure_expr)
+    semantic_model = get_empty_semantic_model(semantic_model_name)
+    semantic_model.measures = [measure]
+
+    # Create a metric with a correct expr (not equal to metric name)
+    metric = PydanticMetric(
+        name=measure_name,
+        type=MetricType.SIMPLE,
+        type_params=PydanticMetricTypeParams(
+            measure=PydanticMetricInputMeasure(name=measure_name),
+            expr=correct_expr,  # This is already correct
+            metric_aggregation_params=PydanticMetricAggregationParams(
+                semantic_model=semantic_model_name,
+                agg=AggregationType.SUM,
+            ),
+        ),
+    )
+
+    manifest = PydanticSemanticManifest(
+        semantic_models=[semantic_model],
+        metrics=[metric],
+        project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+    )
+
+    # Transform the manifest
+    result = FixProxyMetricsRule.transform_model(manifest)
+    unchanged_metric = result.metrics[0]
+
+    # The expr should remain unchanged
+    assert unchanged_metric.type_params.expr == correct_expr, "Metric expr should not have changed"
