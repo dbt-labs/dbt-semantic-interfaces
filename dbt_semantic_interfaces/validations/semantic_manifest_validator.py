@@ -36,6 +36,9 @@ from dbt_semantic_interfaces.validations.semantic_models import (
     SemanticModelDefaultsRule,
     SemanticModelValidityWindowRule,
 )
+from dbt_semantic_interfaces.validations.time_dimension_has_granularity import (
+    TimeDimensionHasGranularityRule,
+)
 from dbt_semantic_interfaces.validations.time_spines import TimeSpineRule
 from dbt_semantic_interfaces.validations.unique_valid_name import (
     PrimaryEntityDimensionPairs,
@@ -93,6 +96,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         EntityLabelsRule[SemanticManifestT](),
         ConversionMetricRule[SemanticManifestT](),
         TimeSpineRule[SemanticManifestT](),
+        TimeDimensionHasGranularityRule[SemanticManifestT](),
     )
 
     def __init__(
