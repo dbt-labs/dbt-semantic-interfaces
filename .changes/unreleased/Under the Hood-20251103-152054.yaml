@@ -1,0 +1,6 @@
+kind: Under the Hood
+body: There is a bug in core when creating metrics from measure proxy where the expr is not using the right value, adding a transformation to account for that
+time: 2025-11-03T15:20:54.266076-05:00
+custom:
+    Author: WilliamDee
+    Issue: None
