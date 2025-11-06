@@ -1,0 +1,6 @@
+kind: Fixes
+body: Remove unnecessary assertion error that disrupts validation flow.
+time: 2025-11-06T11:36:57.555015-08:00
+custom:
+  Author: courtneyholcomb
+  Issue: "450"
