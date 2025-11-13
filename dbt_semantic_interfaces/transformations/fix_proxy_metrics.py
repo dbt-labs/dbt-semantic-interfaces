@@ -15,11 +15,15 @@ logger = logging.getLogger(__name__)
 
 
 class FixProxyMetricsRule(ProtocolHint[SemanticManifestTransformRule[PydanticSemanticManifest]]):
-    """Fixes proxy metrics that were created from the create_metric flag set.
+    """Fixes simple metrics expr.
 
-    This is a temporary fix for a bug in dbt core where proxy metrics have the expr always set
-    to the measure name instead of the measure expr if it is provided. This may continue to exist
-    in the future in legacy manifests, so this may need to exist until all those are cleaned up.
+    Currently, we allow users to set an expr on simple metrics that just references a measure.
+    This is technically allowed in the spec, but we don't actually use it to do anything as
+    the expr that gets rendered will always be the referenced measure's expr. With the migration
+    to the new spec where measures are removed, we are now using the metric.expr field to render
+    the SQL. However, this ends up breaking old specs where the metric.expr is now being rendered
+    which causes unexpected changes. This transformation will just set the expr to the measure expr
+    if it exists to conform with the current behaviour.
     """
 
     @override
@@ -28,19 +32,29 @@ class FixProxyMetricsRule(ProtocolHint[SemanticManifestTransformRule[PydanticSem
 
     @staticmethod
     def transform_model(semantic_manifest: PydanticSemanticManifest) -> PydanticSemanticManifest:
-        """Fixes proxy metrics that were created from the create_metric flag set."""
-        for semantic_model in semantic_manifest.semantic_models:
-            measures_in_model = {measure.name: measure for measure in semantic_model.measures}
-            for metric in semantic_manifest.metrics:
-                proxied_measure = measures_in_model.get(metric.name)
-                # If the metric is a simple metric and has the same name as a measure,
-                # then it is likely a metric created from the create_metric flag set.
-                if metric.type == MetricType.SIMPLE and proxied_measure is not None:
-                    if metric.type_params.expr == proxied_measure.name:
-                        # The faulty expr occurs when the expr is always set to the measure name.
-                        # We are effectively overriding this to ensure the expr is instantiated
-                        # in the correct order where the measure expr is first if it is provided.
-                        metric.type_params.expr = proxied_measure.expr or proxied_measure.name
-                        # Adding logging to help track down the issue in the future.
-                        logger.info("Potential error with proxy metric expr, overriding.")
+        """Fixes simple metrics expr."""
+        all_measures = {
+            measure.name: measure
+            for semantic_model in semantic_manifest.semantic_models
+            for measure in semantic_model.measures
+        }
+
+        for metric in semantic_manifest.metrics:
+            if metric.type != MetricType.SIMPLE:
+                # Only fix simple metrics
+                continue
+            if metric.type_params.measure is None:
+                # No measure input, so no expr to fix
+                # Likely the new spec where measures are removed
+                continue
+
+            if metric.type_params.expr is not None:
+                logger.warning("Metric should not have an expr set if it's proxy from measures")
+            # Override the expr to the measure expr or name if it is not set.
+            referenced_measure = all_measures.get(metric.type_params.measure.name)
+
+            if referenced_measure is None:
+                logger.warning(f"Measure {metric.type_params.measure.name} not found")
+                continue
+            metric.type_params.expr = referenced_measure.expr or referenced_measure.name
         return semantic_manifest
