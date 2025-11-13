@@ -113,9 +113,13 @@ conversion_type_params_schema = {
         "entity": {"type": "string"},
         "window": {"type": "string"},
         "constant_properties": {"type": "array", "items": {"$ref": "constant_property_input_schema"}},
+        "base_metric": {"type:": "string"},
+        "conversion_metric": {"type:": "string"},
     },
     "additionalProperties": False,
-    "required": ["base_measure", "conversion_measure", "entity"],
+    # Since either `base_measure` or `base_metric` can be specified, don't require them.
+    # Same for `conversion_*`.
+    "required": ["entity"],
 }
 
 cumulative_type_params_schema = {
@@ -125,10 +129,32 @@ cumulative_type_params_schema = {
         "window": {"type": "string"},
         "grain_to_date": {"type": "string"},
         "period_agg": {"enum": period_agg_values},
+        "metric": {"type:": "string"},
     },
     "additionalProperties": False,
     "required": [],
 }
+
+metric_aggregation_params_schema = {
+    "$id": "metric_aggregation_params_schema",
+    "type": "object",
+    "properties": {
+        "semantic_model": {"type": "string"},
+        "agg": {"enum": aggregation_type_values},
+        "agg_params": {"$ref": "aggregation_type_params_schema"},
+        "agg_time_dimension": {
+            "type": "string",
+            "pattern": TRANSFORM_OBJECT_NAME_PATTERN,
+        },
+        "non_additive_dimension": {"$ref": "non_additive_dimension_schema"},
+        "window": {"type": "string"},
+        "grain_to_date": {"type": "string"},
+        "period_agg": {"enum": period_agg_values},
+    },
+    "additionalProperties": False,
+    "required": [],
+}
+
 
 constant_property_input_schema = {
     "$id": "constant_property_input_schema",
@@ -157,6 +183,10 @@ metric_type_params_schema = {
         },
         "conversion_type_params": {"$ref": "conversion_type_params_schema"},
         "cumulative_type_params": {"$ref": "cumulative_type_params_schema"},
+        "join_to_timespine": {"type": "boolean"},
+        "fill_nulls_with": {"type": "integer"},
+        "metric_aggregation_params": {"$ref": "metric_aggregation_params_schema"},
+        "is_private": {"type": "boolean"},
     },
     "additionalProperties": False,
 }
@@ -549,6 +579,7 @@ schema_store = {
     metric_type_params_schema["$id"]: metric_type_params_schema,
     conversion_type_params_schema["$id"]: conversion_type_params_schema,
     cumulative_type_params_schema["$id"]: cumulative_type_params_schema,
+    metric_aggregation_params_schema["$id"]: metric_aggregation_params_schema,
     constant_property_input_schema["$id"]: constant_property_input_schema,
     entity_schema["$id"]: entity_schema,
     measure_schema["$id"]: measure_schema,

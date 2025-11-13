@@ -1,0 +1,6 @@
+kind: Features
+body: Update manifest JSON schema for new metric fields
+time: 2025-11-13T11:17:06.536249-08:00
+custom:
+  Author: plypaul
+  Issue: "452"
