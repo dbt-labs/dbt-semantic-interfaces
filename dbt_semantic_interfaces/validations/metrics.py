@@ -1218,3 +1218,31 @@ class MetricTimeGranularityRule(SemanticManifestValidationRule[SemanticManifestT
                 measure_to_agg_time_dimension=measure_to_agg_time_dimension,
             )
         return issues
+
+
+class SimpleMetricExprRule(SemanticManifestValidationRule[SemanticManifestT], Generic[SemanticManifestT]):
+    """Checks that simple metrics expr is configured correctly for old specs."""
+
+    @staticmethod
+    @validate_safely(whats_being_done="validating the expr for simple metrics for old specs")
+    def validate_manifest(semantic_manifest: SemanticManifestT) -> Sequence[ValidationIssue]:  # noqa: D
+        issues: List[ValidationIssue] = []
+
+        for metric in semantic_manifest.metrics or []:
+            if metric.type != MetricType.SIMPLE:
+                continue
+            if metric.type_params.measure is None:
+                # Likely the new spec where measures are removed
+                continue
+            if metric.type_params.expr is not None:
+                issues.append(
+                    ValidationWarning(
+                        context=MetricContext(
+                            file_context=FileContext.from_metadata(metadata=metric.metadata),
+                            metric=MetricModelReference(metric_name=metric.name),
+                        ),
+                        message=f"Metric '{metric.name}' should not have an expr set if it's proxy from measures",
+                    )
+                )
+                continue
+        return issues

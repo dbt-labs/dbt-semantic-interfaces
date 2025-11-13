@@ -27,6 +27,7 @@ from dbt_semantic_interfaces.validations.metrics import (
     ConversionMetricRule,
     CumulativeMetricRule,
     DerivedMetricRule,
+    SimpleMetricExprRule,
 )
 from dbt_semantic_interfaces.validations.non_empty import NonEmptyRule
 from dbt_semantic_interfaces.validations.primary_entity import PrimaryEntityRule
@@ -97,6 +98,7 @@ class SemanticManifestValidator(Generic[SemanticManifestT]):
         ConversionMetricRule[SemanticManifestT](),
         TimeSpineRule[SemanticManifestT](),
         TimeDimensionHasGranularityRule[SemanticManifestT](),
+        SimpleMetricExprRule[SemanticManifestT](),
     )
 
     def __init__(
