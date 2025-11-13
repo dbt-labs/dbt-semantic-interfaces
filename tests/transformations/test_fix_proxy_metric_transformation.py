@@ -106,3 +106,44 @@ def test_does_not_change_non_faulty_proxy_metric() -> None:
 
     # The expr should remain unchanged
     assert unchanged_metric.type_params.expr == correct_expr, "Metric expr should not have changed"
+
+
+def test_fixes_manually_defined_not_same_name_as_measure() -> None:
+    """Test that a manually defined metric with metric.name != measure.name gets fixed to use the measure expr."""
+    metric_name = "my_metric"  # Name doesn't match measure name
+    measure_name = "my_sum_measure"
+    measure_expr = "revenue_amount"
+    semantic_model_name = "revenue_model"
+
+    # Create a measure with an expr
+    measure = PydanticMeasure(name=measure_name, agg=AggregationType.SUM, expr=measure_expr)
+    semantic_model = get_empty_semantic_model(semantic_model_name)
+    semantic_model.measures = [measure]
+
+    # Create a faulty proxy metric where expr == metric.name
+    metric = PydanticMetric(
+        name=metric_name,
+        type=MetricType.SIMPLE,
+        type_params=PydanticMetricTypeParams(
+            measure=PydanticMetricInputMeasure(name=measure_name),
+            expr="asd",  # faulty expr
+            metric_aggregation_params=PydanticMetricAggregationParams(
+                semantic_model=semantic_model_name,
+                agg=AggregationType.SUM,
+            ),
+        ),
+    )
+
+    manifest = PydanticSemanticManifest(
+        semantic_models=[semantic_model],
+        metrics=[metric],
+        project_configuration=EXAMPLE_PROJECT_CONFIGURATION,
+    )
+
+    # Transform the manifest
+    result = FixProxyMetricsRule.transform_model(manifest)
+    fixed_metric = result.metrics[0]
+
+    # The expr should now be the measure's expr
+    assert fixed_metric.type_params.expr == measure_expr, "Metric expr should have been fixed to use measure's expr"
+    assert fixed_metric.type == MetricType.SIMPLE, "Metric type should not have changed"
