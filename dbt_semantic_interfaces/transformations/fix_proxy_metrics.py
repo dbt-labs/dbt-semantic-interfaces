@@ -52,6 +52,9 @@ class FixProxyMetricsRule(ProtocolHint[SemanticManifestTransformRule[PydanticSem
                 logger.warning("Metric should not have an expr set if it's proxy from measures")
             # Override the expr to the measure expr or name if it is not set.
             referenced_measure = all_measures.get(metric.type_params.measure.name)
-            assert referenced_measure is not None, f"Measure {metric.type_params.measure.name} not found"
+
+            if referenced_measure is None:
+                logger.warning(f"Measure {metric.type_params.measure.name} not found")
+                continue
             metric.type_params.expr = referenced_measure.expr or referenced_measure.name
         return semantic_manifest
