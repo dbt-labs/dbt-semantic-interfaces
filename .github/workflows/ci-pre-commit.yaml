@@ -17,7 +17,7 @@ jobs:
         python-version: ["3.8", "3.12"]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744  # actions/checkout@v3
+      - uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8  # actions/checkout@v3
       - name: Setup Python ${{ matrix.python-version }} env
         uses: ./.github/actions/setup-python-env
         with:
