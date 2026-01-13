@@ -1,0 +1,7 @@
+kind: Fixes
+body: '`TimeDimensionHasGranularityRule` can''t emit a `ValidationError` for something
+  previously allowed, that''s a breaking change. So instead it is a `ValidationFutureError`'
+time: 2026-01-13T11:49:41.471252-06:00
+custom:
+  Author: QMalcolm
+  Issue: N/A
