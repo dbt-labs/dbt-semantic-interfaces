@@ -1,3 +1,4 @@
+from datetime import date
 from typing import Generic, List, Sequence
 
 from dbt_semantic_interfaces.protocols import SemanticManifestT, SemanticModel
@@ -8,7 +9,7 @@ from dbt_semantic_interfaces.validations.validator_helpers import (
     SemanticManifestValidationRule,
     SemanticModelElementContext,
     SemanticModelElementType,
-    ValidationError,
+    ValidationFutureError,
     ValidationIssue,
     validate_safely,
 )
@@ -46,12 +47,13 @@ class TimeDimensionHasGranularityRule(SemanticManifestValidationRule[SemanticMan
                     element_type=SemanticModelElementType.DIMENSION,
                 )
                 issues.append(
-                    ValidationError(
+                    ValidationFutureError(
                         context=context,
                         message=(
                             f"In semantic model `{semantic_model.name}`, time dimension `{dimension.name}` "
                             f"must have a time granularity set."
                         ),
+                        error_date=date(2027, 1, 1),
                     )
                 )
 
