@@ -13,7 +13,7 @@ from dbt_semantic_interfaces.naming.keywords import is_metric_time_name
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
-    LinkableElementReference,
+    GroupByItemReference,
     MetricReference,
     TimeDimensionReference,
 )
@@ -154,6 +154,7 @@ class ParameterSetFactory:
         group_by: Sequence[str] = (),
         query_item_location: QueryItemLocation = QueryItemLocation.NON_ORDER_BY,
         descending: Optional[bool] = None,
+        custom_granularity_names: Sequence[str] = (),
     ) -> MetricCallParameterSet:
         """Gets called by Jinja when rendering {{ Metric(...) }}."""
         # Metric(...) syntax is required in saved_query.order_by to apply descending. Don't require group by there.
@@ -162,8 +163,20 @@ class ParameterSetFactory:
                 "`group_by` parameter is required for Metric in where filter. This is needed to determine 1) the "
                 "granularity to aggregate the metric to and 2) how to join the metric to the rest of the query."
             )
+        group_by_references = []
+        for group_by_name in group_by:
+            structured_name = StructuredDunderedName.parse_name(
+                name=group_by_name, custom_granularity_names=custom_granularity_names
+            )
+            group_by_references.append(
+                GroupByItemReference(
+                    element_name=structured_name.element_name,
+                    entity_links=structured_name.entity_links,
+                    time_granularity_name=structured_name.time_granularity,
+                )
+            )
         return MetricCallParameterSet(
             metric_reference=MetricReference(element_name=metric_name),
-            group_by=tuple([LinkableElementReference(element_name=group_by_name) for group_by_name in group_by]),
+            group_by=tuple(group_by_references),
             descending=descending,
         )
