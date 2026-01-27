@@ -48,13 +48,21 @@ class FixProxyMetricsRule(ProtocolHint[SemanticManifestTransformRule[PydanticSem
                 # Likely the new spec where measures are removed
                 continue
 
-            if metric.type_params.expr is not None:
-                logger.warning("Metric should not have an expr set if it's proxy from measures")
             # Override the expr to the measure expr or name if it is not set.
             referenced_measure = all_measures.get(metric.type_params.measure.name)
 
             if referenced_measure is None:
                 logger.warning(f"Measure {metric.type_params.measure.name} not found")
                 continue
+
+            if metric.type_params.expr is not None and metric.type_params.expr not in [
+                referenced_measure.expr,
+                referenced_measure.name,
+            ]:
+                logger.warning(
+                    f"Metric {metric.name} should not have an expr set if it's proxy from measures, "
+                    "overriding with measure"
+                )
+
             metric.type_params.expr = referenced_measure.expr or referenced_measure.name
         return semantic_manifest
