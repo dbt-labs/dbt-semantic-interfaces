@@ -18,6 +18,7 @@ from dbt_semantic_interfaces.call_parameter_sets import (
     DimensionCallParameterSet,
     EntityCallParameterSet,
     MetricCallParameterSet,
+    ParseJinjaObjectException,
     TimeDimensionCallParameterSet,
 )
 from dbt_semantic_interfaces.implementations.base import HashableBaseModel
@@ -295,6 +296,14 @@ def test_metric_group_by_parses_entity_links_and_granularity() -> None:  # noqa
         ),
         metric_reference=MetricReference(element_name="metric"),
     )
+
+
+def test_metric_group_by_rejects_metric_time_grain() -> None:  # noqa
+    where = "{{ Metric('metric', group_by=['listing', 'metric_time__day']) }} = 10"
+    with pytest.raises(ParseJinjaObjectException, match="metric_time"):
+        JinjaObjectParser.parse_call_parameter_sets(
+            where, custom_granularity_names=(), query_item_location=QueryItemLocation.NON_ORDER_BY
+        )
 
 
 def test_order_by_params() -> None:  # noqa
