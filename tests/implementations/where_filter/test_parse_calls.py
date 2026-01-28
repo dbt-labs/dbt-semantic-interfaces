@@ -17,7 +17,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
-    LinkableElementReference,
+    GroupByItemReference,
     MetricReference,
     TimeDimensionReference,
 )
@@ -165,7 +165,7 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
         metric_call_parameter_sets=(
             MetricCallParameterSet(
                 metric_reference=MetricReference("bookings"),
-                group_by=(LinkableElementReference("listing"),),
+                group_by=(GroupByItemReference("listing"),),
             ),
         ),
     )
@@ -180,7 +180,7 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
         metric_call_parameter_sets=(
             MetricCallParameterSet(
                 metric_reference=MetricReference("bookings"),
-                group_by=(LinkableElementReference("listing"), LinkableElementReference("metric_time")),
+                group_by=(GroupByItemReference("listing"), GroupByItemReference("metric_time")),
             ),
         ),
     )

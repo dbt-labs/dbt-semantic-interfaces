@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional, Tuple
 
 from dbt_semantic_interfaces.dataclass_serialization import SerializableDataclass
 
@@ -50,6 +51,14 @@ class TimeDimensionReference(DimensionReference):  # noqa: D
     @property
     def dimension_reference(self) -> DimensionReference:  # noqa: D
         return DimensionReference(element_name=self.element_name)
+
+
+@dataclass(frozen=True, order=True)
+class GroupByItemReference(LinkableElementReference):
+    """Reference for Metric(..., group_by=[...]) items with parsed entity links."""
+
+    entity_links: Tuple[EntityReference, ...] = ()
+    time_granularity_name: Optional[str] = None
 
 
 @dataclass(frozen=True, order=True)

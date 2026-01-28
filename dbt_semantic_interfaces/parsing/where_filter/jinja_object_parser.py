@@ -119,6 +119,7 @@ class JinjaObjectParser:
                         group_by=description.group_by_for_metric_item,
                         query_item_location=query_item_location,
                         descending=description.descending,
+                        custom_granularity_names=custom_granularity_names,
                     )
                 )
             else:
