@@ -168,9 +168,9 @@ class ParameterSetFactory:
             structured_name = StructuredDunderedName.parse_name(
                 name=group_by_name, custom_granularity_names=custom_granularity_names
             )
-            if is_metric_time_name(structured_name.element_name) and structured_name.time_granularity is not None:
+            if is_metric_time_name(structured_name.element_name) and structured_name.time_granularity is None:
                 raise ParseJinjaObjectException(
-                    "Metric group_by does not support grains on `metric_time`. Use `metric_time` without a grain."
+                    "Metric group_by requires an explicit grain on `metric_time` (e.g. `metric_time__day`)."
                 )
             group_by_references.append(
                 GroupByItemReference(
