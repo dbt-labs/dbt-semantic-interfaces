@@ -142,6 +142,11 @@ def test_no_time_spine_config() -> None:  # noqa: D
                         type_params=PydanticDimensionTypeParams(time_granularity=TimeGranularity.SECOND),
                     )
                 ],
+                measures=[
+                    PydanticMeasure(
+                        name="sum_measure", agg=AggregationType.SUM, agg_time_dimension="dim", create_metric=True
+                    ),
+                ],
                 entities=[PydanticEntity(name="entity", type=EntityType.PRIMARY)],
             ),
         ],
