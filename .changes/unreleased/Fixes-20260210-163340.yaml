@@ -1,0 +1,6 @@
+kind: Fixes
+body: Fix bad error message when validating time spines with no time dimensions.
+time: 2026-02-10T16:33:40.469369-08:00
+custom:
+    Author: theyostalservice
+    Issue: "467"
