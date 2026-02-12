@@ -6,7 +6,7 @@ from typing import Optional, Tuple
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
-    LinkableElementReference,
+    GroupByItemReference,
     MetricReference,
     TimeDimensionReference,
 )
@@ -48,7 +48,7 @@ class MetricCallParameterSet:
     """When 'Metric(...)' is used in the Jinja template of the where filter, the parameters to that call."""
 
     metric_reference: MetricReference
-    group_by: Tuple[LinkableElementReference, ...] = ()
+    group_by: Tuple[GroupByItemReference, ...] = ()
     descending: Optional[bool] = None
 
 
