@@ -19,7 +19,7 @@ jobs:
         pydantic-version: ["1.10", "2.0"]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@1af3b93b6815bc44a9784bd300feb67ff0d1eeb3  # actions/checkout@v3
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }} env
         uses: ./.github/actions/setup-python-env
         with:
