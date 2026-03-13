@@ -58,7 +58,7 @@ class OSIDataset(HashableBaseModel):
 
 
 class OSIRelationship(HashableBaseModel):
-    """Foreign key relationship between datasets (stub -- not yet populated by converter)."""
+    """Foreign key relationship between datasets."""
 
     name: str
     from_dataset: str = Field(..., alias="from")

@@ -1,6 +1,8 @@
 from __future__ import annotations
 
-from typing import List, Optional, Sequence, Tuple
+from collections import defaultdict
+from itertools import combinations
+from typing import Dict, List, Optional, Sequence, Tuple
 
 from dbt_semantic_interfaces.osi.models import (
     OSIDataset,
@@ -10,6 +12,7 @@ from dbt_semantic_interfaces.osi.models import (
     OSIDocument,
     OSIExpression,
     OSIField,
+    OSIRelationship,
     OSISemanticModel,
 )
 from dbt_semantic_interfaces.protocols.dimension import Dimension
@@ -29,6 +32,9 @@ class DSIToOSIConverter:
     def convert(self, manifest: SemanticManifest, model_name: str = "semantic_model") -> OSIDocument:  # noqa: D
         datasets = [self._convert_semantic_model(sm) for sm in manifest.semantic_models]
 
+        entity_index = self._build_entity_index(manifest.semantic_models)
+        relationships = self._build_relationships(entity_index)
+
         return OSIDocument(
             version="1.0",
             dialects=[self._dialect],
@@ -36,6 +42,7 @@ class DSIToOSIConverter:
                 OSISemanticModel(
                     name=model_name,
                     datasets=datasets,
+                    relationships=relationships if relationships else None,
                 )
             ],
         )
@@ -105,6 +112,44 @@ class DSIToOSIConverter:
                 unique_keys.append([col])
 
         return primary_key, unique_keys
+
+    @staticmethod
+    def _build_entity_index(
+        semantic_models: Sequence[SemanticModel],
+    ) -> Dict[str, List[Tuple[str, str]]]:
+        """Map each entity name to the (dataset_name, column) pairs that declare it."""
+        index: Dict[str, List[Tuple[str, str]]] = defaultdict(list)
+        for sm in semantic_models:
+            for entity in sm.entities:
+                if entity.type == EntityType.NATURAL:
+                    continue
+                col = entity.expr if entity.expr is not None else entity.name
+                index[entity.name].append((sm.name, col))
+        return dict(index)
+
+    @staticmethod
+    def _build_relationships(
+        entity_index: Dict[str, List[Tuple[str, str]]],
+    ) -> List[OSIRelationship]:
+        """Resolve implicit DSI entity links into explicit OSI relationships.
+
+        Every pair of datasets sharing an entity name is a valid join path.
+        """
+        relationships: List[OSIRelationship] = []
+        for entity_name, entries in entity_index.items():
+            for (ds_a, col_a), (ds_b, col_b) in combinations(entries, 2):
+                if ds_a == ds_b:
+                    continue
+                relationships.append(
+                    OSIRelationship(
+                        name=f"{ds_a}__{ds_b}__{entity_name}",
+                        from_dataset=ds_a,
+                        to=ds_b,
+                        from_columns=[col_a],
+                        to_columns=[col_b],
+                    )
+                )
+        return relationships
 
     def _make_expression(self, expr: str) -> OSIExpression:
         return OSIExpression(dialects=[OSIDialectExpression(dialect=self._dialect, expression=expr)])
