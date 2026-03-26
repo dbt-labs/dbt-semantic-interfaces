@@ -1,0 +1,5 @@
+kind: Features
+body: Add compiled_sql to NodeRelation protocol and PydanticNodeRelation to support ephemeral models in Semantic Layer definitions.
+time: 2026-03-26T00:00:00.000000-07:00
+custom:
+  Author: b-per
