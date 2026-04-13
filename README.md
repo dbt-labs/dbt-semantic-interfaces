@@ -10,6 +10,9 @@
 
 # dbt-semantic-interfaces
 
+> [!WARNING]
+> **This project is deprecated.** `0.10.5` is the last release of `dbt-semantic-interfaces`. This package has been superseded by `metricflow-semantic-interfaces`, which is part of the [MetricFlow](https://github.com/dbt-labs/metricflow) project starting with version `0.210.0`.
+
 This repo contains the shared semantic classes, default validation, and tests designed to be used by both the dbt-core and MetricFlow projects. By centralizing these shared resources, we aim to maintain consistency and reduce code duplication across both projects.
 
 ## Features
