@@ -44,4 +44,5 @@ runs:
     shell: bash
     run: |
       pip3 install "click<8.3.0"
+      pip3 install "virtualenv<21"
       pip3 install hatch
