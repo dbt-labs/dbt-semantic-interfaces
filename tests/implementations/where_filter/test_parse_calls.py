@@ -17,7 +17,7 @@ from dbt_semantic_interfaces.implementations.filters.where_filter import (
 from dbt_semantic_interfaces.references import (
     DimensionReference,
     EntityReference,
-    LinkableElementReference,
+    GroupByItemReference,
     MetricReference,
     TimeDimensionReference,
 )
@@ -165,13 +165,13 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
         metric_call_parameter_sets=(
             MetricCallParameterSet(
                 metric_reference=MetricReference("bookings"),
-                group_by=(LinkableElementReference("listing"),),
+                group_by=(GroupByItemReference("listing"),),
             ),
         ),
     )
 
     parse_result = PydanticWhereFilter(
-        where_sql_template=("{{ Metric('bookings', group_by=['listing', 'metric_time']) }} > 2")
+        where_sql_template=("{{ Metric('bookings', group_by=['listing', 'metric_time__day']) }} > 2")
     ).call_parameter_sets(custom_granularity_names=())
 
     assert parse_result == JinjaCallParameterSets(
@@ -180,10 +180,18 @@ def test_extract_metric_call_parameter_sets() -> None:  # noqa: D
         metric_call_parameter_sets=(
             MetricCallParameterSet(
                 metric_reference=MetricReference("bookings"),
-                group_by=(LinkableElementReference("listing"), LinkableElementReference("metric_time")),
+                group_by=(
+                    GroupByItemReference("listing"),
+                    GroupByItemReference("metric_time", time_granularity_name="day"),
+                ),
             ),
         ),
     )
+
+    with pytest.raises(ParseJinjaObjectException, match="explicit grain"):
+        PydanticWhereFilter(
+            where_sql_template=("{{ Metric('bookings', group_by=['listing', 'metric_time']) }} > 2")
+        ).call_parameter_sets(custom_granularity_names=())
 
     with pytest.raises(ParseJinjaObjectException):
         PydanticWhereFilter(where_sql_template=("{{ Metric('bookings') }} > 2")).call_parameter_sets(
